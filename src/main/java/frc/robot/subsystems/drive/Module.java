@@ -71,6 +71,8 @@ public class Module {
     // Apply setpoints
     io.setDriveVelocity(state.speedMetersPerSecond / wheelRadiusMeters);
     io.setTurnPosition(state.angle);
+    // could implement our own pid controller
+    // sounds like it would be a lot of work
   }
 
   /** Runs the module with the specified output while controlling to zero degrees. */

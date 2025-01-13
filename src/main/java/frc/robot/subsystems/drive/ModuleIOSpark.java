@@ -16,8 +16,7 @@ package frc.robot.subsystems.drive;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
@@ -48,7 +47,7 @@ public class ModuleIOSpark implements ModuleIO {
   private final SparkBase driveSpark;
   private final SparkBase turnSpark;
   private final RelativeEncoder driveEncoder;
-  private final CANcoder turnEncoder;
+  private final AbsoluteEncoder turnEncoder;
 
   // Closed loop controllers
   private final SparkClosedLoopController driveController;
@@ -93,8 +92,7 @@ public class ModuleIOSpark implements ModuleIO {
             },
             MotorType.kBrushless);
     driveEncoder = driveSpark.getEncoder();
-    turnEncoder = new CANcoder(module);
-    turnEncoder.getConfigurator().apply(new CANcoderConfiguration());
+    turnEncoder = turnSpark.getAbsoluteEncoder();
     driveController = driveSpark.getClosedLoopController();
     turnController = turnSpark.getClosedLoopController();
 
@@ -173,8 +171,7 @@ public class ModuleIOSpark implements ModuleIO {
     drivePositionQueue =
         SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder::getPosition);
     turnPositionQueue =
-        SparkOdometryThread.getInstance()
-            .registerSignal(turnSpark, () -> turnEncoder.getAbsolutePosition().getValueAsDouble());
+        SparkOdometryThread.getInstance().registerSignal(turnSpark, turnEncoder::getPosition);
   }
 
   @Override
@@ -189,20 +186,21 @@ public class ModuleIOSpark implements ModuleIO {
         (values) -> inputs.driveAppliedVolts = values[0] * values[1]);
     ifOk(driveSpark, driveSpark::getOutputCurrent, (value) -> inputs.driveCurrentAmps = value);
     inputs.driveConnected = driveConnectedDebounce.calculate(!sparkStickyFault);
-
+    // get cancoder at start of the match
+    // use built in one for the match
+    // later update to use custom PID
+    // because CANCODER can have noise, it might randomly have a spike in something or disconnect
+    // if that happens at start of match, youre screwed (account for that)
     // Update turn inputs
     sparkStickyFault = false;
     ifOk(
         turnSpark,
-        () -> turnEncoder.getAbsolutePosition().getValueAsDouble(),
+        turnEncoder::getPosition,
         (value) -> {
           inputs.turnPosition = new Rotation2d(value).minus(zeroRotation);
           inputs.newTurnPositionRad = inputs.turnPosition.getDegrees();
         });
-    ifOk(
-        turnSpark,
-        () -> turnEncoder.getVelocity().getValueAsDouble(),
-        (value) -> inputs.turnVelocityRadPerSec = value);
+    ifOk(turnSpark, turnEncoder::getVelocity, (value) -> inputs.turnVelocityRadPerSec = value);
     ifOk(
         turnSpark,
         new DoubleSupplier[] {turnSpark::getAppliedOutput, turnSpark::getBusVoltage},
