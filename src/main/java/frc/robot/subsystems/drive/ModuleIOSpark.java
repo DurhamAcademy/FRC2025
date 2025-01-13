@@ -16,7 +16,6 @@ package frc.robot.subsystems.drive;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
@@ -35,6 +34,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
@@ -47,7 +47,7 @@ public class ModuleIOSpark implements ModuleIO {
   private final SparkBase driveSpark;
   private final SparkBase turnSpark;
   private final RelativeEncoder driveEncoder;
-  private final AbsoluteEncoder turnEncoder;
+  private final RelativeEncoder turnEncoder;
 
   // Closed loop controllers
   private final SparkClosedLoopController driveController;
@@ -92,7 +92,7 @@ public class ModuleIOSpark implements ModuleIO {
             },
             MotorType.kBrushless);
     driveEncoder = driveSpark.getEncoder();
-    turnEncoder = turnSpark.getAbsoluteEncoder();
+    turnEncoder = turnSpark.getEncoder();
     driveController = driveSpark.getClosedLoopController();
     turnController = turnSpark.getClosedLoopController();
 
@@ -139,23 +139,21 @@ public class ModuleIOSpark implements ModuleIO {
         .smartCurrentLimit(turnMotorCurrentLimit)
         .voltageCompensation(12.0);
     turnConfig
-        .absoluteEncoder
-        .inverted(turnEncoderInverted)
+        .encoder
         .positionConversionFactor(turnEncoderPositionFactor)
         .velocityConversionFactor(turnEncoderVelocityFactor)
-        .averageDepth(2);
+        .uvwMeasurementPeriod(10)
+        .uvwAverageDepth(2);
     turnConfig
         .closedLoop
-        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-        .positionWrappingEnabled(true)
-        .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pidf(turnKp, 0.0, turnKd, 0.0);
     turnConfig
         .signals
-        .absoluteEncoderPositionAlwaysOn(true)
-        .absoluteEncoderPositionPeriodMs((int) (1000.0 / odometryFrequency))
-        .absoluteEncoderVelocityAlwaysOn(true)
-        .absoluteEncoderVelocityPeriodMs(20)
+        .primaryEncoderPositionAlwaysOn(true)
+        .primaryEncoderPositionPeriodMs((int) (1000.0 / odometryFrequency))
+        .primaryEncoderVelocityAlwaysOn(true)
+        .primaryEncoderVelocityPeriodMs(20)
         .appliedOutputPeriodMs(20)
         .busVoltagePeriodMs(20)
         .outputCurrentPeriodMs(20);
@@ -165,7 +163,6 @@ public class ModuleIOSpark implements ModuleIO {
         () ->
             turnSpark.configure(
                 turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-
     // Create odometry queues
     timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
     drivePositionQueue =
@@ -193,19 +190,31 @@ public class ModuleIOSpark implements ModuleIO {
     // if that happens at start of match, youre screwed (account for that)
     // Update turn inputs
     sparkStickyFault = false;
+    Logger.recordOutput("TurnEncoder/ISOk", 0);
     ifOk(
         turnSpark,
         turnEncoder::getPosition,
         (value) -> {
           inputs.turnPosition = new Rotation2d(value).minus(zeroRotation);
-          inputs.newTurnPositionRad = inputs.turnPosition.getDegrees();
         });
-    ifOk(turnSpark, turnEncoder::getVelocity, (value) -> inputs.turnVelocityRadPerSec = value);
+    ifOk(
+        turnSpark,
+        turnEncoder::getVelocity,
+        (value) -> {
+          inputs.turnVelocityRadPerSec = value;
+        });
     ifOk(
         turnSpark,
         new DoubleSupplier[] {turnSpark::getAppliedOutput, turnSpark::getBusVoltage},
-        (values) -> inputs.turnAppliedVolts = values[0] * values[1]);
-    ifOk(turnSpark, turnSpark::getOutputCurrent, (value) -> inputs.turnCurrentAmps = value);
+        (values) -> {
+          inputs.turnAppliedVolts = values[0] * values[1];
+        });
+    ifOk(
+        turnSpark,
+        turnSpark::getOutputCurrent,
+        (value) -> {
+          inputs.turnCurrentAmps = value;
+        });
     inputs.turnConnected = turnConnectedDebounce.calculate(!sparkStickyFault);
 
     // Update odometry inputs
@@ -248,6 +257,10 @@ public class ModuleIOSpark implements ModuleIO {
     double setpoint =
         MathUtil.inputModulus(
             rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput);
+    Logger.recordOutput(
+        "setpoint/pos",
+        MathUtil.inputModulus(
+            rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput));
     turnController.setReference(setpoint, ControlType.kPosition);
   }
 }

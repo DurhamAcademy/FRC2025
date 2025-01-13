@@ -66,7 +66,6 @@ public class Module {
     // Optimize velocity setpoint
     state.optimize(getAngle());
     state.cosineScale(inputs.turnPosition);
-    inputs.newTurnPositionRad = state.angle.getDegrees();
 
     // Apply setpoints
     io.setDriveVelocity(state.speedMetersPerSecond / wheelRadiusMeters);
