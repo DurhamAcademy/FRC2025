@@ -33,6 +33,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
@@ -66,6 +67,10 @@ public class ModuleIOSpark implements ModuleIO {
   private final Debouncer turnConnectedDebounce = new Debouncer(0.5);
 
   private Rotation2d absoluteOffset = new Rotation2d();
+  private int offsetUpdateCount = 0;
+  private int initialUpdateCount = 0;
+  private final int offsetUpdateFrequency = 100;
+  MedianFilter medianFilter = new MedianFilter(10);
 
   private int module;
 
@@ -183,20 +188,23 @@ public class ModuleIOSpark implements ModuleIO {
 
     turnCANcoder = new CANcoder(module);
     turnCANcoder.getConfigurator().apply(new CANcoderConfiguration());
-    Rotation2d absoluteAngle = getAbsoluteAngle();
-    Logger.recordOutput("RotationOffset/initOffset", absoluteAngle);
   }
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
-    Rotation2d absoluteAngle = getAbsoluteAngle();
-    absoluteOffset = absoluteAngle.minus(Rotation2d.fromRadians(turnEncoder.getPosition()));
-    // absoluteAngle.minus(Rotation2d.fromRadians(turnEncoder.getPosition()))
-    Logger.recordOutput("RotationOffset/offset_" + module, absoluteOffset.getRadians());
-
-    Logger.recordOutput(
-        "PeriodicEncoder/position/" + module,
-        turnCANcoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI / 60.0);
+    if (offsetUpdateCount % 100 == 0 || initialUpdateCount <= 10) {
+      if (initialUpdateCount <= 10) {
+        initialUpdateCount++;
+      }
+      offsetUpdateCount = 0;
+      Rotation2d absoluteAngle = getAbsoluteAngle();
+      Rotation2d currentAbsoluteOffset =
+          absoluteAngle.minus(Rotation2d.fromRadians(turnEncoder.getPosition()));
+      double filteredOffset = medianFilter.calculate(currentAbsoluteOffset.getRadians());
+      absoluteOffset = Rotation2d.fromRadians(filteredOffset);
+      Logger.recordOutput("ModuleIOSpark/offset_" + module, absoluteOffset.getRadians());
+    }
+    offsetUpdateCount++;
 
     // Update drive inputs
     sparkStickyFault = false;
@@ -208,14 +216,9 @@ public class ModuleIOSpark implements ModuleIO {
         (values) -> inputs.driveAppliedVolts = values[0] * values[1]);
     ifOk(driveSpark, driveSpark::getOutputCurrent, (value) -> inputs.driveCurrentAmps = value);
     inputs.driveConnected = driveConnectedDebounce.calculate(!sparkStickyFault);
-    // get cancoder at start of the match
-    // use built in one for the match
-    // later update to use custom PID
-    // because CANCODER can have noise, it might randomly have a spike in something or disconnect
-    // if that happens at start of match, youre screwed (account for that)
+
     // Update turn inputs
     sparkStickyFault = false;
-    Logger.recordOutput("TurnEncoder/ISOk", 0);
     ifOk(
         turnSpark,
         turnEncoder::getPosition,
@@ -281,12 +284,6 @@ public class ModuleIOSpark implements ModuleIO {
   public void setTurnPosition(Rotation2d rotation) {
     double setpoint =
         MathUtil.angleModulus(rotation.plus(zeroRotation).minus(absoluteOffset).getRadians());
-
-    //    setpoint =
-    //        MathUtil.angleModulus(
-    //            new Rotation2d().minus(zeroRotation).minus(absoluteOffset).getRadians());
-
-    Logger.recordOutput("setpoint/pos", setpoint);
 
     turnController.setReference(setpoint, ControlType.kPosition);
   }
