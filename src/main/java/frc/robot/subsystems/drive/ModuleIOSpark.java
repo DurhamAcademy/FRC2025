@@ -16,6 +16,8 @@ package frc.robot.subsystems.drive;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
@@ -48,6 +50,7 @@ public class ModuleIOSpark implements ModuleIO {
   private final SparkBase turnSpark;
   private final RelativeEncoder driveEncoder;
   private final RelativeEncoder turnEncoder;
+  private final CANcoder turnCANcoder;
 
   // Closed loop controllers
   private final SparkClosedLoopController driveController;
@@ -62,7 +65,13 @@ public class ModuleIOSpark implements ModuleIO {
   private final Debouncer driveConnectedDebounce = new Debouncer(0.5);
   private final Debouncer turnConnectedDebounce = new Debouncer(0.5);
 
+  private Rotation2d absoluteOffset = new Rotation2d();
+
+  private int module;
+
   public ModuleIOSpark(int module) {
+    this.module = module;
+
     zeroRotation =
         switch (module) {
           case 0 -> frontLeftZeroRotation;
@@ -147,7 +156,9 @@ public class ModuleIOSpark implements ModuleIO {
     turnConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pidf(turnKp, 0.0, turnKd, 0.0);
+        .pidf(turnKp, 0.0, turnKd, 0.0)
+        .positionWrappingEnabled(true)
+        .positionWrappingInputRange(-Math.PI, Math.PI);
     turnConfig
         .signals
         .primaryEncoderPositionAlwaysOn(true)
@@ -169,10 +180,24 @@ public class ModuleIOSpark implements ModuleIO {
         SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder::getPosition);
     turnPositionQueue =
         SparkOdometryThread.getInstance().registerSignal(turnSpark, turnEncoder::getPosition);
+
+    turnCANcoder = new CANcoder(module);
+    turnCANcoder.getConfigurator().apply(new CANcoderConfiguration());
+    Rotation2d absoluteAngle = getAbsoluteAngle();
+    Logger.recordOutput("RotationOffset/initOffset", absoluteAngle);
   }
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
+    Rotation2d absoluteAngle = getAbsoluteAngle();
+    absoluteOffset = absoluteAngle.minus(Rotation2d.fromRadians(turnEncoder.getPosition()));
+    // absoluteAngle.minus(Rotation2d.fromRadians(turnEncoder.getPosition()))
+    Logger.recordOutput("RotationOffset/offset_" + module, absoluteOffset.getRadians());
+
+    Logger.recordOutput(
+        "PeriodicEncoder/position/" + module,
+        turnCANcoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI / 60.0);
+
     // Update drive inputs
     sparkStickyFault = false;
     ifOk(driveSpark, driveEncoder::getPosition, (value) -> inputs.drivePositionRad = value);
@@ -195,8 +220,7 @@ public class ModuleIOSpark implements ModuleIO {
         turnSpark,
         turnEncoder::getPosition,
         (value) -> {
-          inputs.turnPosition =
-              new Rotation2d(value).minus(zeroRotation).plus(inputs.absoluteOffset);
+          inputs.turnPosition = new Rotation2d(value).minus(zeroRotation).plus(absoluteOffset);
         });
     ifOk(
         turnSpark,
@@ -256,12 +280,20 @@ public class ModuleIOSpark implements ModuleIO {
   @Override
   public void setTurnPosition(Rotation2d rotation) {
     double setpoint =
-        MathUtil.inputModulus(
-            rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput);
-    Logger.recordOutput(
-        "setpoint/pos",
-        MathUtil.inputModulus(
-            rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput));
+        MathUtil.angleModulus(rotation.plus(zeroRotation).minus(absoluteOffset).getRadians());
+
+    //    setpoint =
+    //        MathUtil.angleModulus(
+    //            new Rotation2d().minus(zeroRotation).minus(absoluteOffset).getRadians());
+
+    Logger.recordOutput("setpoint/pos", setpoint);
+
     turnController.setReference(setpoint, ControlType.kPosition);
+  }
+
+  public Rotation2d getAbsoluteAngle() {
+    // TODO: IF RADIANS
+    // return Rotation2d.fromRadians(0.0);
+    return Rotation2d.fromRotations(turnCANcoder.getAbsolutePosition().getValueAsDouble());
   }
 }

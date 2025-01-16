@@ -15,8 +15,7 @@ package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -27,7 +26,6 @@ import org.littletonrobotics.junction.Logger;
 public class Module {
   private final ModuleIO io;
   private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
-  private final CANcoder turnEncoder;
   private final int index;
 
   private final Alert driveDisconnectedAlert;
@@ -45,19 +43,6 @@ public class Module {
     turnDisconnectedAlert =
         new Alert(
             "Disconnected turn motor on module " + Integer.toString(index) + ".", AlertType.kError);
-
-    turnEncoder = new CANcoder(index);
-    turnEncoder.getConfigurator().apply(new CANcoderConfiguration());
-
-    initialize();
-  }
-
-  public void initialize() {
-    Rotation2d absoluteAngle = getAbsoluteAngle();
-    inputs.absoluteOffset = Rotation2d.fromDegrees(0);
-    // absoluteAngle.minus(inputs.turnPosition);
-    Logger.recordOutput(
-        "RotationOffset/offset", Rotation2d.fromDegrees(inputs.absoluteOffset.getDegrees()));
   }
 
   public void periodic() {
@@ -107,7 +92,7 @@ public class Module {
 
   /** Returns the current turn angle of the module. */
   public Rotation2d getAngle() {
-    return Rotation2d.fromRadians(inputs.turnPosition.plus(inputs.absoluteOffset).getRadians());
+    return Rotation2d.fromRadians(MathUtil.angleModulus(inputs.turnPosition.getRadians()));
   }
 
   /** Returns the current drive position of the module in meters. */
@@ -148,10 +133,5 @@ public class Module {
   /** Returns the module velocity in rad/sec. */
   public double getFFCharacterizationVelocity() {
     return inputs.driveVelocityRadPerSec;
-  }
-
-  public Rotation2d getAbsoluteAngle() {
-    // TODO: IF RADIANS
-    return Rotation2d.fromRadians(turnEncoder.getAbsolutePosition().getValueAsDouble());
   }
 }
