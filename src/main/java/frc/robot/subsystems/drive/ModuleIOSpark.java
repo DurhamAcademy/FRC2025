@@ -292,8 +292,6 @@ public class ModuleIOSpark implements ModuleIO {
   }
 
   public Rotation2d getAbsoluteAngle() {
-    // TODO: IF RADIANS
-    // return Rotation2d.fromRadians(0.0);
     return Rotation2d.fromRotations(turnCANcoder.getAbsolutePosition().getValueAsDouble());
   }
 }
