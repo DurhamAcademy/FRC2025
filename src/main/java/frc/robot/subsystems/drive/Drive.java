@@ -14,6 +14,8 @@
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.wpilibj.DriverStation.Alliance.Blue;
+import static edu.wpi.first.wpilibj.DriverStation.Alliance.Red;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -57,26 +59,26 @@ public class Drive extends SubsystemBase {
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
   private final Alert gyroDisconnectedAlert =
-      new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
+          new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
   private Rotation2d rawGyroRotation = new Rotation2d();
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
-      new SwerveModulePosition[] {
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition()
-      };
+          new SwerveModulePosition[] {
+                  new SwerveModulePosition(),
+                  new SwerveModulePosition(),
+                  new SwerveModulePosition(),
+                  new SwerveModulePosition()
+          };
   private SwerveDrivePoseEstimator poseEstimator =
-      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+          new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
   public Drive(
-      GyroIO gyroIO,
-      ModuleIO flModuleIO,
-      ModuleIO frModuleIO,
-      ModuleIO blModuleIO,
-      ModuleIO brModuleIO) {
+          GyroIO gyroIO,
+          ModuleIO flModuleIO,
+          ModuleIO frModuleIO,
+          ModuleIO blModuleIO,
+          ModuleIO brModuleIO) {
     this.gyroIO = gyroIO;
     modules[0] = new Module(flModuleIO, 0);
     modules[1] = new Module(frModuleIO, 1);
@@ -91,36 +93,36 @@ public class Drive extends SubsystemBase {
 
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configure(
-        this::getPose,
-        this::setPose,
-        this::getChassisSpeeds,
-        this::runVelocity,
-        new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-        ppConfig,
-        () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-        this);
+            this::getPose,
+            this::setPose,
+            this::getChassisSpeeds,
+            this::runVelocity,
+            new PPHolonomicDriveController(
+                    new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            ppConfig,
+            () -> DriverStation.getAlliance().orElse(Blue) == Red,
+            this);
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
-        (activePath) -> {
-          Logger.recordOutput(
-              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-        });
+            (activePath) -> {
+              Logger.recordOutput(
+                      "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+            });
     PathPlannerLogging.setLogTargetPoseCallback(
-        (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-        });
+            (targetPose) -> {
+              Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+            });
 
     // Configure SysId
     sysId =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+            new SysIdRoutine(
+                    new SysIdRoutine.Config(
+                            null,
+                            null,
+                            null,
+                            (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+                    new SysIdRoutine.Mechanism(
+                            (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -148,7 +150,7 @@ public class Drive extends SubsystemBase {
 
     // Update odometry
     double[] sampleTimestamps =
-        modules[0].getOdometryTimestamps(); // All signals are sampled together
+            modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
     for (int i = 0; i < sampleCount; i++) {
       // Read wheel positions and deltas from each module
@@ -157,10 +159,10 @@ public class Drive extends SubsystemBase {
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
         modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
         moduleDeltas[moduleIndex] =
-            new SwerveModulePosition(
-                modulePositions[moduleIndex].distanceMeters
-                    - lastModulePositions[moduleIndex].distanceMeters,
-                modulePositions[moduleIndex].angle);
+                new SwerveModulePosition(
+                        modulePositions[moduleIndex].distanceMeters
+                                - lastModulePositions[moduleIndex].distanceMeters,
+                        modulePositions[moduleIndex].angle);
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
 
@@ -234,8 +236,8 @@ public class Drive extends SubsystemBase {
   /** Returns a command to run a quasistatic test in the specified direction. */
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return run(() -> runCharacterization(0.0))
-        .withTimeout(1.0)
-        .andThen(sysId.quasistatic(direction));
+            .withTimeout(1.0)
+            .andThen(sysId.quasistatic(direction));
   }
 
   /** Returns a command to run a dynamic test in the specified direction. */
@@ -304,11 +306,11 @@ public class Drive extends SubsystemBase {
 
   /** Adds a new timestamped vision measurement. */
   public void addVisionMeasurement(
-      Pose2d visionRobotPoseMeters,
-      double timestampSeconds,
-      Matrix<N3, N1> visionMeasurementStdDevs) {
+          Pose2d visionRobotPoseMeters,
+          double timestampSeconds,
+          Matrix<N3, N1> visionMeasurementStdDevs) {
     poseEstimator.addVisionMeasurement(
-        visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+            visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
   }
 
   /** Returns the maximum linear speed in meters per sec. */
@@ -319,5 +321,15 @@ public class Drive extends SubsystemBase {
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
     return maxSpeedMetersPerSec / driveBaseRadius;
+  }
+
+  public Pose2d getReefPosition(Constants.ReefConstants reef) {
+    int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
+    return Constants.LocationConstants.ReefLocations.get(reef)[color];
+  }
+
+  public Pose2d getClosestReefPosition() {
+    int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
+    return poseEstimator.getEstimatedPosition().nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
   }
 }
