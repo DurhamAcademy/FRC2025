@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '11' # Match your WPILib project's JDK version
+          java-version: '19' # Match your WPILib project's JDK version
 
       - name: Cache Gradle
         uses: actions/cache@v3
