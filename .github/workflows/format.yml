@@ -3,7 +3,7 @@ name: Check Java Formatting
 on:
   push:
     branches:
-      - *
+      - '*'
   pull_request:
 
 jobs:
