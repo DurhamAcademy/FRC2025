@@ -1,0 +1,39 @@
+name: Check Java Formatting
+
+on: [ push ]
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17' # Match your WPILib project's JDK version
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle
+
+      - name: Run Spotless Check
+        run: ./gradlew spotlessCheck
+
+      - name: Auto Format (on failure)
+        if: failure()
+        run: ./gradlew spotlessApply
+
+      - name: Commit and Push Changes
+        if: failure()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Apply Spotless formatting fixes"
+          git push

@@ -25,6 +25,7 @@ import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
 public class DriveConstants {
+  // 2024 robot
   public static final double maxSpeedMetersPerSec = 5.75;
   public static final double odometryFrequency = 100.0; // Hz
   public static final double trackWidth = Units.inchesToMeters(20.75);
@@ -38,13 +39,15 @@ public class DriveConstants {
         new Translation2d(-trackWidth / 2.0, -wheelBase / 2.0)
       };
 
-  // Zeroed rotation values for each module, see setup instructions
-  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.284); // 0 -
+  // Zeroed rotation values for each module
+  // 2024 robot
+  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.284); // 0
   public static final Rotation2d frontRightZeroRotation = new Rotation2d(-1.901); // 1
   public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.460); // 2
   public static final Rotation2d backRightZeroRotation = new Rotation2d(-2.835); // 3
 
   // Device CAN IDs
+  // 2024 robot
   public static final int pigeonCanId = 20;
 
   public static final int frontLeftDriveCanId = 1;
@@ -58,6 +61,7 @@ public class DriveConstants {
   public static final int backRightTurnCanId = 8;
 
   // Drive motor configuration
+  // 2024 robot
   public static final int driveMotorCurrentLimit = 50;
   public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
   public static final double driveMotorReduction = 6.75; // MK4i L2s
@@ -80,6 +84,7 @@ public class DriveConstants {
   public static final double driveSimKv = 0.0789;
 
   // Turn motor configuration
+  // 2024 robot
   public static final boolean turnInverted = true;
   public static final int turnMotorCurrentLimit = 20;
   public static final double turnMotorReduction = 150.0 / 7.0;
@@ -91,7 +96,6 @@ public class DriveConstants {
       2 * Math.PI / (turnMotorReduction); // Rotations -> Radians
   public static final double turnEncoderVelocityFactor =
       (2 * Math.PI) / 60.0 / (turnMotorReduction); // RPM -> Rad/Sec
-  // TODO check if this is right
 
   // Turn PID configuration
   public static final double turnKp = 2.0;

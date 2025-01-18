@@ -47,6 +47,13 @@ public class ModuleIOSpark implements ModuleIO {
   private final Rotation2d zeroRotation;
 
   // Hardware objects
+  /*
+  driveEncoder and turnEncoder are both relative encoders,
+  meaning when the robot restarts they are set to 0
+
+  turnCANcoder is an absolute encoder,
+  meaning when the robot restarts it maintains it angle
+   */
   private final SparkBase driveSpark;
   private final SparkBase turnSpark;
   private final RelativeEncoder driveEncoder;
@@ -69,7 +76,6 @@ public class ModuleIOSpark implements ModuleIO {
   private Rotation2d absoluteOffset = new Rotation2d();
   private int offsetUpdateCount = 0;
   private int initialUpdateCount = 0;
-  private final int offsetUpdateFrequency = 100;
   MedianFilter medianFilter = new MedianFilter(10);
 
   private int module;
@@ -192,14 +198,20 @@ public class ModuleIOSpark implements ModuleIO {
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
+    // updates the absoluteOffset every 100 periodic runs (~2 seconds)
+    // also updates for the first 10 runs of periodic as the robot starts
     if (offsetUpdateCount % 100 == 0 || initialUpdateCount <= 10) {
       if (initialUpdateCount <= 10) {
         initialUpdateCount++;
       }
       offsetUpdateCount = 0;
+
+      // gets absolute angle of turnCANcoder, finds offset from relative encoder
       Rotation2d absoluteAngle = getAbsoluteAngle();
       Rotation2d currentAbsoluteOffset =
           absoluteAngle.minus(Rotation2d.fromRadians(turnEncoder.getPosition()));
+
+      // uses a median filter to filter spikes in CANcoder values, sets absoluteOffset
       double filteredOffset = medianFilter.calculate(currentAbsoluteOffset.getRadians());
       absoluteOffset = Rotation2d.fromRadians(filteredOffset);
       Logger.recordOutput("ModuleIOSpark/offset_" + module, absoluteOffset.getRadians());
@@ -288,6 +300,11 @@ public class ModuleIOSpark implements ModuleIO {
     turnController.setReference(setpoint, ControlType.kPosition);
   }
 
+  /**
+   * gets absolute angle of CANcoder
+   *
+   * @return absolute angle of CANcoder as a Rotation2d
+   */
   public Rotation2d getAbsoluteAngle() {
     return Rotation2d.fromRotations(turnCANcoder.getAbsolutePosition().getValueAsDouble());
   }

@@ -66,16 +66,12 @@ public class Module {
   /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */
   public void runSetpoint(SwerveModuleState state) {
     // Optimize velocity setpoint
-    Logger.recordOutput("Module/stateangle", state.angle);
-    Logger.recordOutput("Module/targetangle", inputs.turnPosition);
     state.optimize(getAngle());
     state.cosineScale(inputs.turnPosition);
-    Logger.recordOutput("Module/stateAngle", state.angle.getDegrees());
+
     // Apply setpoints
     io.setDriveVelocity(state.speedMetersPerSecond / wheelRadiusMeters);
     io.setTurnPosition(state.angle);
-    // could implement our own pid controller
-    // sounds like it would be a lot of work
   }
 
   /** Runs the module with the specified output while controlling to zero degrees. */
