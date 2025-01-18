@@ -23,7 +23,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
-import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 
 public class DriveConstants {
   public static final double maxSpeedMetersPerSec = 5.75;
@@ -119,20 +118,21 @@ public class DriveConstants {
 
   public static final double driveFrictionVoltage = 0.1;
   public static final double turnFrictionVoltage = 0.1;
+  public static final double steerRotationalInertia = 0.02;
   public static final DriveTrainSimulationConfig mapleSimConfig =
       DriveTrainSimulationConfig.Default()
           .withCustomModuleTranslations(moduleTranslations)
           .withRobotMass(Kilogram.of(robotMassKg))
           .withGyro(COTS.ofPigeon2())
-          .withSwerveModule(
-              new SwerveModuleSimulationConfig(
-                  driveGearbox,
-                  turnGearbox,
-                  driveMotorReduction,
-                  turnMotorReduction,
-                  Volts.of(driveFrictionVoltage),
-                  Volts.of(turnFrictionVoltage),
-                  Meters.of(wheelRadiusMeters),
-                  KilogramSquareMeters.of(0.02),
-                  wheelCOF));
+          .withSwerveModule(COTS.ofMark4i(driveGearbox, turnGearbox, wheelCOF, 2));
+  //              new SwerveModuleSimulationConfig(
+  //                  driveGearbox,
+  //                  turnGearbox,
+  //                  driveMotorReduction,
+  //                  turnMotorReduction,
+  //                  Volts.of(driveFrictionVoltage),
+  //                  Volts.of(turnFrictionVoltage),
+  //                  Meters.of(wheelRadiusMeters),
+  //                  KilogramSquareMeters.of(steerRotationalInertia),
+  //                  wheelCOF));
 }
