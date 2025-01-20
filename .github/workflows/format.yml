@@ -1,6 +1,6 @@
 name: Check Java Formatting
 
-on: [ push ]
+on: [ push, pull_request ]
 
 jobs:
   format-check:
