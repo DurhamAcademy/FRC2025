@@ -78,7 +78,8 @@ public class Drive extends SubsystemBase {
           ModuleIO flModuleIO,
           ModuleIO frModuleIO,
           ModuleIO blModuleIO,
-          ModuleIO brModuleIO) {
+          ModuleIO brModuleIO
+  ) {
     this.gyroIO = gyroIO;
     modules[0] = new Module(flModuleIO, 0);
     modules[1] = new Module(frModuleIO, 1);
@@ -101,28 +102,35 @@ public class Drive extends SubsystemBase {
                     new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
             ppConfig,
             () -> DriverStation.getAlliance().orElse(Blue) == Red,
-            this);
+            this
+    );
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
             (activePath) -> {
               Logger.recordOutput(
                       "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-            });
+            }
+    );
     PathPlannerLogging.setLogTargetPoseCallback(
             (targetPose) -> {
               Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-            });
+            }
+    );
 
     // Configure SysId
-    sysId =
-            new SysIdRoutine(
-                    new SysIdRoutine.Config(
-                            null,
-                            null,
-                            null,
-                            (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-                    new SysIdRoutine.Mechanism(
-                            (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+    sysId = new SysIdRoutine(
+            new SysIdRoutine.Config(
+                    null,
+                    null,
+                    null,
+                    (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())
+            ),
+            new SysIdRoutine.Mechanism(
+                    (voltage) -> runCharacterization(voltage.in(Volts)),
+                    null,
+                    this
+            )
+    );
   }
 
   @Override

@@ -108,11 +108,11 @@ public class DriveCommands {
 
     /**
      * Field relative drive command using two joysticks (controlling linear and angular velocities).
-     * @param drive
-     * @param xSupplier
-     * @param ySupplier
-     * @param omegaSupplier
-     * @return
+     * @param drive drive
+     * @param xSupplier left joystick x value
+     * @param ySupplier left joystick y value
+     * @param omegaSupplier right joystick x value
+     * @return command for robot
      */
     public static Command joystickDrive(
             Drive drive,
@@ -122,6 +122,7 @@ public class DriveCommands {
     ) {
         return Commands.run(
                 () -> {
+                    // Get linear velocity to apply to robot
                     Translation2d linearVelocity = getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
                     // Apply rotation deadband
@@ -131,13 +132,18 @@ public class DriveCommands {
                     omega = Math.copySign(omega * omega, omega);
 
                     // Convert to field relative speeds & send command
+                    // Basically say, go this much x, go this much y, and turn this much
                     ChassisSpeeds speeds = new ChassisSpeeds(
                             linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                             linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                             omega * drive.getMaxAngularSpeedRadPerSec()
                     );
+
+                    // See if rotation should be flipped, red = flipped, blue = normal
                     boolean isFlipped = DriverStation.getAlliance().isPresent()
                             && DriverStation.getAlliance().get() == Alliance.Red;
+
+                    // Run the velocity on the drive
                     drive.runVelocity(
                             ChassisSpeeds.fromFieldRelativeSpeeds(
                                     speeds,
@@ -153,6 +159,11 @@ public class DriveCommands {
      * Field relative drive command using joystick for linear control and PID for angular control.
      * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
      * absolute rotation with a joystick.
+     * @param drive drive
+     * @param xSupplier left joystick x value
+     * @param ySupplier left joystick y value
+     * @param rotationSupplier the rotation to lock onto
+     * @return command for robot
      */
     public static Command joystickDriveAtAngle(
             Drive drive,
@@ -160,18 +171,20 @@ public class DriveCommands {
             DoubleSupplier ySupplier,
             Supplier<Rotation2d> rotationSupplier
     ) {
-        // Create PID controller
+        // Create PID controller that deals with rotation
         ProfiledPIDController angleController = new ProfiledPIDController(
                 ANGLE_KP,
                 0.0,
                 ANGLE_KD,
                 new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION)
         );
+
+        // Enable continuous input
         angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-        // Construct command
         return Commands.run(
                 () -> {
+                    // Get linear velocity to apply to robot
                     Translation2d linearVelocity = getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
                     // Calculate angular speed
@@ -186,8 +199,12 @@ public class DriveCommands {
                             linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                             omega
                     );
+
+                    // See if rotation should be flipped, red = flipped, blue = normal
                     boolean isFlipped = DriverStation.getAlliance().isPresent()
                             && DriverStation.getAlliance().get() == Alliance.Red;
+
+                    // Run the velocity on the drive
                     drive.runVelocity(
                             ChassisSpeeds.fromFieldRelativeSpeeds(
                                     speeds,
@@ -202,7 +219,6 @@ public class DriveCommands {
 
     /**
      * Measures the velocity feedforward constants for the drive motors.
-     *
      * <p>This command should only be used in voltage control mode.
      */
     public static Command feedforwardCharacterization(Drive drive) {
@@ -371,51 +387,70 @@ public class DriveCommands {
             DoubleSupplier omegaSupplier,
             Constants.ReefConstants reef
     ) {
-        // TODO: DOUBLE CHECK WITH METHODS ABOVE
+        // Create PID controller that deals with rotation
         ProfiledPIDController angleController = new ProfiledPIDController(
                 ANGLE_KP,
                 0.0,
                 ANGLE_KD,
                 new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION)
         );
+
+        // Enable continuous input
+        angleController.enableContinuousInput(-Math.PI, Math.PI);
+
         var command = Commands.run(
                 () -> {
+                    // Get current linear velocity
+                    Translation2d linearVelocity = getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+                    // Get position of reef
                     Pose2d reefPose = drive.getReefPosition(reef);
+
+                    // Get angle to reef
                     Rotation2d angle = reefPose
                             .getTranslation()
                             .minus(drive.getPose().getTranslation())
                             .getAngle();
 
-                    var value = angleController.calculate(
-                            angleModulus(drive.getPose().getRotation().getRadians()),
-                            new TrapezoidProfile.State(angle.getRadians(), 0)
+                    // Calculate angular speed
+                    double omega = angleController.calculate(
+                            drive.getRotation().getRadians(),
+                            angle.getRadians()
                     );
-                    Translation2d linearVelocity = getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-                    boolean isFlipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-                    // TODO: dunno if this works
+
+                    // Convert to field relative speeds & send command
+                    ChassisSpeeds speeds = new ChassisSpeeds(
+                            linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                            linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                            omega
+                    );
+
+                    // See if rotation should be flipped, red = flipped, blue = normal
+                    boolean isFlipped = DriverStation.getAlliance().isPresent()
+                            && DriverStation.getAlliance().get() == Alliance.Red;
+
+                    // Run the velocity on the drive
                     drive.runVelocity(
                             ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-
-                                    (angleController.getSetpoint().velocity + value),
+                                    speeds,
                                     isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()
                             )
                     );
                 },
                 drive
         )
-                .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
-                .until(
-                        () -> {
-                            // if the controller is giving a turn input, end the command
-                            // because the driver is trying to take back control
-                            var isGTE = omegaSupplier.getAsDouble() >= DEADBAND;
-                            var isLTE = omegaSupplier.getAsDouble() <= -DEADBAND;
-                            return !RobotState.isAutonomous() && (isLTE || isGTE);
-                            // until the driver moves the stick, and it is not during autonomous
-                        }
-                );
+                .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+                // TODO: unsure what this code does, requires some testing
+//                .until(
+//                        () -> {
+//                            // if the controller is giving a turn input, end the command
+//                            // because the driver is trying to take back control
+//                            var isGTE = omegaSupplier.getAsDouble() >= DEADBAND;
+//                            var isLTE = omegaSupplier.getAsDouble() <= -DEADBAND;
+//                            return !RobotState.isAutonomous() && (isLTE || isGTE);
+//                            // until the driver moves the stick, and it is not during autonomous
+//                        }
+//                );
 
         return new CommandAndReadySupplier(command, angleController::atGoal);
     }
