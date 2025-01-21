@@ -17,7 +17,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,45 +45,112 @@ public final class Constants {
   public static class LocationConstants {
 
     /**
-     * <p>HashMap containing locations of individual reefs.</p>
-     * <p>Key = Reef Constant. </p>
-     * <p>Value = Array of Pose2D's where 0th index is blue and 1st index is red</p>
+     * HashMap containing locations of individual reefs.
+     *
+     * <p>Key = Reef Constant.
+     *
+     * <p>Value = Array of Pose2D's where 0th index is blue and 1st index is red
      */
-    public static final Map<ReefConstants, Pose2d[]> ReefLocations = new HashMap<>() {{
-      // centers of the hexagons
-      double blueY = Units.inchesToMeters(158.5);
-      double redY = Units.inchesToMeters(blueY);
-      double blueX = Units.inchesToMeters(176.75);
-      double redX = Units.inchesToMeters(690.875 - blueX);
+    public static final Map<ReefConstants, Pose2d[]> ReefLocations =
+        new HashMap<>() {
+          {
+            // centers of the hexagons
+            double blueY = Units.inchesToMeters(158.5);
+            double redY = Units.inchesToMeters(blueY);
+            double blueX = Units.inchesToMeters(176.75);
+            double redX = Units.inchesToMeters(690.875 - blueX);
 
-      // for the 1, 2, 7, and 8 positions where the edge is parallel to the alliance walls
-      double changeXLarge = Units.inchesToMeters(32.75);
-      double changeYSmall = Units.inchesToMeters(6.5);
+            // for the 1, 2, 7, and 8 positions where the edge is parallel to the alliance walls
+            double changeXLarge = Units.inchesToMeters(32.75);
+            double changeYSmall = Units.inchesToMeters(6.5);
 
-      // for 3, 6, 9, and 12 (the parts that are closer to the parallel sides, but still on the slanted sides)
-      double changeXMedium = Units.inchesToMeters(22.004165);
-      double changeYMedium = Units.inchesToMeters(25.112332);
+            // for 3, 6, 9, and 12 (the parts that are closer to the parallel sides, but still on
+            // the slanted sides)
+            double changeXMedium = Units.inchesToMeters(22.004165);
+            double changeYMedium = Units.inchesToMeters(25.112332);
 
-      // for 4, 5, 10, and 11 (the ones in the middle)
-      double changeXSmall = Units.inchesToMeters(10.745835);
-      double changeYLarge = Units.inchesToMeters(31.612332);
+            // for 4, 5, 10, and 11 (the ones in the middle)
+            double changeXSmall = Units.inchesToMeters(10.745835);
+            double changeYLarge = Units.inchesToMeters(31.612332);
 
+            put(
+                ReefConstants.ONE,
+                new Pose2d[] {
+                  new Pose2d(blueX - changeXLarge, blueY + changeYSmall, new Rotation2d()),
+                  new Pose2d(redX + changeXLarge, redY - changeYSmall, new Rotation2d())
+                });
+            put(
+                ReefConstants.TWO,
+                new Pose2d[] {
+                  new Pose2d(blueX - changeXLarge, blueY - changeYSmall, new Rotation2d()),
+                  new Pose2d(redX + changeXLarge, redY + changeYSmall, new Rotation2d())
+                });
+            put(
+                ReefConstants.THREE,
+                new Pose2d[] {
+                  new Pose2d(blueX - changeXMedium, blueY - changeYMedium, new Rotation2d()),
+                  new Pose2d(redX + changeXMedium, redY + changeYMedium, new Rotation2d())
+                });
+            put(
+                ReefConstants.FOUR,
+                new Pose2d[] {
+                  new Pose2d(blueX - changeXSmall, blueY - changeYLarge, new Rotation2d()),
+                  new Pose2d(redX + changeXSmall, redY + changeYLarge, new Rotation2d())
+                });
+            put(
+                ReefConstants.FIVE,
+                new Pose2d[] {
+                  new Pose2d(blueX + changeXSmall, blueY - changeYLarge, new Rotation2d()),
+                  new Pose2d(redX - changeXSmall, redY + changeYLarge, new Rotation2d())
+                });
+            put(
+                ReefConstants.SIX,
+                new Pose2d[] {
+                  new Pose2d(blueX + changeXMedium, blueY - changeYMedium, new Rotation2d()),
+                  new Pose2d(redX - changeXMedium, redY + changeYSmall, new Rotation2d())
+                });
+            put(
+                ReefConstants.SEVEN,
+                new Pose2d[] {
+                  new Pose2d(blueX + changeXLarge, blueY - changeYSmall, new Rotation2d()),
+                  new Pose2d(redX - changeXLarge, redY + changeYSmall, new Rotation2d())
+                });
+            put(
+                ReefConstants.EIGHT,
+                new Pose2d[] {
+                  new Pose2d(blueX + changeXLarge, blueY + changeYSmall, new Rotation2d()),
+                  new Pose2d(redX - changeXLarge, redY - changeYSmall, new Rotation2d())
+                });
+            put(
+                ReefConstants.NINE,
+                new Pose2d[] {
+                  new Pose2d(blueX + changeXMedium, blueY + changeYMedium, new Rotation2d()),
+                  new Pose2d(redX - changeXMedium, redY - changeYMedium, new Rotation2d())
+                });
+            put(
+                ReefConstants.TEN,
+                new Pose2d[] {
+                  new Pose2d(blueX + changeXSmall, blueY + changeYLarge, new Rotation2d()),
+                  new Pose2d(redX - changeXSmall, redY - changeYLarge, new Rotation2d())
+                });
+            put(
+                ReefConstants.ELEVEN,
+                new Pose2d[] {
+                  new Pose2d(blueX - changeXSmall, blueY + changeYLarge, new Rotation2d()),
+                  new Pose2d(redX + changeXSmall, redY - changeYLarge, new Rotation2d())
+                });
+            put(
+                ReefConstants.TWELVE,
+                new Pose2d[] {
+                  new Pose2d(blueX - changeXMedium, blueY + changeYMedium, new Rotation2d()),
+                  new Pose2d(redX + changeXMedium, redY - changeYMedium, new Rotation2d())
+                });
+          }
+        };
 
-      put(ReefConstants.ONE, new Pose2d[]{new Pose2d(blueX - changeXLarge, blueY + changeYSmall, new Rotation2d()),       new Pose2d(redX + changeXLarge, redY - changeYSmall, new Rotation2d())});
-      put(ReefConstants.TWO, new Pose2d[]{new Pose2d(blueX - changeXLarge, blueY - changeYSmall, new Rotation2d()),       new Pose2d(redX + changeXLarge, redY + changeYSmall, new Rotation2d())});
-      put(ReefConstants.THREE, new Pose2d[]{new Pose2d(blueX - changeXMedium, blueY - changeYMedium, new Rotation2d()),   new Pose2d(redX + changeXMedium, redY + changeYMedium, new Rotation2d())});
-      put(ReefConstants.FOUR, new Pose2d[]{new Pose2d(blueX - changeXSmall, blueY - changeYLarge, new Rotation2d()),      new Pose2d(redX + changeXSmall, redY + changeYLarge, new Rotation2d())});
-      put(ReefConstants.FIVE, new Pose2d[]{new Pose2d(blueX + changeXSmall, blueY - changeYLarge, new Rotation2d()),      new Pose2d(redX - changeXSmall, redY + changeYLarge, new Rotation2d())});
-      put(ReefConstants.SIX, new Pose2d[]{new Pose2d(blueX + changeXMedium, blueY - changeYMedium, new Rotation2d()),     new Pose2d(redX - changeXMedium, redY + changeYSmall, new Rotation2d())});
-      put(ReefConstants.SEVEN, new Pose2d[]{new Pose2d(blueX + changeXLarge, blueY - changeYSmall, new Rotation2d()),     new Pose2d(redX - changeXLarge, redY + changeYSmall, new Rotation2d())});
-      put(ReefConstants.EIGHT, new Pose2d[]{new Pose2d(blueX + changeXLarge, blueY + changeYSmall, new Rotation2d()),     new Pose2d(redX - changeXLarge, redY - changeYSmall, new Rotation2d())});
-      put(ReefConstants.NINE, new Pose2d[]{new Pose2d(blueX + changeXMedium, blueY + changeYMedium, new Rotation2d()),    new Pose2d(redX - changeXMedium, redY - changeYMedium, new Rotation2d())});
-      put(ReefConstants.TEN, new Pose2d[]{new Pose2d(blueX + changeXSmall, blueY + changeYLarge, new Rotation2d()),       new Pose2d(redX - changeXSmall, redY - changeYLarge, new Rotation2d())});
-      put(ReefConstants.ELEVEN, new Pose2d[]{new Pose2d(blueX - changeXSmall, blueY + changeYLarge, new Rotation2d()),    new Pose2d(redX + changeXSmall, redY - changeYLarge, new Rotation2d())});
-      put(ReefConstants.TWELVE, new Pose2d[]{new Pose2d(blueX - changeXMedium, blueY + changeYMedium, new Rotation2d()),  new Pose2d(redX + changeXMedium, redY - changeYMedium, new Rotation2d())});
-    }};
-
-    public static final List<ReefConstants> AllReefLocations = List.of(ReefConstants.ONE,
+    public static final List<ReefConstants> AllReefLocations =
+        List.of(
+            ReefConstants.ONE,
             ReefConstants.TWO,
             ReefConstants.THREE,
             ReefConstants.FOUR,
@@ -95,11 +161,11 @@ public final class Constants {
             ReefConstants.NINE,
             ReefConstants.TEN,
             ReefConstants.ELEVEN,
-            ReefConstants.TWELVE
-    );
+            ReefConstants.TWELVE);
+
     public static List<Pose2d> PosesOfAllReefLocations(int color) {
       List<Pose2d> allPoses = new ArrayList<>();
-      for(int i = 0; i < AllReefLocations.size(); i++) {
+      for (int i = 0; i < AllReefLocations.size(); i++) {
         allPoses.add(ReefLocations.get(AllReefLocations.get(i))[color]);
       }
       return allPoses;
