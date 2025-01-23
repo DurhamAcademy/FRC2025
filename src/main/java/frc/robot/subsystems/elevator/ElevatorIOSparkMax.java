@@ -8,7 +8,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     private final SparkMax primaryMotor;
     private final SparkMax secondaryMotor;
 
-
     private final DigitalInput limitSwitch;
 
     private final boolean isZeroed = false;

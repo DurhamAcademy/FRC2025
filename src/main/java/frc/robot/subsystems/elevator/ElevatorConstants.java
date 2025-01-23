@@ -23,5 +23,4 @@ public class ElevatorConstants {
     public static final double L2 = 0.0;
     public static final double L3 = 0.0;
     public static final double L4 = 0.0;
-
 }
