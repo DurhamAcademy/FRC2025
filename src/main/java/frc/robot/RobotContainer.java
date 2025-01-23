@@ -24,6 +24,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorIO;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -38,6 +42,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
+    private final Elevator elevator;
     private SwerveDriveSimulation driveSimulation = null;
 
     // Controller
@@ -58,6 +63,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
                                 new ModuleIOSpark(3));
+                elevator = new Elevator(new ElevatorIOSparkMax());
                 break;
 
             case SIM:
@@ -75,6 +81,8 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[1]),
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
                                 new ModuleIOSim(driveSimulation.getModules()[3]));
+                // TODO: Elevator SIM
+                elevator = new Elevator(new ElevatorIOSim() {});
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -96,6 +104,7 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {});
+                elevator = new Elevator(new ElevatorIO() {});
                 break;
         }
 
