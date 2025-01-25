@@ -42,7 +42,11 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         resetConfig
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pidf(ElevatorConstants.elevatorKp, ElevatorConstants.elevatorKi, ElevatorConstants.elevatorKd, ElevatorConstants.elevatorFF)
+                .pidf(
+                        ElevatorConstants.elevatorKp,
+                        ElevatorConstants.elevatorKi,
+                        ElevatorConstants.elevatorKd,
+                        ElevatorConstants.elevatorFF)
                 .positionWrappingEnabled(true)
                 .positionWrappingInputRange(-Math.PI, Math.PI);
 
@@ -78,7 +82,9 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         inputs.heightInches = primaryEncoder.getPosition() / ElevatorConstants.countsPerInch;
         inputs.targetHeightInches = targetHeightInches;
         inputs.velocityInches = primaryEncoder.getVelocity() / ElevatorConstants.countsPerInch;
-        inputs.isAtTargetLevel = Math.abs(inputs.heightInches - targetHeightInches) < 0.5 && Math.abs(inputs.velocityInches) < 0.1;
+        inputs.isAtTargetLevel =
+                Math.abs(inputs.heightInches - targetHeightInches) < 0.5
+                        && Math.abs(inputs.velocityInches) < 0.1;
     }
 
     @Override
@@ -87,9 +93,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
                 MathUtil.clamp(
                         heightInches,
                         ElevatorLevel.ZERO.heightInches,
-                        ElevatorLevel.L4.heightInches
-        );
+                        ElevatorLevel.L4.heightInches);
     }
-
-
 }

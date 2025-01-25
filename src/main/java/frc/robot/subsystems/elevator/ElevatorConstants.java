@@ -29,7 +29,8 @@ public class ElevatorConstants {
     // TODO: MEASURE
     public static final double maxVelocity = 0.0;
     public static final double maxAcceleration = 0.0;
-    public static final double minHeight = ZERO; // i wanted to add just for code clarity but idk if i should remove or nah
+    public static final double minHeight =
+            ZERO; // i wanted to add just for code clarity but idk if i should remove or nah
     public static final double maxHeight = L4;
     public static final double countsPerInch = 0.1;
 }

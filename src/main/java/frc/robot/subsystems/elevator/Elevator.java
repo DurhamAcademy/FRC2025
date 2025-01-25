@@ -1,7 +1,5 @@
 package frc.robot.subsystems.elevator;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
@@ -34,10 +32,9 @@ public class Elevator extends SubsystemBase {
     public Elevator(ElevatorIO io) {
         this.io = io;
 
-        constraints = new TrapezoidProfile.Constraints(
-                ElevatorConstants.maxVelocity,
-                ElevatorConstants.maxAcceleration
-        );
+        constraints =
+                new TrapezoidProfile.Constraints(
+                        ElevatorConstants.maxVelocity, ElevatorConstants.maxAcceleration);
         goalState = new TrapezoidProfile.State(0, 0);
         currentState = new TrapezoidProfile.State(0, 0);
         profile = new TrapezoidProfile(constraints);
@@ -60,18 +57,13 @@ public class Elevator extends SubsystemBase {
         if (inputs.heightInches > ElevatorConstants.maxHeight) {
             io.stopMotors();
         }
-
-
-
     }
 
-    public void setTargetHeight(double inches) {
-
-    }
+    public void setTargetHeight(double inches) {}
 
     public void runElevator() {
-        if (inputs.heightInches > ElevatorConstants.maxHeight ||
-                inputs.heightInches < ElevatorConstants.minHeight) {
+        if (inputs.heightInches > ElevatorConstants.maxHeight
+                || inputs.heightInches < ElevatorConstants.minHeight) {
             io.stopMotors();
             return;
         }

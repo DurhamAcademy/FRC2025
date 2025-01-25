@@ -153,12 +153,7 @@ public class RobotContainer {
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX()));
 
-        elevator.setDefaultCommand(
-                ElevatorCommands.moveElevator(
-                        elevator,
-                        ElevatorLevel.ZERO
-                )
-        );
+        elevator.setDefaultCommand(ElevatorCommands.moveElevator(elevator, ElevatorLevel.ZERO));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
@@ -197,45 +192,37 @@ public class RobotContainer {
         //    controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
         // OPERATOR CONTROLLER
-//        operatorController.start()
-//                .onTrue(
-//                        Commands.runOnce(
-//                                ElevatorCommands.moveElevator(
-//                                        elevator,
-//                                        ElevatorLevel.ZERO
-//                                ),
-//                                elevator));
-        operatorController.a()
+        //        operatorController.start()
+        //                .onTrue(
+        //                        Commands.runOnce(
+        //                                ElevatorCommands.moveElevator(
+        //                                        elevator,
+        //                                        ElevatorLevel.ZERO
+        //                                ),
+        //                                elevator));
+        operatorController
+                .a()
                 .onTrue(
                         Commands.runOnce(
-                                () -> ElevatorCommands.moveElevator(
-                                        elevator,
-                                        ElevatorLevel.L1
-                                ),
+                                () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L1),
                                 elevator));
-        operatorController.x()
+        operatorController
+                .x()
                 .onTrue(
                         Commands.runOnce(
-                                () -> ElevatorCommands.moveElevator(
-                                        elevator,
-                                        ElevatorLevel.L2
-                                ),
+                                () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L2),
                                 elevator));
-        operatorController.b()
+        operatorController
+                .b()
                 .onTrue(
                         Commands.runOnce(
-                                () -> ElevatorCommands.moveElevator(
-                                        elevator,
-                                        ElevatorLevel.L3
-                                ),
+                                () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L3),
                                 elevator));
-        operatorController.y()
+        operatorController
+                .y()
                 .onTrue(
                         Commands.runOnce(
-                                () -> ElevatorCommands.moveElevator(
-                                        elevator,
-                                        ElevatorLevel.L4
-                                ),
+                                () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L4),
                                 elevator));
     }
 
