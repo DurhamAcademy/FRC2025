@@ -5,11 +5,9 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
 import java.util.ArrayList;
-import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -42,10 +40,9 @@ public class Vision extends SubsystemBase {
             "limelight", // camera name
             new Transform3d(
                 new Translation3d(0.06220, 0, 0.4683),
-                new Rotation3d(0.0, Math.toRadians(75 - 90), 0.0)), // Camera pose
-            new Transform3d(new Translation3d(0.0, 0.0, 0.0), new Rotation3d()) // Fiducial offset
-        )
-    );
+                new Rotation3d(0.0, Math.toRadians(-15), 0.0)), // Camera pose
+            new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
+            ));
 
     /*cameraConfigs.add(
     new CameraConfig(
@@ -80,9 +77,9 @@ public class Vision extends SubsystemBase {
           camera.cameraPose.getTranslation().getX(),
           camera.cameraPose.getTranslation().getY(),
           camera.cameraPose.getTranslation().getZ(),
-          camera.cameraPose.getRotation().getX(),
-          camera.cameraPose.getRotation().getY(),
-          camera.cameraPose.getRotation().getZ());
+          Math.toDegrees(camera.cameraPose.getRotation().getX()),
+          Math.toDegrees(camera.cameraPose.getRotation().getY()),
+          Math.toDegrees(camera.cameraPose.getRotation().getZ()));
 
       // Set AprilTag offset tracking point (meters)
       // accounts for the physical position of the Limelight (or other camera) relative to your
@@ -107,30 +104,7 @@ public class Vision extends SubsystemBase {
     // Update Limelight robot orientation from pose estimator
     LimelightHelpers.SetRobotOrientation(
         cameraName, poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-
-    // get what alliance we are on (red or blue)
-    Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
-    // make sure DriverStation knows our alliance (do not execute anything otherwise, as we don't
-    // know whether to use red or blue)
-    Logger.recordOutput("HasAlliance", alliance.isPresent());
-    if (alliance.isPresent()) {
-      Logger.recordOutput("Alliance", alliance.get());
-      switch (alliance.get()) {
-        case Red:
-          return LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(cameraName);
-        case Blue:
-          return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName);
-        default:
-          // idk why this would happen but if alliance is not red or blue, return blue
-          return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName);
-      }
-    } else {
-      // If no alliance is selected, you could handle it as an error or warning
-      DriverStation.reportError("Alliance not set. Cannot update vision.", false);
-    }
-    Logger.recordOutput("Vision/thisIsBad", true);
-    // Return a default PoseEstimate as a fallback
-    return new LimelightHelpers.PoseEstimate();
+    return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName);
   }
 
   /**
@@ -142,16 +116,20 @@ public class Vision extends SubsystemBase {
     int iters = 0;
     for (CameraConfig camera : cameraConfigs) {
       LimelightHelpers.PoseEstimate poseEstimate = getEstimatedPoseFromCamera(camera.name);
-      Logger.recordOutput("Vision/numTags", poseEstimate.tagCount);
+      Logger.recordOutput("Vision/numTags" + iters, poseEstimate.tagCount);
       Logger.recordOutput("Vision/tagPose" + iters, poseEstimate.pose);
-      // Reject update if no tags are detected todo: add more conditions?
+      // Reject update if no tags are detected
       if (poseEstimate.tagCount == 0) {
         continue; // skip to next camera if conditions are not met
       }
+      if(Math.abs(gyro.yawVelocityRadPerSec) > 4 * Math.PI){
+        continue;
+      }
 
       // sets uncertainty values (x, y, z) - can't be trusted for z at all obviously bc robot does
-      // not move in 3d space
+      // not move in 3d space (unless actively climbing when vision doesn't really  matter)
       poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, Double.MAX_VALUE));
+
       // adds the found position to our position estimator
       poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
       iters++;
@@ -173,6 +151,7 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     poseEstimator.update(gyro.yawPosition, modulePositions); // update rotation
     updateEstimatedPose(); // use camera data to estimate position
+    Logger.recordOutput("RobotPosition", poseEstimator.getEstimatedPosition());
     currentPosition = poseEstimator.getEstimatedPosition();
     logRobotPosition(); // show field visualization in shuffleboard
   }
