@@ -23,8 +23,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ElevatorCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
@@ -45,8 +47,9 @@ public class RobotContainer {
     private final Elevator elevator;
     private SwerveDriveSimulation driveSimulation = null;
 
-    // Controller
-    private final CommandXboxController controller = new CommandXboxController(0);
+    // Controllers
+    private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController operatorController = new CommandXboxController(1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
@@ -146,25 +149,33 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -controller.getLeftY(),
-                        () -> -controller.getLeftX(),
-                        () -> -controller.getRightX()));
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX()));
 
+        elevator.setDefaultCommand(
+                ElevatorCommands.moveElevator(
+                        elevator,
+                        ElevatorLevel.ZERO
+                )
+        );
+
+        // DRIVER CONTROLLER
         // Lock to 0° when A button is held
-        controller
+        driverController
                 .a()
                 .whileTrue(
                         DriveCommands.joystickDriveAtAngle(
                                 drive,
-                                () -> -controller.getLeftY(),
-                                () -> -controller.getLeftX(),
+                                () -> -driverController.getLeftY(),
+                                () -> -driverController.getLeftX(),
                                 () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
-        controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+        driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Reset gyro to 0° when B button is pressed
-        controller
+        driverController
                 .b()
                 .onTrue(
                         Commands.runOnce(
@@ -184,6 +195,48 @@ public class RobotContainer {
         //            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new
         // Rotation2d())); // zero gyro
         //    controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+
+        // OPERATOR CONTROLLER
+//        operatorController.start()
+//                .onTrue(
+//                        Commands.runOnce(
+//                                ElevatorCommands.moveElevator(
+//                                        elevator,
+//                                        ElevatorLevel.ZERO
+//                                ),
+//                                elevator));
+        operatorController.a()
+                .onTrue(
+                        Commands.runOnce(
+                                () -> ElevatorCommands.moveElevator(
+                                        elevator,
+                                        ElevatorLevel.L1
+                                ),
+                                elevator));
+        operatorController.x()
+                .onTrue(
+                        Commands.runOnce(
+                                () -> ElevatorCommands.moveElevator(
+                                        elevator,
+                                        ElevatorLevel.L2
+                                ),
+                                elevator));
+        operatorController.b()
+                .onTrue(
+                        Commands.runOnce(
+                                () -> ElevatorCommands.moveElevator(
+                                        elevator,
+                                        ElevatorLevel.L3
+                                ),
+                                elevator));
+        operatorController.y()
+                .onTrue(
+                        Commands.runOnce(
+                                () -> ElevatorCommands.moveElevator(
+                                        elevator,
+                                        ElevatorLevel.L4
+                                ),
+                                elevator));
     }
 
     /**
