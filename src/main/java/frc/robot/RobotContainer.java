@@ -13,6 +13,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.wpilibj2.command.Commands.either;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,8 +36,6 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
-import static edu.wpi.first.wpilibj2.command.Commands.either;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -159,8 +159,7 @@ public class RobotContainer {
                 either(
                         ElevatorCommands.moveElevator(elevator, ElevatorLevel.ZERO),
                         ElevatorCommands.zeroElevator(elevator),
-                        elevator::hasZeroed
-                ));
+                        elevator::hasZeroed));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
@@ -200,10 +199,7 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
         // Elevator
-        operatorController
-                .start()
-                .onTrue(
-                        ElevatorCommands.zeroElevator(elevator));
+        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
         operatorController
                 .a()
                 .onTrue(

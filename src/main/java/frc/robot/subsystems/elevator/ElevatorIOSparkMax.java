@@ -9,7 +9,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
-import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 
 public class ElevatorIOSparkMax implements ElevatorIO {
     // some credit to https://chiefdelphi.com/t/elevator-subsystem-example-code/482648
@@ -94,8 +93,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     public void setTargetHeightInches(double heightInches) {
         targetHeightInches =
                 MathUtil.clamp(
-                        heightInches,
-                        ElevatorConstants.minHeight,
-                        ElevatorConstants.maxHeight);
+                        heightInches, ElevatorConstants.minHeight, ElevatorConstants.maxHeight);
     }
 }
