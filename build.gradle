@@ -2,7 +2,7 @@ plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2025.2.1"
     id "com.peterabeles.gversion" version "1.10"
-    id "com.diffplug.spotless" version "6.12.0"
+    id "com.diffplug.spotless" version "6.23.3"
 }
 
 java {
@@ -108,14 +108,18 @@ test {
 // AdvantageKit log replay from the command line. Set the
 // value to "true" to enable the sim GUI by default (this
 // is the standard WPILib behavior).
-wpi.sim.addGui().defaultEnabled = false
+wpi.sim.addGui().defaultEnabled = true
 wpi.sim.addDriverstation()
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
 // in order to make them all available at runtime. Also adding the manifest so WPILib
 // knows where to look for our Robot Class.
 jar {
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
     from sourceSets.main.allSource
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -134,12 +138,12 @@ tasks.withType(JavaCompile) {
 // Create version file
 project.compileJava.dependsOn(createVersionFile)
 gversion {
-    srcDir       = "src/main/java/"
+    srcDir = "src/main/java/"
     classPackage = "frc.robot"
-    className    = "BuildConstants"
-    dateFormat   = "yyyy-MM-dd HH:mm:ss z"
-    timeZone     = "America/New_York"
-    indent       = "  "
+    className = "BuildConstants"
+    dateFormat = "yyyy-MM-dd HH:mm:ss z"
+    timeZone = "America/New_York"
+    indent = "  "
 }
 
 // Create commit with working changes on event branches
@@ -184,7 +188,7 @@ spotless {
             exclude "**/build/**", "**/build-*/**"
         }
         toggleOffOn()
-        googleJavaFormat()
+        googleJavaFormat('1.17.0').aosp().reflowLongStrings()
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
