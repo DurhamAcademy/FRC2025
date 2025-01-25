@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.util.LocalADStarAK;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -69,23 +70,23 @@ public class Drive extends SubsystemBase {
                 new SwerveModulePosition(),
                 new SwerveModulePosition()
             };
-    private SwerveDrivePoseEstimator poseEstimator =
+    public SwerveDrivePoseEstimator poseEstimator =
             new SwerveDrivePoseEstimator(
                     kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
     Vision vision;
 
-  public Drive(
-      GyroIO gyroIO,
-      ModuleIO flModuleIO,
-      ModuleIO frModuleIO,
-      ModuleIO blModuleIO,
-      ModuleIO brModuleIO) {
-    this.gyroIO = gyroIO;
-    modules[0] = new Module(flModuleIO, 0);
-    modules[1] = new Module(frModuleIO, 1);
-    modules[2] = new Module(blModuleIO, 2);
-    modules[3] = new Module(brModuleIO, 3);
+    public Drive(
+            GyroIO gyroIO,
+            ModuleIO flModuleIO,
+            ModuleIO frModuleIO,
+            ModuleIO blModuleIO,
+            ModuleIO brModuleIO) {
+        this.gyroIO = gyroIO;
+        modules[0] = new Module(flModuleIO, 0);
+        modules[1] = new Module(frModuleIO, 1);
+        modules[2] = new Module(blModuleIO, 2);
+        modules[3] = new Module(brModuleIO, 3);
 
         // Usage reporting for swerve template
         HAL.report(
@@ -117,19 +118,20 @@ public class Drive extends SubsystemBase {
                     Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
                 });
 
-    // Configure SysId
-    sysId =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+        // Configure SysId
+        sysId =
+                new SysIdRoutine(
+                        new SysIdRoutine.Config(
+                                null,
+                                null,
+                                null,
+                                (state) ->
+                                        Logger.recordOutput("Drive/SysIdState", state.toString())),
+                        new SysIdRoutine.Mechanism(
+                                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
 
-    vision = new Vision(kinematics, lastModulePositions, gyroInputs);
-  }
+        vision = new Vision(kinematics, lastModulePositions, gyroInputs, this);
+    }
 
     @Override
     public void periodic() {
@@ -156,7 +158,7 @@ public class Drive extends SubsystemBase {
 
         // Update odometry
         double[] sampleTimestamps =
-                modules[0].getOdometryTimestamps(); // All signals are sampled together
+                modules[1].getOdometryTimestamps(); // All signals are sampled together
         int sampleCount = sampleTimestamps.length;
         for (int i = 0; i < sampleCount; i++) {
             // Read wheel positions and deltas from each module
@@ -188,6 +190,7 @@ public class Drive extends SubsystemBase {
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+        Logger.recordOutput("Drive/closestReef", getClosestReefPosition());
     }
 
     /**
@@ -336,10 +339,27 @@ public class Drive extends SubsystemBase {
         return Constants.LocationConstants.ReefLocations.get(reef)[color];
     }
 
-    public Pose2d getClosestReefPosition() {
+    /**
+     * Gets the closes reef position relative to current vision pos
+     *
+     * @return ReefConstant value of closest reef position
+     */
+    public Constants.ReefConstants getClosestReefPosition() {
         int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
-        return poseEstimator
-                .getEstimatedPosition()
-                .nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
+        // finds closest reef position to current pose
+        Pose2d estimatedReefPose =
+                poseEstimator
+                        .getEstimatedPosition()
+                        .nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
+        Logger.recordOutput("Drive/closetReefPose", estimatedReefPose);
+        // Return null if no matching reef is found
+        Constants.ReefConstants closestReefConstantValue =
+                Constants.LocationConstants.ReefLocations.entrySet().stream()
+                        .filter(entry -> entry.getValue()[color].equals(estimatedReefPose))
+                        .map(Map.Entry::getKey)
+                        .findFirst()
+                        .orElse(null);
+        Logger.recordOutput("Drive/closestReef", closestReefConstantValue);
+        return closestReefConstantValue;
     }
 }

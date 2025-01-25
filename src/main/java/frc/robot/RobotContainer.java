@@ -145,11 +145,12 @@ public class RobotContainer {
         controller
                 .a()
                 .whileTrue(
-                        DriveCommands.joystickDriveAtAngle(
-                                drive,
-                                () -> -controller.getLeftY(),
-                                () -> -controller.getLeftX(),
-                                () -> new Rotation2d()));
+                        DriveCommands.reefAlign(
+                                        drive,
+                                        () -> -controller.getLeftY(),
+                                        () -> -controller.getLeftX(),
+                                        drive::getClosestReefPosition)
+                                .getCommand());
 
         // Switch to X pattern when X button is pressed
         controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
