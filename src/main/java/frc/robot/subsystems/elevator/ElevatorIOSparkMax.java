@@ -31,7 +31,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         SparkMaxConfig followerConfig = new SparkMaxConfig();
         followerConfig.follow(primaryMotor);
 
-        followerMotor.configure(followerConfig, null, null); // TODO: WHAT IS THIS NULL NULL THING
+        followerMotor.configure(followerConfig, null, null);
 
         primaryEncoder = primaryMotor.getEncoder();
         limitSwitch = new DigitalInput(ElevatorConstants.limitSwitchPort);
@@ -46,9 +46,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
                         ElevatorConstants.elevatorKp,
                         ElevatorConstants.elevatorKi,
                         ElevatorConstants.elevatorKd,
-                        ElevatorConstants.elevatorFF)
-                .positionWrappingEnabled(true)
-                .positionWrappingInputRange(-Math.PI, Math.PI);
+                        ElevatorConstants.elevatorFF);
 
         configureMotors();
     }
@@ -62,8 +60,13 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     }
 
     @Override
-    public void resetEncoder() {
-        primaryEncoder.setPosition(0);
+    public void setEncoder(double position) {
+        primaryEncoder.setPosition(position);
+    }
+
+    @Override
+    public void setPower(double power) {
+        primaryMotor.set(power);
     }
 
     @Override
@@ -92,7 +95,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         targetHeightInches =
                 MathUtil.clamp(
                         heightInches,
-                        ElevatorLevel.ZERO.heightInches,
-                        ElevatorLevel.L4.heightInches);
+                        ElevatorConstants.minHeight,
+                        ElevatorConstants.maxHeight);
     }
 }

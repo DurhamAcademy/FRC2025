@@ -9,21 +9,25 @@ public interface ElevatorIO {
         public double heightInches;
         public double targetHeightInches;
         public double velocityInches;
+        public double voltage;
         public boolean isAtTargetLevel;
     }
 
     /** Update the set of loggable inputs. */
     public default void updateInputs(ElevatorIOInputs inputs) {}
 
-    /** Sets the target position of the elevator */
-    public default void setTargetHeightInches(double targetHeightInches) {}
+    /** Sets the motors' power */
+    public default void setPower(double power) {}
 
     /** Sets the motors' power */
     public default void setVoltage(double voltage) {}
+
+    /** Sets the motors' velocity */
+    public default void setTargetHeightInches(double targetHeightInches) {}
 
     /** Stop motors */
     public default void stopMotors() {}
 
     /** Resets encoder */
-    public default void resetEncoder() {}
+    public default void setEncoder(double position) {}
 }

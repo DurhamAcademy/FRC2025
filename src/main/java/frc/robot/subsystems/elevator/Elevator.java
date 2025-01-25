@@ -8,11 +8,6 @@ public class Elevator extends SubsystemBase {
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
-    private final TrapezoidProfile profile;
-    private final TrapezoidProfile.Constraints constraints;
-    private TrapezoidProfile.State goalState;
-    private TrapezoidProfile.State currentState;
-
     private boolean hasZeroed = false;
 
     public enum ElevatorLevel {
@@ -31,13 +26,6 @@ public class Elevator extends SubsystemBase {
 
     public Elevator(ElevatorIO io) {
         this.io = io;
-
-        constraints =
-                new TrapezoidProfile.Constraints(
-                        ElevatorConstants.maxVelocity, ElevatorConstants.maxAcceleration);
-        goalState = new TrapezoidProfile.State(0, 0);
-        currentState = new TrapezoidProfile.State(0, 0);
-        profile = new TrapezoidProfile(constraints);
     }
 
     @Override
@@ -45,33 +33,25 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
-        if (hasZeroed) {
-            runElevator();
-        }
-
         if (inputs.isLimitSwitchPressed) {
-            io.resetEncoder();
+            io.setEncoder(ElevatorConstants.minHeight * ElevatorConstants.countsPerInch);
             hasZeroed = true;
-        }
-
-        if (inputs.heightInches > ElevatorConstants.maxHeight) {
-            io.stopMotors();
         }
     }
 
-    public void setTargetHeight(double inches) {}
+    public void setTargetHeight(ElevatorLevel level) {
+        io.setTargetHeightInches(level.heightInches);
+    }
 
-    public void runElevator() {
-        if (inputs.heightInches > ElevatorConstants.maxHeight
-                || inputs.heightInches < ElevatorConstants.minHeight) {
-            io.stopMotors();
-            return;
-        }
+    public void setPower(double power) {
+        io.setPower(power);
+    }
 
-        currentState = profile.calculate(0.020, currentState, goalState);
+    public boolean hasZeroed() {
+        return hasZeroed;
+    }
 
-        double targetVoltage = currentState.velocity * ElevatorConstants.elevatorFF;
-
-        io.setVoltage(targetVoltage);
+    public boolean isZeroed() {
+        return inputs.isLimitSwitchPressed;
     }
 }

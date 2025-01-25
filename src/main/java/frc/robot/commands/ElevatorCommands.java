@@ -10,7 +10,25 @@ public class ElevatorCommands {
     public static Command moveElevator(Elevator elevator, ElevatorLevel targetLevel) {
         return Commands.run(
                 () -> {
-                    elevator.setTargetHeight(targetLevel.heightInches);
+                    elevator.setTargetHeight(targetLevel);
                 });
+    }
+
+    public static Command moveElevator(
+            Elevator elevator,
+            double power
+    ) {
+        return Commands.run(
+                () -> {
+                    elevator.setPower(power);
+                }
+        );
+    }
+
+    public static Command zeroElevator(
+            Elevator elevator
+    ) {
+        return moveElevator(elevator, -0.1)
+                .onlyWhile(() -> !elevator.isZeroed());
     }
 }

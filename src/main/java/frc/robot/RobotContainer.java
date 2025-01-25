@@ -35,6 +35,8 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
+import static edu.wpi.first.wpilibj2.command.Commands.either;
+
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -153,7 +155,12 @@ public class RobotContainer {
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX()));
 
-        elevator.setDefaultCommand(ElevatorCommands.moveElevator(elevator, ElevatorLevel.ZERO));
+        elevator.setDefaultCommand(
+                either(
+                        ElevatorCommands.moveElevator(elevator, ElevatorLevel.ZERO),
+                        ElevatorCommands.zeroElevator(elevator),
+                        elevator::hasZeroed
+                ));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
@@ -192,36 +199,33 @@ public class RobotContainer {
         //    controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
         // OPERATOR CONTROLLER
-        //        operatorController.start()
-        //                .onTrue(
-        //                        Commands.runOnce(
-        //                                ElevatorCommands.moveElevator(
-        //                                        elevator,
-        //                                        ElevatorLevel.ZERO
-        //                                ),
-        //                                elevator));
+        // Elevator
+        operatorController
+                .start()
+                .onTrue(
+                        ElevatorCommands.zeroElevator(elevator));
         operatorController
                 .a()
                 .onTrue(
-                        Commands.runOnce(
+                        Commands.run(
                                 () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L1),
                                 elevator));
         operatorController
                 .x()
                 .onTrue(
-                        Commands.runOnce(
+                        Commands.run(
                                 () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L2),
                                 elevator));
         operatorController
                 .b()
                 .onTrue(
-                        Commands.runOnce(
+                        Commands.run(
                                 () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L3),
                                 elevator));
         operatorController
                 .y()
                 .onTrue(
-                        Commands.runOnce(
+                        Commands.run(
                                 () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L4),
                                 elevator));
     }

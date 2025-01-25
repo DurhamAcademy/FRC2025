@@ -16,15 +16,17 @@ public class ElevatorConstants {
     public static final double elevatorKp = 0.0;
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
+    public static final double elevatorKf = 0.0;
+    public static final double elevatorKs = 0.0;
+    public static final double elevatorKg = 0.0;
     public static final double elevatorFF = 0.0;
 
-    // Elevator Levels
-    // TODO: level heights
+    // Elevator Levels in inches
     public static final double ZERO = 0.0; // min height
-    public static final double L1 = 0.0;
-    public static final double L2 = 0.0;
-    public static final double L3 = 0.0;
-    public static final double L4 = 0.0; // max height
+    public static final double L1 = 3.0;
+    public static final double L2 = 8.0;
+    public static final double L3 = 13.5;
+    public static final double L4 = 21.0; // max height
 
     // TODO: MEASURE
     public static final double maxVelocity = 0.0;
