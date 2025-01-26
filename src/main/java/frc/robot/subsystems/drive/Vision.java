@@ -15,7 +15,6 @@ import org.littletonrobotics.junction.Logger;
  */
 public class Vision extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
-    private final SwerveModulePosition[] modulePositions;
     GyroIO.GyroIOInputs gyro;
     Drive drive;
 
@@ -25,11 +24,8 @@ public class Vision extends SubsystemBase {
             new ArrayList<>(); // holds all the cameras (initialized in constructor)
 
     public Vision(
-            SwerveDriveKinematics kinematics,
-            SwerveModulePosition[] modulePositions,
             GyroIO.GyroIOInputs gyro,
             Drive drive) {
-        this.modulePositions = modulePositions;
         this.gyro = gyro;
         this.drive = drive;
 

@@ -130,7 +130,7 @@ public class Drive extends SubsystemBase {
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
 
-        vision = new Vision(kinematics, lastModulePositions, gyroInputs, this);
+        vision = new Vision(gyroInputs, this);
     }
 
     @Override
