@@ -10,8 +10,8 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 public class ElevatorIOSparkMax implements ElevatorIO {
@@ -61,7 +61,9 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
         configureMotors();
 
-        constraints = new TrapezoidProfile.Constraints(ElevatorConstants.maxVelocity, ElevatorConstants.maxAcceleration);
+        constraints =
+                new TrapezoidProfile.Constraints(
+                        ElevatorConstants.maxVelocity, ElevatorConstants.maxAcceleration);
         currentState = new TrapezoidProfile.State(0, 0);
         goalState = new TrapezoidProfile.State(0, 0);
         profile = new TrapezoidProfile(constraints);
@@ -113,7 +115,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
                 MathUtil.clamp(
                         heightInches, ElevatorConstants.minHeight, ElevatorConstants.maxHeight);
 
-        goalState = new TrapezoidProfile.State(targetHeightInches * ElevatorConstants.countsPerInch, 0);
+        goalState =
+                new TrapezoidProfile.State(targetHeightInches * ElevatorConstants.countsPerInch, 0);
     }
 
     @Override
@@ -123,10 +126,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
         // Use the profiler's position as the target for the motor controller
         primaryController.setReference(
-                currentState.position,
-                ControlType.kPosition,
-                ClosedLoopSlot.kSlot0
+                currentState.position, ControlType.kPosition, ClosedLoopSlot.kSlot0
                 // arbff?
-        );
+                );
     }
 }
