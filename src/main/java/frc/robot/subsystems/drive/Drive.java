@@ -77,6 +77,8 @@ public class Drive extends SubsystemBase {
                     lastModulePositions,
                     new Pose2d(3, 3, new Rotation2d()));
 
+    private Constants.ReefConstants reefToAlign;
+
     Vision vision;
 
     public Drive(
@@ -193,7 +195,6 @@ public class Drive extends SubsystemBase {
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
-        Logger.recordOutput("Drive/closestReef", getClosestReefPosition());
     }
 
     /**
@@ -337,6 +338,10 @@ public class Drive extends SubsystemBase {
         return maxSpeedMetersPerSec / driveBaseRadius;
     }
 
+    public Constants.ReefConstants getReefToAlign() {
+        return reefToAlign;
+    }
+
     public Pose2d getReefPosition(Constants.ReefConstants reef) {
         int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
         return Constants.LocationConstants.ReefLocations.get(reef)[color];
@@ -347,7 +352,7 @@ public class Drive extends SubsystemBase {
      *
      * @return ReefConstant value of closest reef position
      */
-    public Constants.ReefConstants getClosestReefPosition() {
+    public void alignToClosestReef() {
         int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
         // finds closest reef position to current pose
         Pose2d estimatedReefPose =
@@ -363,6 +368,24 @@ public class Drive extends SubsystemBase {
                         .findFirst()
                         .orElse(null);
         Logger.recordOutput("Drive/closestReef", closestReefConstantValue);
-        return closestReefConstantValue;
+        reefToAlign = closestReefConstantValue;
+    }
+
+    /**
+     * Gets the reef position left of current reef position
+     */
+    public void alignToLeftReef() {
+        int currentReefLocationsIndex = Constants.LocationConstants.AllReefLocations.indexOf(reefToAlign);
+        int toGetReefLocationsIndex = currentReefLocationsIndex != 0 ? currentReefLocationsIndex - 1 : 11;
+        reefToAlign = Constants.LocationConstants.AllReefLocations.get(toGetReefLocationsIndex);
+    }
+
+    /**
+     * Gets the reef position right of current reef position
+     */
+    public void alignToRightReef() {
+        int currentReefLocationsIndex = Constants.LocationConstants.AllReefLocations.indexOf(reefToAlign);
+        int toGetReefLocationsIndex = currentReefLocationsIndex != 11 ? currentReefLocationsIndex + 1 : 0;
+        reefToAlign = Constants.LocationConstants.AllReefLocations.get(toGetReefLocationsIndex);
     }
 }

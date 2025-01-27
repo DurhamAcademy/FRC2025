@@ -31,6 +31,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import org.ironmaple.simulation.SimulatedArena;
+import org.littletonrobotics.junction.Logger;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -396,10 +399,6 @@ public class DriveCommands {
             DoubleSupplier xSupplier,
             DoubleSupplier ySupplier,
             Supplier<Constants.ReefConstants> reef) {
-        if (reef == null) {
-            // TODO what to return if null
-            return null;
-        }
         // Create PID controller that deals with rotation
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
@@ -473,7 +472,7 @@ public class DriveCommands {
         //                            var isLTE = omegaSupplier.getAsDouble() <= -DEADBAND;
         //                            return !RobotState.isAutonomous() && (isLTE || isGTE);
         //                            // until the driver moves the stick, and it is not during
-        // autonomous
+        //                            // autonomous
         //                        }
         //                );
 

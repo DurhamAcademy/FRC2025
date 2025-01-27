@@ -40,8 +40,9 @@ public class RobotContainer {
     private final Drive drive;
     private SwerveDriveSimulation driveSimulation = null;
 
-    // Controller
-    private final CommandXboxController controller = new CommandXboxController(0);
+    // Controllers
+    private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController operatorController = new CommandXboxController(1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
@@ -137,36 +138,57 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -controller.getLeftY(),
-                        () -> -controller.getLeftX(),
-                        () -> -controller.getRightX()));
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX()));
 
+        // DRIVER CONTROLLER
         // Lock to 0° when A button is held
-        controller
+        driverController
                 .a()
                 .whileTrue(
-                        DriveCommands.reefAlign(
-                                        drive,
-                                        () -> -controller.getLeftY(),
-                                        () -> -controller.getLeftX(),
-                                        drive::getClosestReefPosition)
-                                .getCommand());
+                        DriveCommands.joystickDriveAtAngle(
+                                drive,
+                                () -> -driverController.getLeftY(),
+                                () -> -driverController.getLeftX(),
+                                () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
-        controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+        driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-        // Reset gyro to 0° when B button is pressed
-        controller
+        // Align to the closest reef
+        driverController
                 .b()
                 .onTrue(
-                        Commands.runOnce(
-                                        () ->
-                                                drive.setPose(
-                                                        new Pose2d(
-                                                                drive.getPose().getTranslation(),
-                                                                new Rotation2d())),
-                                        drive)
-                                .ignoringDisable(true));
+                        Commands.run(
+                                drive::alignToClosestReef
+                        )
+                )
+                .whileTrue(
+                        DriveCommands.reefAlign(
+                                drive,
+                                () -> -driverController.getLeftY(),
+                                () -> -driverController.getLeftX(),
+                                drive::getReefToAlign)
+                                .getCommand());
+
+        // Align to left reef
+        driverController
+                .leftBumper()
+                .onTrue(
+                        Commands.run(
+                                drive::alignToLeftReef
+                        )
+                );
+
+        // Align to right reef
+        driverController
+                .rightBumper()
+                .onTrue(
+                        Commands.run(
+                                drive::alignToRightReef
+                        )
+                );
 
         //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
         //            ? () -> drive.setPose(
