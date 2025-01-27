@@ -6,11 +6,14 @@ public interface ElevatorIO {
     @AutoLog
     public static class ElevatorIOInputs {
         public boolean isLimitSwitchPressed;
-        public double heightInches;
+        public double leftHeightInches;
+        public double rightHeightInches;
         public double targetHeightInches;
         public double velocityInches;
         public double voltage;
         public boolean isAtTargetLevel;
+        public double leftVoltage;
+        public double rightVoltage;
     }
 
     /** Update the set of loggable inputs. */
@@ -30,4 +33,7 @@ public interface ElevatorIO {
 
     /** Resets encoder */
     public default void setEncoder(double position) {}
+
+    /** Updating trapezoid profiler and reference height using the profiler */
+    public default void updateProfile() {}
 }

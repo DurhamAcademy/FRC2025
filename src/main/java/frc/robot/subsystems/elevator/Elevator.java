@@ -36,6 +36,8 @@ public class Elevator extends SubsystemBase {
             io.setEncoder(ElevatorConstants.minHeight * ElevatorConstants.countsPerInch);
             hasZeroed = true;
         }
+
+        io.updateProfile();
     }
 
     public void setTargetHeight(ElevatorLevel level) {
