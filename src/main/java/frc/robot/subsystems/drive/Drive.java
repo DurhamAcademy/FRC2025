@@ -72,7 +72,10 @@ public class Drive extends SubsystemBase {
             };
     public SwerveDrivePoseEstimator poseEstimator =
             new SwerveDrivePoseEstimator(
-                    kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+                    kinematics,
+                    rawGyroRotation,
+                    lastModulePositions,
+                    new Pose2d(3, 3, new Rotation2d()));
 
     Vision vision;
 
