@@ -371,21 +371,21 @@ public class Drive extends SubsystemBase {
         reefToAlign = closestReefConstantValue;
     }
 
-    /**
-     * Gets the reef position left of current reef position
-     */
+    /** Gets the reef position left of current reef position */
     public void alignToLeftReef() {
-        int currentReefLocationsIndex = Constants.LocationConstants.AllReefLocations.indexOf(reefToAlign);
-        int toGetReefLocationsIndex = currentReefLocationsIndex != 0 ? currentReefLocationsIndex - 1 : 11;
+        int currentReefLocationsIndex =
+                Constants.LocationConstants.AllReefLocations.indexOf(reefToAlign);
+        int toGetReefLocationsIndex =
+                currentReefLocationsIndex != 0 ? currentReefLocationsIndex - 1 : 11;
         reefToAlign = Constants.LocationConstants.AllReefLocations.get(toGetReefLocationsIndex);
     }
 
-    /**
-     * Gets the reef position right of current reef position
-     */
+    /** Gets the reef position right of current reef position */
     public void alignToRightReef() {
-        int currentReefLocationsIndex = Constants.LocationConstants.AllReefLocations.indexOf(reefToAlign);
-        int toGetReefLocationsIndex = currentReefLocationsIndex != 11 ? currentReefLocationsIndex + 1 : 0;
+        int currentReefLocationsIndex =
+                Constants.LocationConstants.AllReefLocations.indexOf(reefToAlign);
+        int toGetReefLocationsIndex =
+                currentReefLocationsIndex != 11 ? currentReefLocationsIndex + 1 : 0;
         reefToAlign = Constants.LocationConstants.AllReefLocations.get(toGetReefLocationsIndex);
     }
 }

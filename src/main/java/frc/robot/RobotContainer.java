@@ -159,36 +159,20 @@ public class RobotContainer {
         // Align to the closest reef
         driverController
                 .b()
-                .onTrue(
-                        Commands.run(
-                                drive::alignToClosestReef
-                        )
-                )
+                .onTrue(Commands.run(drive::alignToClosestReef))
                 .whileTrue(
                         DriveCommands.reefAlign(
-                                drive,
-                                () -> -driverController.getLeftY(),
-                                () -> -driverController.getLeftX(),
-                                drive::getReefToAlign)
+                                        drive,
+                                        () -> -driverController.getLeftY(),
+                                        () -> -driverController.getLeftX(),
+                                        drive::getReefToAlign)
                                 .getCommand());
 
         // Align to left reef
-        driverController
-                .leftBumper()
-                .onTrue(
-                        Commands.run(
-                                drive::alignToLeftReef
-                        )
-                );
+        driverController.leftBumper().onTrue(Commands.run(drive::alignToLeftReef));
 
         // Align to right reef
-        driverController
-                .rightBumper()
-                .onTrue(
-                        Commands.run(
-                                drive::alignToRightReef
-                        )
-                );
+        driverController.rightBumper().onTrue(Commands.run(drive::alignToRightReef));
 
         //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
         //            ? () -> drive.setPose(
