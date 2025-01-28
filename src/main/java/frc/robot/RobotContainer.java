@@ -162,10 +162,10 @@ public class RobotContainer {
                 .onTrue(Commands.run(drive::alignToClosestReef))
                 .whileTrue(
                         DriveCommands.reefAlign(
-                                        drive,
-                                        () -> -driverController.getLeftY(),
-                                        () -> -driverController.getLeftX(),
-                                        drive::getReefToAlign));
+                                drive,
+                                () -> -driverController.getLeftY(),
+                                () -> -driverController.getLeftX(),
+                                drive::getReefToAlign));
 
         // Align to left reef
         driverController.leftBumper().onTrue(Commands.run(drive::alignToLeftReef));
