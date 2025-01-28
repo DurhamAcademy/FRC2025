@@ -73,6 +73,8 @@ public class Drive extends SubsystemBase {
             new SwerveDrivePoseEstimator(
                     kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
+    Vision vision;
+
     public Drive(
             GyroIO gyroIO,
             ModuleIO flModuleIO,
@@ -126,6 +128,8 @@ public class Drive extends SubsystemBase {
                                         Logger.recordOutput("Drive/SysIdState", state.toString())),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+        vision = new Vision(kinematics, lastModulePositions, gyroInputs);
     }
 
     @Override
