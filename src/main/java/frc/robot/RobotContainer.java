@@ -165,8 +165,7 @@ public class RobotContainer {
                                         drive,
                                         () -> -driverController.getLeftY(),
                                         () -> -driverController.getLeftX(),
-                                        drive::getReefToAlign)
-                                .getCommand());
+                                        drive::getReefToAlign));
 
         // Align to left reef
         driverController.leftBumper().onTrue(Commands.run(drive::alignToLeftReef));
