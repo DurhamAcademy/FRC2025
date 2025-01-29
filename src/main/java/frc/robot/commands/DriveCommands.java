@@ -113,7 +113,6 @@ public class DriveCommands {
      * @param omegaSupplier right joystick x value
      * @return command for robot
      */
-
     public static Command joystickDrive(
             Drive drive,
             DoubleSupplier xSupplier,

@@ -2,8 +2,6 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
 import java.util.ArrayList;
@@ -23,9 +21,7 @@ public class Vision extends SubsystemBase {
     ArrayList<CameraConfig> cameraConfigs =
             new ArrayList<>(); // holds all the cameras (initialized in constructor)
 
-    public Vision(
-            GyroIO.GyroIOInputs gyro,
-            Drive drive) {
+    public Vision(GyroIO.GyroIOInputs gyro, Drive drive) {
         this.gyro = gyro;
         this.drive = drive;
 
