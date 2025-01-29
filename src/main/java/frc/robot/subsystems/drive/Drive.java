@@ -89,8 +89,9 @@ public class Drive extends SubsystemBase {
             ModuleIO frModuleIO,
             ModuleIO blModuleIO,
             ModuleIO brModuleIO,
-        SwerveDriveSimulation swerveSim) {
-        this.driveSimulation = swerveSim;this.gyroIO = gyroIO;
+            SwerveDriveSimulation swerveSim) {
+        this.driveSimulation = swerveSim;
+        this.gyroIO = gyroIO;
         modules[0] = new Module(flModuleIO, 0);
         modules[1] = new Module(frModuleIO, 1);
         modules[2] = new Module(blModuleIO, 2);

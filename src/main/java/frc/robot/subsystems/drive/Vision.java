@@ -15,33 +15,33 @@ import org.littletonrobotics.junction.Logger;
 public class Vision extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
 
-    GyroIO.GyroIOInputs gyro;Drive drive;
+    GyroIO.GyroIOInputs gyro;
+    Drive drive;
 
     Pose2d currentPosition = new Pose2d(0, 0, new Rotation2d(0));
 
     ArrayList<CameraConfig> cameraConfigs =
             new ArrayList<>(); // holds all the cameras (initialized in constructor)
 
-    public Vision(
-
-            GyroIO.GyroIOInputs gyro, Drive drive) {
+    public Vision(GyroIO.GyroIOInputs gyro, Drive drive) {
         this.gyro = gyro;
         this.drive = drive;
 
         // create two new cameras with different positions and offsets and store them to be used for
         // position later
-        if (Constants.currentMode != Constants.Mode.SIM) {cameraConfigs.add(
-                new CameraConfig(
-                        "limelight", // camera name
-                        new Transform3d(
-                                new Translation3d(0.06220, 0, 0.4683),
-                                new Rotation3d(0.0, Math.toRadians(-15), 0.0)), // Camera pose
-                        new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
-                        ));}
+        if (Constants.currentMode != Constants.Mode.SIM) {
+            cameraConfigs.add(
+                    new CameraConfig(
+                            "limelight", // camera name
+                            new Transform3d(
+                                    new Translation3d(0.06220, 0, 0.4683),
+                                    new Rotation3d(0.0, Math.toRadians(-15), 0.0)), // Camera pose
+                            new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
+                            ));
+        }
 
         // Initialize pose estimator
-        poseEstimator =
-                drive.poseEstimator;
+        poseEstimator = drive.poseEstimator;
 
         // TODO do we want to do this in code or via limelight local
         // initializeLimelightHelpers(); // sets up all the cameras in the cameraConfigs list
@@ -133,9 +133,9 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void periodic() {
-        //poseEstimator.update(gyro.yawPosition, modulePositions); // update rotation
+        // poseEstimator.update(gyro.yawPosition, modulePositions); // update rotation
         updateEstimatedPose(); // use camera data to estimate position
-        //currentPosition = getPosition();
-        //logRobotPosition(); // show field visualization in shuffleboard
+        // currentPosition = getPosition();
+        // logRobotPosition(); // show field visualization in shuffleboard
     }
 }
