@@ -113,6 +113,7 @@ public class DriveCommands {
      * @param omegaSupplier right joystick x value
      * @return command for robot
      */
+
     public static Command joystickDrive(
             Drive drive,
             DoubleSupplier xSupplier,
@@ -142,7 +143,7 @@ public class DriveCommands {
                     // See if rotation should be flipped, red = flipped, blue = normal
                     boolean isFlipped =
                             DriverStation.getAlliance().isPresent()
-                                    && DriverStation.getAlliance().get() == Alliance.Red;
+                                    && DriverStation.getAlliance().get() == Alliance.Blue;
 
                     // Run the velocity on the drive
                     drive.runVelocity(
