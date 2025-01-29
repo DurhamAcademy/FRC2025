@@ -135,9 +135,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
         // Use the profiler's position as the target for the motor controller
         primaryController.setReference(
-                currentState.position,
-                ControlType.kPosition,
-                ClosedLoopSlot.kSlot0,
-                ffVolts);
+                currentState.position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
     }
 }
