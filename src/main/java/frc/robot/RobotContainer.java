@@ -13,6 +13,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.wpilibj2.command.Commands.run;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -38,10 +40,11 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
-    private SwerveDriveSimulation driveSimulation = null;
+    public SwerveDriveSimulation driveSimulation = null;
 
-    // Controller
-    private final CommandXboxController controller = new CommandXboxController(0);
+    // Controllers
+    private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController operatorController = new CommandXboxController(1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
@@ -57,7 +60,8 @@ public class RobotContainer {
                                 new ModuleIOSpark(0),
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
-                                new ModuleIOSpark(3));
+                                new ModuleIOSpark(3),
+                                null);
                 break;
 
             case SIM:
@@ -74,7 +78,8 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[0]),
                                 new ModuleIOSim(driveSimulation.getModules()[1]),
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
-                                new ModuleIOSim(driveSimulation.getModules()[3]));
+                                new ModuleIOSim(driveSimulation.getModules()[3]),
+                                driveSimulation);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -95,7 +100,8 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {},
-                                new ModuleIO() {});
+                                new ModuleIO() {},
+                                null);
                 break;
         }
 
@@ -137,35 +143,32 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -controller.getLeftY(),
-                        () -> -controller.getLeftX(),
-                        () -> -controller.getRightX()));
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX()));
 
+        // DRIVER CONTROLLER
         // Lock to 0° when A button is held
-        controller
+        driverController
                 .a()
                 .whileTrue(
                         DriveCommands.joystickDriveAtAngle(
                                 drive,
-                                () -> -controller.getLeftY(),
-                                () -> -controller.getLeftX(),
+                                () -> -driverController.getLeftY(),
+                                () -> -driverController.getLeftX(),
                                 () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
-        controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+        driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-        // Reset gyro to 0° when B button is pressed
-        controller
-                .b()
-                .onTrue(
-                        Commands.runOnce(
-                                        () ->
-                                                drive.setPose(
-                                                        new Pose2d(
-                                                                drive.getPose().getTranslation(),
-                                                                new Rotation2d())),
-                                        drive)
-                                .ignoringDisable(true));
+        // Align to the closest reef
+        driverController.b().whileTrue(DriveCommands.reefAlign(drive, drive::getReefToAlign));
+
+        // Align to left reef
+        driverController.leftBumper().onTrue(run(drive::alignToLeftReef));
+
+        // Align to right reef
+        driverController.rightBumper().onTrue(run(drive::alignToRightReef));
 
         //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
         //            ? () -> drive.setPose(
@@ -189,7 +192,7 @@ public class RobotContainer {
     public void resetSimulationField() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
 
-        driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+        driveSimulation.setSimulationWorldPose(drive.getPose());
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 
@@ -204,5 +207,9 @@ public class RobotContainer {
         Logger.recordOutput(
                 "FieldSimulation/Algae",
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    }
+
+    public SwerveDriveSimulation getDriveSimulation() {
+        return driveSimulation;
     }
 }
