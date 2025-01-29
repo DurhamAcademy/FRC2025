@@ -2,9 +2,8 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
@@ -15,8 +14,8 @@ import org.littletonrobotics.junction.Logger;
  */
 public class Vision extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
-    private final SwerveModulePosition[] modulePositions;
-    GyroIO.GyroIOInputs gyro;
+
+    GyroIO.GyroIOInputs gyro;Drive drive;
 
     Pose2d currentPosition = new Pose2d(0, 0, new Rotation2d(0));
 
@@ -24,30 +23,25 @@ public class Vision extends SubsystemBase {
             new ArrayList<>(); // holds all the cameras (initialized in constructor)
 
     public Vision(
-            SwerveDriveKinematics kinematics,
-            SwerveModulePosition[] modulePositions,
-            GyroIO.GyroIOInputs gyro) {
-        this.modulePositions = modulePositions;
+
+            GyroIO.GyroIOInputs gyro, Drive drive) {
         this.gyro = gyro;
+        this.drive = drive;
 
         // create two new cameras with different positions and offsets and store them to be used for
         // position later
-        cameraConfigs.add(
+        if (Constants.currentMode != Constants.Mode.SIM) {cameraConfigs.add(
                 new CameraConfig(
                         "limelight", // camera name
                         new Transform3d(
                                 new Translation3d(0.06220, 0, 0.4683),
                                 new Rotation3d(0.0, Math.toRadians(-15), 0.0)), // Camera pose
                         new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
-                        ));
+                        ));}
 
         // Initialize pose estimator
         poseEstimator =
-                new SwerveDrivePoseEstimator(
-                        kinematics, // Kinematics for drivetrain
-                        gyro.yawPosition, // Initial gyro angle
-                        modulePositions, // positions of swerve modules
-                        new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0)));
+                drive.poseEstimator;
 
         // TODO do we want to do this in code or via limelight local
         // initializeLimelightHelpers(); // sets up all the cameras in the cameraConfigs list
@@ -139,9 +133,9 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void periodic() {
-        poseEstimator.update(gyro.yawPosition, modulePositions); // update rotation
+        //poseEstimator.update(gyro.yawPosition, modulePositions); // update rotation
         updateEstimatedPose(); // use camera data to estimate position
-        currentPosition = getPosition();
-        logRobotPosition(); // show field visualization in shuffleboard
+        //currentPosition = getPosition();
+        //logRobotPosition(); // show field visualization in shuffleboard
     }
 }
