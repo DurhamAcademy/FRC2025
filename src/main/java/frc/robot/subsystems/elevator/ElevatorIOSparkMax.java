@@ -11,6 +11,7 @@ import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
 
@@ -29,6 +30,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
+    private final ElevatorFeedforward feedForward;
 
     public ElevatorIOSparkMax() {
         // Primary motor = left motor
@@ -53,11 +55,10 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         resetConfig
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pidf(
+                .pid(
                         ElevatorConstants.elevatorKp,
                         ElevatorConstants.elevatorKi,
-                        ElevatorConstants.elevatorKd,
-                        ElevatorConstants.elevatorFF);
+                        ElevatorConstants.elevatorKd);
 
         configureMotors();
 
@@ -67,6 +68,13 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         currentState = new TrapezoidProfile.State(0, 0);
         goalState = new TrapezoidProfile.State(0, 0);
         profile = new TrapezoidProfile(constraints);
+
+        feedForward =
+                new ElevatorFeedforward(
+                        ElevatorConstants.elevatorKs,
+                        ElevatorConstants.elevatorKg,
+                        ElevatorConstants.elevatorKv,
+                        ElevatorConstants.elevatorKa);
     }
 
     private void configureMotors() {
@@ -123,11 +131,13 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     public void updateProfile() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
+        double ffVolts = feedForward.calculate(currentState.velocity);
 
         // Use the profiler's position as the target for the motor controller
         primaryController.setReference(
-                currentState.position, ControlType.kPosition, ClosedLoopSlot.kSlot0
-                // arbff?
-                );
+                currentState.position,
+                ControlType.kPosition,
+                ClosedLoopSlot.kSlot0,
+                ffVolts);
     }
 }
