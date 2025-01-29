@@ -9,7 +9,6 @@ import frc.robot.LimelightHelpers;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
 
-
 /**
  * Class to handle Limelight vision find docs at: <a
  * href="https://limelightlib-wpijava-reference.limelightvision.io/frc/robot/package-summary.html">link</a>
