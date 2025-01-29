@@ -14,6 +14,7 @@ import org.littletonrobotics.junction.Logger;
  */
 public class Vision extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
+
     GyroIO.GyroIOInputs gyro;
     Drive drive;
 
@@ -132,9 +133,9 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void periodic() {
-        //        poseEstimator.update(gyro.yawPosition, modulePositions); // update rotation
+        // poseEstimator.update(gyro.yawPosition, modulePositions); // update rotation
         updateEstimatedPose(); // use camera data to estimate position
-        //        currentPosition = getPosition();
-        //        logRobotPosition(); // show field visualization in shuffleboard
+        // currentPosition = getPosition();
+        // logRobotPosition(); // show field visualization in shuffleboard
     }
 }
