@@ -37,6 +37,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -139,6 +140,26 @@ public class Drive extends SubsystemBase {
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
 
         vision = new Vision(gyroInputs, this);
+
+        Logger.recordOutput(
+                "Drive/blueReefs",
+                Constants.LocationConstants.PosesOfAllReefLocations(0).toArray(new Pose2d[0]));
+        Logger.recordOutput(
+                "Drive/redReefs",
+                Constants.LocationConstants.PosesOfAllReefLocations(1).toArray(new Pose2d[0]));
+
+        Logger.recordOutput(
+                "Drive/red1",
+                Constants.LocationConstants.ReefLocations.get(Constants.ReefConstants.ONE)[1]);
+        Logger.recordOutput(
+                "Drive/blue1",
+                Constants.LocationConstants.ReefLocations.get(Constants.ReefConstants.ONE)[0]);
+        double blueY = Units.inchesToMeters(158.5);
+        double redY = blueY;
+        double blueX = Units.inchesToMeters(176.75);
+        double redX = Units.inchesToMeters(690.875) - blueX;
+        Logger.recordOutput("Drive/BlueCenter", new Pose2d(blueX, blueY, new Rotation2d()));
+        Logger.recordOutput("Drive/RedCenter", new Pose2d(redX, redY, new Rotation2d()));
     }
 
     @Override
@@ -150,6 +171,7 @@ public class Drive extends SubsystemBase {
             module.periodic();
         }
         odometryLock.unlock();
+        Logger.recordOutput("Drive/poseEstimate", poseEstimator.getEstimatedPosition());
 
         // Stop moving when disabled
         if (DriverStation.isDisabled()) {
@@ -158,6 +180,17 @@ public class Drive extends SubsystemBase {
             }
         }
 
+        if (DriverStation.getAlliance().isPresent()) {
+            Pose2d estimatedReefPose =
+                    poseEstimator
+                            .getEstimatedPosition()
+                            .nearest(
+                                    Constants.LocationConstants.PosesOfAllReefLocations(
+                                            Constants.getAllianceColor(
+                                                    DriverStation.getAlliance().get())));
+
+            Logger.recordOutput("Drive/closestReefPose", estimatedReefPose);
+        }
         // Log empty setpoint states when disabled
         if (DriverStation.isDisabled()) {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
@@ -345,7 +378,7 @@ public class Drive extends SubsystemBase {
     }
 
     public Constants.ReefConstants getReefToAlign() {
-        alignToClosestReef();
+        findClosestReef();
         return reefToAlign;
     }
 
@@ -359,13 +392,16 @@ public class Drive extends SubsystemBase {
      *
      * @return ReefConstant value of closest reef position
      */
-    public void alignToClosestReef() {
-        int color = 0;
+    public void findClosestReef() {
+        int color = Constants.getAllianceColor(DriverStation.getAlliance().get());
         // finds closest reef position to current pose
         Pose2d estimatedReefPose =
                 poseEstimator
                         .getEstimatedPosition()
                         .nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
+        Logger.recordOutput(
+                "Drive/Poses" + color,
+                Constants.LocationConstants.PosesOfAllReefLocations(color).toArray(new Pose2d[0]));
         // Return null if no matching reef is found
         Constants.ReefConstants closestReefConstantValue =
                 Constants.LocationConstants.ReefLocations.entrySet().stream()
@@ -373,7 +409,6 @@ public class Drive extends SubsystemBase {
                         .map(Map.Entry::getKey)
                         .findFirst()
                         .orElse(null);
-        Logger.recordOutput("Drive/closestReef", closestReefConstantValue);
         reefToAlign = closestReefConstantValue;
     }
 

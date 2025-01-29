@@ -16,6 +16,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,8 +43,17 @@ public final class Constants {
         REPLAY
     }
 
-    public static class LocationConstants {
+    /**
+     * Get number associated with DriverStation alliance
+     *
+     * @param alliance DriverStation.getAlliance(), either Alliance.Red or Alliance.Blue
+     * @return 1 for red, 0 for blue
+     */
+    public static int getAllianceColor(DriverStation.Alliance alliance) {
+        return alliance == DriverStation.Alliance.Red ? 1 : 0;
+    }
 
+    public static class LocationConstants {
         public static enum AprilTagLocations {
             // List of locations from
             // https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025FieldDrawings-FieldLayoutAndMarking.pdf
@@ -181,9 +191,9 @@ public final class Constants {
                     {
                         // centers of the hexagons
                         double blueY = Units.inchesToMeters(158.5);
-                        double redY = Units.inchesToMeters(blueY);
+                        double redY = blueY;
                         double blueX = Units.inchesToMeters(176.75);
-                        double redX = Units.inchesToMeters(690.875 - blueX);
+                        double redX = Units.inchesToMeters(690.875) - blueX;
 
                         // for the 1, 2, 7, and 8 positions where the edge is parallel to the
                         // alliance walls
@@ -269,7 +279,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(300)),
                                     new Pose2d(
                                             redX - changeXMedium,
-                                            redY + changeYSmall,
+                                            redY + changeYMedium,
                                             Rotation2d.fromDegrees(120))
                                 });
                         put(

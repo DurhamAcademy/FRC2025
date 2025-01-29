@@ -367,7 +367,7 @@ public class DriveCommands {
     }
 
     public static Command reefAlign(Drive drive, Supplier<Constants.ReefConstants> reef) {
-
+        Logger.recordOutput("Drive/goingHere", true);
         // Create PID controller that deals with rotation
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
@@ -392,12 +392,24 @@ public class DriveCommands {
                     // Get position of reef
                     Pose2d reefPose = drive.getReefPosition(reef.get());
 
+                    double shiftDistance = 0.4;
+                    Rotation2d newRotation =
+                            Rotation2d.fromDegrees(
+                                    reefPose.getRotation().getDegrees()
+                                            + 180); // Reverse the rotation by 180 degrees
                     Pose2d goalPose =
-                            reefPose.plus(
-                                    new Transform2d(
-                                            Math.abs(.5 * reefPose.getRotation().getCos()),
-                                            Math.abs(.5 * reefPose.getRotation().getSin()),
-                                            Rotation2d.fromDegrees(180.0)));
+                            new Pose2d(
+                                    reefPose.getX()
+                                            - shiftDistance
+                                                    * newRotation
+                                                            .getCos(), // Move backward in X based
+                                    // on rotation
+                                    reefPose.getY()
+                                            - shiftDistance
+                                                    * newRotation
+                                                            .getSin(), // Move backward in Y based
+                                    // on rotation
+                                    newRotation);
                     Logger.recordOutput("Drive/goalPose", goalPose);
 
                     // Return the actual pathfinding command
