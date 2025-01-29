@@ -89,8 +89,9 @@ public class Drive extends SubsystemBase {
             ModuleIO frModuleIO,
             ModuleIO blModuleIO,
             ModuleIO brModuleIO,
-        SwerveDriveSimulation swerveSim) {
-        this.driveSimulation = swerveSim;this.gyroIO = gyroIO;
+            SwerveDriveSimulation swerveSim) {
+        this.driveSimulation = swerveSim;
+        this.gyroIO = gyroIO;
         modules[0] = new Module(flModuleIO, 0);
         modules[1] = new Module(frModuleIO, 1);
         modules[2] = new Module(blModuleIO, 2);
@@ -165,7 +166,7 @@ public class Drive extends SubsystemBase {
 
         // Update odometry
         double[] sampleTimestamps =
-                modules[1].getOdometryTimestamps(); // All signals are sampled together
+                modules[0].getOdometryTimestamps(); // All signals are sampled together
         int sampleCount = sampleTimestamps.length;
         for (int i = 0; i < sampleCount; i++) {
             // Read wheel positions and deltas from each module
