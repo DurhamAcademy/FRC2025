@@ -26,10 +26,10 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
 public class DriveConstants {
     // 2024 robot
-    public static final double maxSpeedMetersPerSec = 5.75;
+    public static final double maxSpeedMetersPerSec = 5.05;
     public static final double odometryFrequency = 100.0; // Hz
-    public static final double trackWidth = Units.inchesToMeters(20.75);
-    public static final double wheelBase = Units.inchesToMeters(20.75);
+    public static final double trackWidth = Units.inchesToMeters(22.75);
+    public static final double wheelBase = Units.inchesToMeters(22.75);
     public static final double driveBaseRadius = Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
     public static final Translation2d[] moduleTranslations =
             new Translation2d[] {
@@ -41,13 +41,17 @@ public class DriveConstants {
 
     // Zeroed rotation values for each module
     // 2024 robot
-    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.284); // 0
-    public static final Rotation2d frontRightZeroRotation = new Rotation2d(-1.901); // 1
-    public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.460); // 2
-    public static final Rotation2d backRightZeroRotation = new Rotation2d(-2.835); // 3
+    //    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.284); // 0
+    //    public static final Rotation2d frontRightZeroRotation = new Rotation2d(-1.901); // 1
+    //    public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.460); // 2
+    //    public static final Rotation2d backRightZeroRotation = new Rotation2d(-2.835); // 3
+    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(.296); // 0
+    public static final Rotation2d frontRightZeroRotation = new Rotation2d(1.763); // 1
+    public static final Rotation2d backLeftZeroRotation = new Rotation2d(0.650); // 2
+    public static final Rotation2d backRightZeroRotation = new Rotation2d(-1.806); // 3
 
     // Device CAN IDs
-    // 2024 robot
+    // both robots
     public static final int pigeonCanId = 20;
 
     public static final int frontLeftDriveCanId = 1;
@@ -62,9 +66,11 @@ public class DriveConstants {
 
     // Drive motor configuration
     // 2024 robot
+    // public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
+    //  public static final double driveMotorReduction = 6.75; // MK4i L2s
     public static final int driveMotorCurrentLimit = 50;
-    public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
-    public static final double driveMotorReduction = 6.75; // MK4i L2s
+    public static final double wheelRadiusMeters = Units.inchesToMeters(2.0);
+    public static final double driveMotorReduction = 6.12; // MK4i L3s
     public static final DCMotor driveGearbox = DCMotor.getNEO(1);
 
     // Drive encoder configuration
