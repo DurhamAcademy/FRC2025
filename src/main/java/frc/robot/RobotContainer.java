@@ -13,6 +13,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.wpilibj2.command.Commands.run;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -38,7 +40,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
-    private SwerveDriveSimulation driveSimulation = null;
+    public SwerveDriveSimulation driveSimulation = null;
 
     // Controllers
     private final CommandXboxController driverController = new CommandXboxController(0);
@@ -58,7 +60,8 @@ public class RobotContainer {
                                 new ModuleIOSpark(0),
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
-                                new ModuleIOSpark(3));
+                                new ModuleIOSpark(3),
+                                null);
                 break;
 
             case SIM:
@@ -75,7 +78,8 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[0]),
                                 new ModuleIOSim(driveSimulation.getModules()[1]),
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
-                                new ModuleIOSim(driveSimulation.getModules()[3]));
+                                new ModuleIOSim(driveSimulation.getModules()[3]),
+                                driveSimulation);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -96,7 +100,8 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {},
-                                new ModuleIO() {});
+                                new ModuleIO() {},
+                                null);
                 break;
         }
 
@@ -157,21 +162,13 @@ public class RobotContainer {
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Align to the closest reef
-        driverController
-                .b()
-                .onTrue(Commands.run(drive::alignToClosestReef))
-                .whileTrue(
-                        DriveCommands.reefAlign(
-                                drive,
-                                () -> -driverController.getLeftY(),
-                                () -> -driverController.getLeftX(),
-                                drive::getReefToAlign));
+        driverController.b().whileTrue(DriveCommands.reefAlign(drive, drive::getReefToAlign));
 
         // Align to left reef
-        driverController.leftBumper().onTrue(Commands.run(drive::alignToLeftReef));
+        driverController.leftBumper().onTrue(run(drive::alignToLeftReef));
 
         // Align to right reef
-        driverController.rightBumper().onTrue(Commands.run(drive::alignToRightReef));
+        driverController.rightBumper().onTrue(run(drive::alignToRightReef));
 
         //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
         //            ? () -> drive.setPose(
@@ -210,5 +207,9 @@ public class RobotContainer {
         Logger.recordOutput(
                 "FieldSimulation/Algae",
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    }
+
+    public SwerveDriveSimulation getDriveSimulation() {
+        return driveSimulation;
     }
 }

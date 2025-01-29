@@ -49,6 +49,7 @@ import frc.robot.util.LocalADStarAK;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -78,6 +79,7 @@ public class Drive extends SubsystemBase {
                     new Pose2d(3, 3, new Rotation2d()));
 
     private Constants.ReefConstants reefToAlign;
+    public SwerveDriveSimulation driveSimulation = null;
 
     Vision vision;
 
@@ -86,7 +88,9 @@ public class Drive extends SubsystemBase {
             ModuleIO flModuleIO,
             ModuleIO frModuleIO,
             ModuleIO blModuleIO,
-            ModuleIO brModuleIO) {
+            ModuleIO brModuleIO,
+            SwerveDriveSimulation swerveSim) {
+        this.driveSimulation = swerveSim;
         this.gyroIO = gyroIO;
         modules[0] = new Module(flModuleIO, 0);
         modules[1] = new Module(frModuleIO, 1);
@@ -115,8 +119,7 @@ public class Drive extends SubsystemBase {
         PathPlannerLogging.setLogActivePathCallback(
                 (activePath) -> {
                     Logger.recordOutput(
-                            "Odometry/Trajectory",
-                            activePath.toArray(new Pose2d[activePath.size()]));
+                            "Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
                 });
         PathPlannerLogging.setLogTargetPoseCallback(
                 (targetPose) -> {
@@ -306,6 +309,9 @@ public class Drive extends SubsystemBase {
     /** Returns the current odometry pose. */
     @AutoLogOutput(key = "Odometry/Robot")
     public Pose2d getPose() {
+        if (Constants.currentMode == Mode.SIM) {
+            return driveSimulation.getSimulatedDriveTrainPose();
+        }
         return poseEstimator.getEstimatedPosition();
     }
 
@@ -339,6 +345,7 @@ public class Drive extends SubsystemBase {
     }
 
     public Constants.ReefConstants getReefToAlign() {
+        alignToClosestReef();
         return reefToAlign;
     }
 
@@ -353,13 +360,12 @@ public class Drive extends SubsystemBase {
      * @return ReefConstant value of closest reef position
      */
     public void alignToClosestReef() {
-        int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
+        int color = 0;
         // finds closest reef position to current pose
         Pose2d estimatedReefPose =
                 poseEstimator
                         .getEstimatedPosition()
                         .nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
-        Logger.recordOutput("Drive/closetReefPose", estimatedReefPose);
         // Return null if no matching reef is found
         Constants.ReefConstants closestReefConstantValue =
                 Constants.LocationConstants.ReefLocations.entrySet().stream()

@@ -37,8 +37,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.1;
@@ -114,6 +116,8 @@ public class DriveCommands {
                     boolean isFlipped =
                             DriverStation.getAlliance().isPresent()
                                     && DriverStation.getAlliance().get() == Alliance.Red;
+
+                    Logger.recordOutput("Drive/isFlipped", isFlipped);
 
                     // Run the velocity on the drive
                     drive.runVelocity(
@@ -362,11 +366,8 @@ public class DriveCommands {
         return null;
     }
 
-    public static Command reefAlign(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            Supplier<Constants.ReefConstants> reef) {
+    public static Command reefAlign(Drive drive, Supplier<Constants.ReefConstants> reef) {
+
         // Create PID controller that deals with rotation
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
@@ -379,16 +380,6 @@ public class DriveCommands {
         // Enable continuous input
         angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-        // Get position of reef
-        Pose2d reefPose = drive.getReefPosition(reef.get());
-
-        Pose2d goalPose =
-                reefPose.plus(
-                        new Transform2d(
-                                0.5 * reefPose.getRotation().getCos(),
-                                0.5 * reefPose.getRotation().getSin(),
-                                new Rotation2d()));
-
         PathConstraints constraints =
                 new PathConstraints(
                         LINEAR_MAX_VELOCITY,
@@ -396,80 +387,23 @@ public class DriveCommands {
                         ANGLE_MAX_VELOCITY,
                         ANGLE_MAX_ACCELERATION);
 
-        Command command = AutoBuilder.pathfindToPose(goalPose, constraints, 0.0);
+        return Commands.defer(
+                () -> {
+                    // Get position of reef
+                    Pose2d reefPose = drive.getReefPosition(reef.get());
 
-        //        var command =
-        //                Commands.run(
-        //                                () -> {
-        //                                    // Get current linear velocity
-        //                                    Translation2d linearVelocity =
-        //                                            getLinearVelocityFromJoysticks(
-        //                                                    xSupplier.getAsDouble(),
-        //                                                    ySupplier.getAsDouble());
-        //
-        //                                    // Get position of reef
-        //                                    Pose2d reefPose = drive.getReefPosition(reef.get());
-        //
-        //                                    // Get angle to reef
-        //                                    Rotation2d angle =
-        //                                            reefPose.getTranslation()
-        //
-        // .minus(drive.getPose().getTranslation())
-        //                                                    .getAngle();
-        //
-        //                                    // Calculate angular speed
-        //                                    double omega =
-        //                                            angleController.calculate(
-        //                                                    drive.getRotation().getRadians(),
-        //                                                    angle.getRadians());
-        //
-        //                                    // Convert to field relative speeds & send command
-        //                                    ChassisSpeeds speeds =
-        //                                            new ChassisSpeeds(
-        //                                                    linearVelocity.getX()
-        //                                                            *
-        // drive.getMaxLinearSpeedMetersPerSec(),
-        //                                                    linearVelocity.getY()
-        //                                                            *
-        // drive.getMaxLinearSpeedMetersPerSec(),
-        //                                                    omega);
-        //
-        //                                    // See if rotation should be flipped, red = flipped,
-        // blue =
-        //                                    // normal
-        //                                    boolean isFlipped =
-        //                                            DriverStation.getAlliance().isPresent()
-        //                                                    && DriverStation.getAlliance().get()
-        //                                                            == Alliance.Red;
-        //
-        //                                    // Run the velocity on the drive
-        //                                    drive.runVelocity(
-        //                                            ChassisSpeeds.fromFieldRelativeSpeeds(
-        //                                                    speeds,
-        //                                                    isFlipped
-        //                                                            ? drive.getRotation()
-        //                                                                    .plus(new
-        // Rotation2d(Math.PI))
-        //                                                            : drive.getRotation()));
-        //                                },
-        //                                drive)
-        //                        .beforeStarting(
-        //                                () ->
-        // angleController.reset(drive.getRotation().getRadians()));
-        // TODO: unsure what this code does, requires some testing
-        //                .until(
-        //                        () -> {
-        //                            // if the controller is giving a turn input, end the command
-        //                            // because the driver is trying to take back control
-        //                            var isGTE = omegaSupplier.getAsDouble() >= DEADBAND;
-        //                            var isLTE = omegaSupplier.getAsDouble() <= -DEADBAND;
-        //                            return !RobotState.isAutonomous() && (isLTE || isGTE);
-        //                            // until the driver moves the stick, and it is not during
-        //                            // autonomous
-        //                        }
-        //                );
+                    Pose2d goalPose =
+                            reefPose.plus(
+                                    new Transform2d(
+                                            Math.abs(.5 * reefPose.getRotation().getCos()),
+                                            Math.abs(.5 * reefPose.getRotation().getSin()),
+                                            Rotation2d.fromDegrees(180.0)));
+                    Logger.recordOutput("Drive/goalPose", goalPose);
 
-        return command;
+                    // Return the actual pathfinding command
+                    return AutoBuilder.pathfindToPose(goalPose, constraints, 0.0);
+                },
+                Set.of(drive));
     }
 
     public Command shootAlign(
