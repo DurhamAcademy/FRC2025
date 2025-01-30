@@ -14,7 +14,6 @@ import org.littletonrobotics.junction.Logger;
  */
 public class Vision extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
-
     GyroIO.GyroIOInputs gyro;
     Drive drive;
 

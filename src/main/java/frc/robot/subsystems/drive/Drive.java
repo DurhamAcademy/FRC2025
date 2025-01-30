@@ -87,6 +87,8 @@ public class Drive extends SubsystemBase {
 
     Vision vision;
 
+    Vision vision;
+
     public Drive(
             GyroIO gyroIO,
             ModuleIO flModuleIO,
@@ -143,26 +145,6 @@ public class Drive extends SubsystemBase {
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
 
         vision = new Vision(gyroInputs, this);
-
-        Logger.recordOutput(
-                "Drive/blueReefs",
-                Constants.LocationConstants.PosesOfAllReefLocations(0).toArray(new Pose2d[0]));
-        Logger.recordOutput(
-                "Drive/redReefs",
-                Constants.LocationConstants.PosesOfAllReefLocations(1).toArray(new Pose2d[0]));
-
-        Logger.recordOutput(
-                "Drive/red1",
-                Constants.LocationConstants.ReefLocations.get(Constants.ReefConstants.ONE)[1]);
-        Logger.recordOutput(
-                "Drive/blue1",
-                Constants.LocationConstants.ReefLocations.get(Constants.ReefConstants.ONE)[0]);
-        double blueY = Units.inchesToMeters(158.5);
-        double redY = blueY;
-        double blueX = Units.inchesToMeters(176.75);
-        double redX = Units.inchesToMeters(690.875) - blueX;
-        Logger.recordOutput("Drive/BlueCenter", new Pose2d(blueX, blueY, new Rotation2d()));
-        Logger.recordOutput("Drive/RedCenter", new Pose2d(redX, redY, new Rotation2d()));
     }
 
     @Override
@@ -234,6 +216,7 @@ public class Drive extends SubsystemBase {
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+        Logger.recordOutput("Drive/closestReef", getClosestReefPosition());
     }
 
     /**
