@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -79,8 +80,10 @@ public class Drive extends SubsystemBase {
                     lastModulePositions,
                     new Pose2d(3, 3, new Rotation2d()));
 
-    private Constants.ReefConstants reefToAlign;
+    public Constants.ReefConstants reefToAlign;
     public SwerveDriveSimulation driveSimulation = null;
+    public boolean isGamePieceOriented =
+            false; // want to reorient to game piece when aligning to reef
 
     Vision vision;
 
@@ -239,6 +242,29 @@ public class Drive extends SubsystemBase {
      * @param speeds Speeds in meters/sec
      */
     public void runVelocity(ChassisSpeeds speeds) {
+        // Check if we are in game-piece-oriented mode
+        /*if (isGamePieceOriented && DriverStation.getAlliance().isPresent()) {
+            // Get the desired direction for the game piece
+            Pose2d targetPose =
+                    Constants.LocationConstants.ReefLocations.get(reefToAlign)[
+                            Constants.getAllianceColor(DriverStation.getAlliance().get())];
+            Translation2d targetDirection =
+                    targetPose
+                            .getTranslation()
+                            .minus(poseEstimator.getEstimatedPosition().getTranslation());
+            double angleToTarget = Math.atan2(targetDirection.getY(), targetDirection.getX());
+            Rotation2d targetRotation = new Rotation2d(angleToTarget);
+
+            // Rotate input speeds to align with target direction
+            speeds =
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                            speeds.vxMetersPerSecond,
+                            speeds.vyMetersPerSecond,
+                            speeds.omegaRadiansPerSecond,
+                            targetRotation // Override field orientation with target orientation
+                            );
+        }*/
+
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
@@ -378,7 +404,6 @@ public class Drive extends SubsystemBase {
     }
 
     public Constants.ReefConstants getReefToAlign() {
-        findClosestReef();
         return reefToAlign;
     }
 
@@ -392,24 +417,37 @@ public class Drive extends SubsystemBase {
      *
      * @return ReefConstant value of closest reef position
      */
-    public void findClosestReef() {
-        int color = Constants.getAllianceColor(DriverStation.getAlliance().get());
-        // finds closest reef position to current pose
-        Pose2d estimatedReefPose =
-                poseEstimator
-                        .getEstimatedPosition()
-                        .nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
-        Logger.recordOutput(
-                "Drive/Poses" + color,
-                Constants.LocationConstants.PosesOfAllReefLocations(color).toArray(new Pose2d[0]));
-        // Return null if no matching reef is found
-        Constants.ReefConstants closestReefConstantValue =
-                Constants.LocationConstants.ReefLocations.entrySet().stream()
-                        .filter(entry -> entry.getValue()[color].equals(estimatedReefPose))
-                        .map(Map.Entry::getKey)
-                        .findFirst()
-                        .orElse(null);
-        reefToAlign = closestReefConstantValue;
+    public Command findClosestReef() {
+        return Commands.runOnce(
+                () -> {
+                    int color = Constants.getAllianceColor(DriverStation.getAlliance().get());
+
+                    // Find closest reef position to current pose
+                    Pose2d estimatedReefPose =
+                            poseEstimator
+                                    .getEstimatedPosition()
+                                    .nearest(
+                                            Constants.LocationConstants.PosesOfAllReefLocations(
+                                                    color));
+
+                    Logger.recordOutput(
+                            "Drive/Poses" + color,
+                            Constants.LocationConstants.PosesOfAllReefLocations(color)
+                                    .toArray(new Pose2d[0]));
+
+                    // Find corresponding reef constant value
+                    Constants.ReefConstants closestReefConstantValue =
+                            Constants.LocationConstants.ReefLocations.entrySet().stream()
+                                    .filter(
+                                            entry ->
+                                                    entry.getValue()[color].equals(
+                                                            estimatedReefPose))
+                                    .map(Map.Entry::getKey)
+                                    .findFirst()
+                                    .orElse(null);
+
+                    reefToAlign = closestReefConstantValue;
+                });
     }
 
     /** Gets the reef position left of current reef position */

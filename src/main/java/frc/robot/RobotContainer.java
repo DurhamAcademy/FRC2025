@@ -14,6 +14,7 @@
 package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.run;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -162,7 +163,14 @@ public class RobotContainer {
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Align to the closest reef
-        driverController.b().whileTrue(DriveCommands.reefAlign(drive, drive::getReefToAlign));
+        driverController
+                .b()
+                .onTrue(sequence(DriveCommands.setGamePieceOriented(drive, true), drive.findClosestReef()))
+                .whileTrue(
+                        DriveCommands.reefAlign(
+                                drive,
+                                drive::getReefToAlign)) // todo: lock in to target while pressed?
+                .onFalse(DriveCommands.setGamePieceOriented(drive, false));
 
         // Align to left reef
         driverController.leftBumper().onTrue(run(drive::alignToLeftReef));

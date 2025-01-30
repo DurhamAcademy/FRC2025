@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -48,9 +49,13 @@ public class DriveCommands {
     private static final double ANGLE_KD = 0.4;
 
     // TODO: FIX THESE NUMBERS, AND WHY ARE THEY DIFFERENT FROM DRIVE CONSTANTS
-    private static final double LINEAR_MAX_VELOCITY = 5.0;
+    /* private static final double LINEAR_MAX_VELOCITY = 0.2;
+    private static final double LINEAR_MAX_ACCELERATION = 1.0;
+    private static final double ANGLE_MAX_VELOCITY = 0.2;
+    private static final double ANGLE_MAX_ACCELERATION = 1.0;*/
+    private static final double LINEAR_MAX_VELOCITY = 10;
     private static final double LINEAR_MAX_ACCELERATION = 20.0;
-    private static final double ANGLE_MAX_VELOCITY = 8.0;
+    private static final double ANGLE_MAX_VELOCITY = 10;
     private static final double ANGLE_MAX_ACCELERATION = 20.0;
 
     private static final double FF_START_DELAY = 2.0; // Secs
@@ -111,6 +116,55 @@ public class DriveCommands {
                                     linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                                     linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                                     omega * drive.getMaxAngularSpeedRadPerSec());
+
+                    if (drive.isGamePieceOriented && DriverStation.getAlliance().isPresent()) {
+                        // Target pose based on alliance
+                        Pose2d targetPose =
+                                Constants.LocationConstants.ReefLocations.get(drive.reefToAlign)[
+                                        Constants.getAllianceColor(
+                                                DriverStation.getAlliance().get())];
+
+                        // Compute direction to target
+                        Translation2d targetDirection =
+                                targetPose
+                                        .getTranslation()
+                                        .minus(
+                                                drive.poseEstimator
+                                                        .getEstimatedPosition()
+                                                        .getTranslation());
+
+                        // Normalize the target direction
+                        targetDirection = targetDirection.div(targetDirection.getNorm());
+
+                        // Compute dot product manually to project joystick velocity onto target
+                        // direction
+                        double forwardComponent =
+                                linearVelocity.getX() * targetDirection.getX()
+                                        + linearVelocity.getY() * targetDirection.getY();
+
+                        // Adjust movement along the reef-aligned direction
+                        Translation2d adjustedVelocity = targetDirection.times(forwardComponent);
+
+                        // Compute angle to target
+                        double angleToTarget =
+                                Math.atan2(targetDirection.getY(), targetDirection.getX());
+
+                        // Compute angle error
+                        double angleError = angleToTarget - drive.getRotation().getRadians();
+
+                        Logger.recordOutput(
+                                "Drive/TargetAngleDegrees", Math.toDegrees(angleToTarget));
+                        Logger.recordOutput("Drive/AngleErrorDegrees", Math.toDegrees(angleError));
+
+                        // Apply reoriented motion based on projection
+                        speeds =
+                                new ChassisSpeeds(
+                                        adjustedVelocity.getX()
+                                                * drive.getMaxLinearSpeedMetersPerSec(),
+                                        adjustedVelocity.getY()
+                                                * drive.getMaxLinearSpeedMetersPerSec(),
+                                        angleError); // Keep omega controlled for smooth rotation
+                    }
 
                     // See if rotation should be flipped, red = flipped, blue = normal
                     boolean isFlipped =
@@ -386,13 +440,12 @@ public class DriveCommands {
                         LINEAR_MAX_ACCELERATION,
                         ANGLE_MAX_VELOCITY,
                         ANGLE_MAX_ACCELERATION);
-
         return Commands.defer(
                 () -> {
                     // Get position of reef
                     Pose2d reefPose = drive.getReefPosition(reef.get());
 
-                    double shiftDistance = 0.4;
+                    double shiftDistance = 0.8;
                     Rotation2d newRotation =
                             Rotation2d.fromDegrees(
                                     reefPose.getRotation().getDegrees()
@@ -416,6 +469,10 @@ public class DriveCommands {
                     return AutoBuilder.pathfindToPose(goalPose, constraints, 0.0);
                 },
                 Set.of(drive));
+    }
+
+    public static Command setGamePieceOriented(Drive drive, boolean value) {
+        return new InstantCommand(() -> drive.isGamePieceOriented = value);
     }
 
     public Command shootAlign(
