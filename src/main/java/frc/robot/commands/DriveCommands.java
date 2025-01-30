@@ -142,7 +142,7 @@ public class DriveCommands {
                     // See if rotation should be flipped, red = flipped, blue = normal
                     boolean isFlipped =
                             DriverStation.getAlliance().isPresent()
-                                    && DriverStation.getAlliance().get() == Alliance.Blue;
+                                    && DriverStation.getAlliance().get() == Alliance.Red;
 
                     // Run the velocity on the drive
                     drive.runVelocity(
