@@ -44,7 +44,7 @@ public class RobotContainer {
     private final CommandXboxController controller = new CommandXboxController(0);
 
     // Dashboard inputs
-    private final LoggedDashboardChooser<Command> autoChooser;
+    public final LoggedDashboardChooser<Command> autoChooser;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -186,12 +186,15 @@ public class RobotContainer {
         return autoChooser.get();
     }
 
-    public void resetSimulationField() {
+    public void resetSimulationField(Pose2d pose) {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-
         driveSimulation.setSimulationWorldPose(
-                new Pose2d(1.715, 4.375, new Rotation2d(Math.toRadians(22.141))));
+                new Pose2d(pose.getX(), pose.getY(), new Rotation2d()));
         SimulatedArena.getInstance().resetFieldForAuto();
+    }
+
+    public void resetSimulationField() {
+        resetSimulationField(new Pose2d(3, 3, new Rotation2d()));
     }
 
     public void displaySimFieldToAdvantageScope() {

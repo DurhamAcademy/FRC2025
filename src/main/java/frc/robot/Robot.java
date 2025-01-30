@@ -13,9 +13,12 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -121,6 +124,14 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit() {
         autonomousCommand = robotContainer.getAutonomousCommand();
+        // code to update starting position of robot when auto is selected
+        String autoName = robotContainer.autoChooser.getSendableChooser().getSelected();
+        try {
+            List<PathPlannerPath> auto = PathPlannerAuto.getPathGroupFromAutoFile(autoName);
+            robotContainer.resetSimulationField(auto.get(0).getStartingDifferentialPose());
+        } catch (Exception e) {
+            System.out.println("No Auto Found");
+        }
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
             autonomousCommand.schedule();
