@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.util.LocalADStarAK;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -69,7 +70,7 @@ public class Drive extends SubsystemBase {
                 new SwerveModulePosition(),
                 new SwerveModulePosition()
             };
-    private SwerveDrivePoseEstimator poseEstimator =
+    public SwerveDrivePoseEstimator poseEstimator =
             new SwerveDrivePoseEstimator(
                     kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
@@ -129,7 +130,7 @@ public class Drive extends SubsystemBase {
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
 
-        vision = new Vision(kinematics, lastModulePositions, gyroInputs);
+        vision = new Vision(gyroInputs, this);
     }
 
     @Override
@@ -189,6 +190,7 @@ public class Drive extends SubsystemBase {
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+        Logger.recordOutput("Drive/closestReef", getClosestReefPosition());
     }
 
     /**
@@ -337,10 +339,27 @@ public class Drive extends SubsystemBase {
         return Constants.LocationConstants.ReefLocations.get(reef)[color];
     }
 
-    public Pose2d getClosestReefPosition() {
+    /**
+     * Gets the closes reef position relative to current vision pos
+     *
+     * @return ReefConstant value of closest reef position
+     */
+    public Constants.ReefConstants getClosestReefPosition() {
         int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
-        return poseEstimator
-                .getEstimatedPosition()
-                .nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
+        // finds closest reef position to current pose
+        Pose2d estimatedReefPose =
+                poseEstimator
+                        .getEstimatedPosition()
+                        .nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
+        Logger.recordOutput("Drive/closetReefPose", estimatedReefPose);
+        // Return null if no matching reef is found
+        Constants.ReefConstants closestReefConstantValue =
+                Constants.LocationConstants.ReefLocations.entrySet().stream()
+                        .filter(entry -> entry.getValue()[color].equals(estimatedReefPose))
+                        .map(Map.Entry::getKey)
+                        .findFirst()
+                        .orElse(null);
+        Logger.recordOutput("Drive/closestReef", closestReefConstantValue);
+        return closestReefConstantValue;
     }
 }

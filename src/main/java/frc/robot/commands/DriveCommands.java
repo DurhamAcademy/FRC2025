@@ -142,7 +142,7 @@ public class DriveCommands {
                     // See if rotation should be flipped, red = flipped, blue = normal
                     boolean isFlipped =
                             DriverStation.getAlliance().isPresent()
-                                    && DriverStation.getAlliance().get() == Alliance.Red;
+                                    && DriverStation.getAlliance().get() == Alliance.Blue;
 
                     // Run the velocity on the drive
                     drive.runVelocity(
@@ -391,12 +391,15 @@ public class DriveCommands {
         return null;
     }
 
-    public CommandAndReadySupplier reefAlign(
+    public static CommandAndReadySupplier reefAlign(
             Drive drive,
             DoubleSupplier xSupplier,
             DoubleSupplier ySupplier,
-            DoubleSupplier omegaSupplier,
-            Constants.ReefConstants reef) {
+            Supplier<Constants.ReefConstants> reef) {
+        if (reef == null) {
+            // TODO what to return if null
+            return null;
+        }
         // Create PID controller that deals with rotation
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
@@ -419,7 +422,7 @@ public class DriveCommands {
                                                     ySupplier.getAsDouble());
 
                                     // Get position of reef
-                                    Pose2d reefPose = drive.getReefPosition(reef);
+                                    Pose2d reefPose = drive.getReefPosition(reef.get());
 
                                     // Get angle to reef
                                     Rotation2d angle =
