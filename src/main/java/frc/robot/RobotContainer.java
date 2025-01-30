@@ -165,7 +165,10 @@ public class RobotContainer {
         // Align to the closest reef
         driverController
                 .b()
-                .onTrue(sequence(DriveCommands.setGamePieceOriented(drive, true), drive.findClosestReef()))
+                .onTrue(
+                        sequence(
+                                DriveCommands.setGamePieceOriented(drive, true),
+                                drive.findClosestReef()))
                 .whileTrue(
                         DriveCommands.reefAlign(
                                 drive,
