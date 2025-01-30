@@ -80,7 +80,7 @@ public class Drive extends SubsystemBase {
                     lastModulePositions,
                     new Pose2d(3, 3, new Rotation2d()));
 
-    public Constants.ReefConstants reefToAlign;
+    public Constants.ReefConstants reefToAlign = Constants.ReefConstants.TWELVE;
     public SwerveDriveSimulation driveSimulation = null;
     public boolean isGamePieceOriented =
             false; // want to reorient to game piece when aligning to reef
@@ -404,6 +404,7 @@ public class Drive extends SubsystemBase {
     }
 
     public Constants.ReefConstants getReefToAlign() {
+
         return reefToAlign;
     }
 
