@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -382,7 +383,7 @@ public class Drive extends SubsystemBase {
     }
 
     public Constants.ReefConstants getReefToAlign() {
-        findClosestReef();
+        // findClosestReef();
         return reefToAlign;
     }
 
@@ -396,56 +397,36 @@ public class Drive extends SubsystemBase {
      *
      * @return ReefConstant value of closest reef position
      */
-    public void findClosestReef() {
-        int color = Constants.getAllianceColor(DriverStation.getAlliance().get());
+    public Command findClosestReef() {
+        return Commands.runOnce(
+                () -> {
+                    int color = Constants.getAllianceColor(DriverStation.getAlliance().get());
 
-        // Find closest reef position to current pose
-        Pose2d estimatedReefPose =
-                poseEstimator
-                        .getEstimatedPosition()
-                        .nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
+                    // Find closest reef position to current pose
+                    Pose2d estimatedReefPose =
+                            poseEstimator
+                                    .getEstimatedPosition()
+                                    .nearest(
+                                            Constants.LocationConstants.PosesOfAllReefLocations(
+                                                    color));
 
-        Logger.recordOutput(
-                "Drive/Poses" + color,
-                Constants.LocationConstants.PosesOfAllReefLocations(color).toArray(new Pose2d[0]));
+                    Logger.recordOutput(
+                            "Drive/Poses" + color,
+                            Constants.LocationConstants.PosesOfAllReefLocations(color)
+                                    .toArray(new Pose2d[0]));
 
-        // Find corresponding reef constant value
-        Constants.ReefConstants closestReefConstantValue =
-                Constants.LocationConstants.ReefLocations.entrySet().stream()
-                        .filter(entry -> entry.getValue()[color].equals(estimatedReefPose))
-                        .map(Map.Entry::getKey)
-                        .findFirst()
-                        .orElse(null);
-        reefToAlign = closestReefConstantValue;
-        /*return Commands.runOnce(
-        () -> {
-            int color = Constants.getAllianceColor(DriverStation.getAlliance().get());
-
-            // Find closest reef position to current pose
-            Pose2d estimatedReefPose =
-                    poseEstimator
-                            .getEstimatedPosition()
-                            .nearest(
-                                    Constants.LocationConstants.PosesOfAllReefLocations(
-                                            color));
-
-            Logger.recordOutput(
-                    "Drive/Poses" + color,
-                    Constants.LocationConstants.PosesOfAllReefLocations(color)
-                            .toArray(new Pose2d[0]));
-
-            // Find corresponding reef constant value
-            Constants.ReefConstants closestReefConstantValue =
-                    Constants.LocationConstants.ReefLocations.entrySet().stream()
-                            .filter(
-                                    entry ->
-                                            entry.getValue()[color].equals(
-                                                    estimatedReefPose))
-                            .map(Map.Entry::getKey)
-                            .findFirst()
-                            .orElse(null);
-            reefToAlign = closestReefConstantValue;
-        });*/
+                    // Find corresponding reef constant value
+                    Constants.ReefConstants closestReefConstantValue =
+                            Constants.LocationConstants.ReefLocations.entrySet().stream()
+                                    .filter(
+                                            entry ->
+                                                    entry.getValue()[color].equals(
+                                                            estimatedReefPose))
+                                    .map(Map.Entry::getKey)
+                                    .findFirst()
+                                    .orElse(null);
+                    reefToAlign = closestReefConstantValue;
+                });
     }
 
     /** Gets the reef position left of current reef position */

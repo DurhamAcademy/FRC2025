@@ -14,6 +14,7 @@
 package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.run;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -164,10 +165,10 @@ public class RobotContainer {
         // Align to the closest reef
         driverController
                 .b()
-                /*.onTrue(
-                sequence(
-                        // DriveCommands.setGamePieceOriented(drive, true),
-                        drive.findClosestReef()))*/
+                .onTrue(
+                        sequence(
+                                // DriveCommands.setGamePieceOriented(drive, true),
+                                drive.findClosestReef()))
                 .whileTrue(
                         DriveCommands.reefAlign(
                                 drive,
