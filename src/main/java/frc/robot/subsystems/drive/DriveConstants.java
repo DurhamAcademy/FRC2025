@@ -135,7 +135,12 @@ public class DriveConstants {
                     .withCustomModuleTranslations(moduleTranslations)
                     .withRobotMass(Kilogram.of(robotMassKg))
                     .withGyro(COTS.ofPigeon2())
-                    .withSwerveModule(COTS.ofMark4i(driveGearbox, turnGearbox, wheelCOF, 2));
+                    .withSwerveModule(
+                            COTS.ofMark4i(
+                                    driveGearbox,
+                                    turnGearbox,
+                                    wheelCOF,
+                                    2)); // todo: update gear ratio
     //              new SwerveModuleSimulationConfig(
     //                  driveGearbox,
     //                  turnGearbox,

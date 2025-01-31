@@ -53,10 +53,10 @@ public class DriveCommands {
     private static final double LINEAR_MAX_ACCELERATION = 1.0;
     private static final double ANGLE_MAX_VELOCITY = 0.2;
     private static final double ANGLE_MAX_ACCELERATION = 1.0;*/
-    private static final double LINEAR_MAX_VELOCITY = 10;
-    private static final double LINEAR_MAX_ACCELERATION = 20.0;
-    private static final double ANGLE_MAX_VELOCITY = 10;
-    private static final double ANGLE_MAX_ACCELERATION = 20.0;
+    private static final double LINEAR_MAX_VELOCITY = 2;
+    private static final double LINEAR_MAX_ACCELERATION = 3.0;
+    private static final double ANGLE_MAX_VELOCITY = 3;
+    private static final double ANGLE_MAX_ACCELERATION = 3.0;
 
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
@@ -117,7 +117,9 @@ public class DriveCommands {
                                     linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                                     omega * drive.getMaxAngularSpeedRadPerSec());
 
-                    if (drive.isGamePieceOriented && DriverStation.getAlliance().isPresent()) {
+                    if (drive.isGamePieceOriented
+                            && DriverStation.getAlliance().isPresent()
+                            && false) {
                         // Target pose based on alliance
                         Pose2d targetPose =
                                 Constants.LocationConstants.ReefLocations.get(drive.reefToAlign)[
@@ -421,7 +423,6 @@ public class DriveCommands {
     }
 
     public static Command reefAlign(Drive drive, Supplier<Constants.ReefConstants> reef) {
-        Logger.recordOutput("Drive/goingHere", true);
         // Create PID controller that deals with rotation
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
@@ -463,6 +464,7 @@ public class DriveCommands {
                                                             .getSin(), // Move backward in Y based
                                     // on rotation
                                     newRotation);
+                    Logger.recordOutput("Drive/REEFYREEFY", reefPose);
                     Logger.recordOutput("Drive/goalPose", goalPose);
 
                     // Return the actual pathfinding command
