@@ -125,18 +125,9 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void autonomousInit() {
+        // reset maple-sim field and set robot to correct position according to the auto start pos
+        robotContainer.resetSimulationFieldForAuto();
         autonomousCommand = robotContainer.getAutonomousCommand();
-        // code to update starting position of robot when auto is selected
-        String autoName = robotContainer.autoChooser.getSendableChooser().getSelected();
-        try {
-            List<PathPlannerPath> auto = PathPlannerAuto.getPathGroupFromAutoFile(autoName);
-            robotContainer.resetSimulationField(
-                    auto.get(0)
-                            .getStartingHolonomicPose()
-                            .orElse(new Pose2d(0, 0, new Rotation2d(0))));
-        } catch (Exception e) {
-            System.out.println("No Auto Found");
-        }
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
             autonomousCommand.schedule();

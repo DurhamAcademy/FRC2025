@@ -25,11 +25,11 @@ import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
 public class DriveConstants {
-    // 2024 robot
-    public static final double maxSpeedMetersPerSec = 5.75;
+    // update max speed meters per sec
+    public static final double maxSpeedMetersPerSec = 5.05968;
     public static final double odometryFrequency = 100.0; // Hz
-    public static final double trackWidth = Units.inchesToMeters(20.75);
-    public static final double wheelBase = Units.inchesToMeters(20.75);
+    public static final double trackWidth = Units.inchesToMeters(22.75);
+    public static final double wheelBase = Units.inchesToMeters(22.75);
     public static final double driveBaseRadius = Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
     public static final Translation2d[] moduleTranslations =
             new Translation2d[] {
@@ -61,10 +61,10 @@ public class DriveConstants {
     public static final int backRightTurnCanId = 8;
 
     // Drive motor configuration
-    // 2024 robot
-    public static final int driveMotorCurrentLimit = 50;
-    public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
-    public static final double driveMotorReduction = 6.75; // MK4i L2s
+    // 2025 robot
+    public static final int driveMotorCurrentLimit = 60;
+    public static final double wheelRadiusMeters = Units.inchesToMeters(2);
+    public static final double driveMotorReduction = 6.12; // MK4i L3s
     public static final DCMotor driveGearbox = DCMotor.getNEO(1);
 
     // Drive encoder configuration
@@ -86,7 +86,7 @@ public class DriveConstants {
     // Turn motor configuration
     // 2024 robot
     public static final boolean turnInverted = true;
-    public static final int turnMotorCurrentLimit = 20;
+    public static final int turnMotorCurrentLimit = 30;
     public static final double turnMotorReduction = 150.0 / 7.0;
     public static final DCMotor turnGearbox = DCMotor.getNEO(1);
 
@@ -120,23 +120,11 @@ public class DriveConstants {
                             1),
                     moduleTranslations);
 
-    public static final double driveFrictionVoltage = 0.1;
-    public static final double turnFrictionVoltage = 0.1;
-    public static final double steerRotationalInertia = 0.02;
     public static final DriveTrainSimulationConfig mapleSimConfig =
             DriveTrainSimulationConfig.Default()
                     .withCustomModuleTranslations(moduleTranslations)
                     .withRobotMass(Kilogram.of(robotMassKg))
                     .withGyro(COTS.ofPigeon2())
-                    .withSwerveModule(COTS.ofMark4i(driveGearbox, turnGearbox, wheelCOF, 2));
-    //              new SwerveModuleSimulationConfig(
-    //                  driveGearbox,
-    //                  turnGearbox,
-    //                  driveMotorReduction,
-    //                  turnMotorReduction,
-    //                  Volts.of(driveFrictionVoltage),
-    //                  Volts.of(turnFrictionVoltage),
-    //                  Meters.of(wheelRadiusMeters),
-    //                  KilogramSquareMeters.of(steerRotationalInertia),
-    //                  wheelCOF));
+                    // L3 gear ratio for 2025 robot
+                    .withSwerveModule(COTS.ofMark4i(driveGearbox, turnGearbox, wheelCOF, 3));
 }
