@@ -188,13 +188,12 @@ public class RobotContainer {
 
     public void resetSimulationField(Pose2d pose) {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-        driveSimulation.setSimulationWorldPose(
-                new Pose2d(pose.getX(), pose.getY(), new Rotation2d()));
+        driveSimulation.setSimulationWorldPose(pose);
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 
     public void resetSimulationField() {
-        resetSimulationField(new Pose2d(3, 3, new Rotation2d()));
+        resetSimulationField(new Pose2d(3, 6, new Rotation2d()));
     }
 
     public void displaySimFieldToAdvantageScope() {

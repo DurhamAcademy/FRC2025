@@ -15,6 +15,8 @@ package frc.robot;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -128,7 +130,10 @@ public class Robot extends LoggedRobot {
         String autoName = robotContainer.autoChooser.getSendableChooser().getSelected();
         try {
             List<PathPlannerPath> auto = PathPlannerAuto.getPathGroupFromAutoFile(autoName);
-            robotContainer.resetSimulationField(auto.get(0).getStartingDifferentialPose());
+            robotContainer.resetSimulationField(
+                    auto.get(0)
+                            .getStartingHolonomicPose()
+                            .orElse(new Pose2d(0, 0, new Rotation2d(0))));
         } catch (Exception e) {
             System.out.println("No Auto Found");
         }
