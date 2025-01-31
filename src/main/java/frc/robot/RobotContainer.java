@@ -26,12 +26,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.*;
+import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
-import java.util.List;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -191,8 +190,8 @@ public class RobotContainer {
     }
 
     /**
-     * Gets the selected autoName from the dashboard and find's the corresponding auto.
-     * Then gets the starting Pose2d of the auto and passes it to the resetSimulationField function.
+     * Gets the selected autoName from the dashboard and find's the corresponding auto. Then gets
+     * the starting Pose2d of the auto and passes it to the resetSimulationField function.
      */
     public void resetSimulationFieldForAuto() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
@@ -220,9 +219,7 @@ public class RobotContainer {
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 
-    /**
-     * Sets the robot to a default position and reset's the simulation field.
-     */
+    /** Sets the robot to a default position and reset's the simulation field. */
     public void resetSimulationField() {
         resetSimulationField(new Pose2d(3, 6, new Rotation2d()));
     }
