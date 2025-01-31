@@ -37,7 +37,7 @@ public class Vision extends SubsystemBase {
                         ));
 
         // Initialize pose estimator
-        poseEstimator = drive.poseEstimator;
+        poseEstimator = drive.getPoseEstimator();
 
         // TODO do we want to do this in code or via limelight local
         // initializeLimelightHelpers(); // sets up all the cameras in the cameraConfigs list
@@ -99,6 +99,10 @@ public class Vision extends SubsystemBase {
     private void updateEstimatedPose() {
         for (CameraConfig camera : cameraConfigs) {
             LimelightHelpers.PoseEstimate poseEstimate = getEstimatedPoseFromCamera(camera.name);
+
+            if (poseEstimate == null) {
+                continue;
+            }
 
             // Reject update if no tags are detected
             if (poseEstimate.tagCount == 0) {

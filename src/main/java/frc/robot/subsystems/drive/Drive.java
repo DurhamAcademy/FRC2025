@@ -70,7 +70,7 @@ public class Drive extends SubsystemBase {
                 new SwerveModulePosition(),
                 new SwerveModulePosition()
             };
-    public SwerveDrivePoseEstimator poseEstimator =
+    private SwerveDrivePoseEstimator poseEstimator =
             new SwerveDrivePoseEstimator(
                     kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
@@ -361,5 +361,25 @@ public class Drive extends SubsystemBase {
                         .orElse(null);
         Logger.recordOutput("Drive/closestReef", closestReefConstantValue);
         return closestReefConstantValue;
+    }
+
+    /**
+     * Retrieves the module at the specified index.
+     *
+     * @param index The index of the module to retrieve (0-3).
+     * @return the module[index]
+     */
+    public Module getModule(int index) {
+        return modules[index];
+    }
+
+    /**
+     * Retrieves the swerve drive pose estimator used for tracking the robot's position on the
+     * field.
+     *
+     * @return The current instance of the SwerveDrivePoseEstimator.
+     */
+    public SwerveDrivePoseEstimator getPoseEstimator() {
+        return poseEstimator;
     }
 }
