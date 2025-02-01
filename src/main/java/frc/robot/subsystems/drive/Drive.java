@@ -104,7 +104,7 @@ public class Drive extends SubsystemBase {
                 new PPHolonomicDriveController(
                         new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
                 ppConfig,
-                () -> DriverStation.getAlliance().orElse(Blue) == Red,
+                () -> DriverStation.getAlliance().orElse(Blue) != Red,
                 this);
         Pathfinding.setPathfinder(new LocalADStarAK());
         PathPlannerLogging.setLogActivePathCallback(
