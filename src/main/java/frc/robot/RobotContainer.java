@@ -176,8 +176,7 @@ public class RobotContainer {
         final Runnable resetGyro =
                 Constants.currentMode == Constants.Mode.SIM
                         ? () -> drive.setPose(driveSimulation.getSimulatedDriveTrainPose())
-                        : () ->
-                                drive.setPose(drive.getPose());
+                        : () -> drive.setPose(drive.getPose());
         controller.povUp().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
     }
 
