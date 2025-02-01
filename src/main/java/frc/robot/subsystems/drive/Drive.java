@@ -194,7 +194,7 @@ public class Drive extends SubsystemBase {
         }
 
         // Update gyro alert
-        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode == Mode.SIM);
         Logger.recordOutput("Drive/closestReef", getClosestReefPosition());
     }
 

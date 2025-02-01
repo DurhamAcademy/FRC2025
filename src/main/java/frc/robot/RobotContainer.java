@@ -45,7 +45,7 @@ public class RobotContainer {
     private final CommandXboxController controller = new CommandXboxController(0);
 
     // Dashboard inputs
-    public final LoggedDashboardChooser<Command> autoChooser;
+    private final LoggedDashboardChooser<Command> autoChooser;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -66,7 +66,7 @@ public class RobotContainer {
                 // create a maple-sim swerve drive simulation instance
                 this.driveSimulation =
                         new SwerveDriveSimulation(
-                                DriveConstants.mapleSimConfig, new Pose2d(0, 0, new Rotation2d()));
+                                DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
                 // add the simulated drivetrain to the simulation field
                 SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
                 // Sim robot, instantiate physics sim IO implementations
