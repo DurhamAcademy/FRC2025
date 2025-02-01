@@ -49,6 +49,7 @@ import frc.robot.util.LocalADStarAK;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -61,18 +62,20 @@ public class Drive extends SubsystemBase {
     private final Alert gyroDisconnectedAlert =
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
-    private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
+    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
     private Rotation2d rawGyroRotation = new Rotation2d();
-    private SwerveModulePosition[] lastModulePositions = // For delta tracking
+    private final SwerveModulePosition[] lastModulePositions = // For delta tracking
             new SwerveModulePosition[] {
                 new SwerveModulePosition(),
                 new SwerveModulePosition(),
                 new SwerveModulePosition(),
                 new SwerveModulePosition()
             };
-    private SwerveDrivePoseEstimator poseEstimator =
+    private final SwerveDrivePoseEstimator poseEstimator =
             new SwerveDrivePoseEstimator(
                     kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+
+    private final Consumer<Pose2d> resetSimulationPoseCallBack;
 
     Vision vision;
 
@@ -81,8 +84,10 @@ public class Drive extends SubsystemBase {
             ModuleIO flModuleIO,
             ModuleIO frModuleIO,
             ModuleIO blModuleIO,
-            ModuleIO brModuleIO) {
+            ModuleIO brModuleIO,
+            Consumer<Pose2d> resetSimulationPoseCallBack) {
         this.gyroIO = gyroIO;
+        this.resetSimulationPoseCallBack = resetSimulationPoseCallBack;
         modules[0] = new Module(flModuleIO, 0);
         modules[1] = new Module(frModuleIO, 1);
         modules[2] = new Module(blModuleIO, 2);
@@ -104,7 +109,7 @@ public class Drive extends SubsystemBase {
                 new PPHolonomicDriveController(
                         new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
                 ppConfig,
-                () -> DriverStation.getAlliance().orElse(Blue) != Red,
+                () -> DriverStation.getAlliance().orElse(Blue) == Red,
                 this);
         Pathfinding.setPathfinder(new LocalADStarAK());
         PathPlannerLogging.setLogActivePathCallback(
@@ -189,7 +194,7 @@ public class Drive extends SubsystemBase {
         }
 
         // Update gyro alert
-        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode == Mode.SIM);
         Logger.recordOutput("Drive/closestReef", getClosestReefPosition());
     }
 
@@ -312,6 +317,7 @@ public class Drive extends SubsystemBase {
 
     /** Resets the current odometry pose. */
     public void setPose(Pose2d pose) {
+        resetSimulationPoseCallBack.accept(pose);
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     }
 
