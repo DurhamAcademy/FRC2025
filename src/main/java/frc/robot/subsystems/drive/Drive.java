@@ -74,6 +74,8 @@ public class Drive extends SubsystemBase {
             new SwerveDrivePoseEstimator(
                     kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
+    private int targetedReef = 1;
+
     Vision vision;
 
     public Drive(
@@ -381,5 +383,18 @@ public class Drive extends SubsystemBase {
      */
     public SwerveDrivePoseEstimator getPoseEstimator() {
         return poseEstimator;
+    }
+
+    public int getTargetedReef() {
+        return targetedReef;
+    }
+
+    public void setTargetedReef(long targetedReef) {
+        if (targetedReef < 1) {
+            targetedReef = 12;
+        } else if (targetedReef > 12) {
+            targetedReef = 1;
+        }
+        this.targetedReef = (int) targetedReef;
     }
 }
