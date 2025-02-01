@@ -14,8 +14,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -27,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.*;
-import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -61,7 +58,8 @@ public class RobotContainer {
                                 new ModuleIOSpark(0),
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
-                                new ModuleIOSpark(3));
+                                new ModuleIOSpark(3),
+                                (pose) -> {});
                 break;
 
             case SIM:
@@ -78,7 +76,8 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[0]),
                                 new ModuleIOSim(driveSimulation.getModules()[1]),
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
-                                new ModuleIOSim(driveSimulation.getModules()[3]));
+                                new ModuleIOSim(driveSimulation.getModules()[3]),
+                                driveSimulation::setSimulationWorldPose);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -99,7 +98,8 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {},
-                                new ModuleIO() {});
+                                new ModuleIO() {},
+                                (pose) -> {});
                 break;
         }
 
@@ -192,39 +192,11 @@ public class RobotContainer {
         return autoChooser.get();
     }
 
-    /**
-     * Gets the selected autoName from the dashboard and find's the corresponding auto. Then gets
-     * the starting Pose2d of the auto and passes it to the resetSimulationField function.
-     */
-    public void resetSimulationFieldForAuto() {
-        if (Constants.currentMode != Constants.Mode.SIM) return;
-        // code to update starting position of robot when auto is selected
-        String autoName = autoChooser.getSendableChooser().getSelected();
-        try {
-            List<PathPlannerPath> auto = PathPlannerAuto.getPathGroupFromAutoFile(autoName);
-            resetSimulationField(
-                    auto.get(0)
-                            .getStartingHolonomicPose()
-                            .orElse(new Pose2d(0, 0, new Rotation2d(0))));
-        } catch (Exception e) {
-            System.out.println("No Auto Found");
-        }
-    }
-
-    /**
-     * Sets the robot to a Pose2d position and reset's the simulation field.
-     *
-     * @param pose the location where to set the robot when resetting the simulation field.
-     */
-    public void resetSimulationField(Pose2d pose) {
-        if (Constants.currentMode != Constants.Mode.SIM) return;
-        driveSimulation.setSimulationWorldPose(pose);
-        SimulatedArena.getInstance().resetFieldForAuto();
-    }
-
     /** Sets the robot to a default position and reset's the simulation field. */
     public void resetSimulationField() {
-        resetSimulationField(new Pose2d(3, 6, new Rotation2d()));
+        if (Constants.currentMode != Constants.Mode.SIM) return;
+        drive.setPose(new Pose2d(3, 3, new Rotation2d()));
+        SimulatedArena.getInstance().resetFieldForAuto();
     }
 
     public void displaySimFieldToAdvantageScope() {
