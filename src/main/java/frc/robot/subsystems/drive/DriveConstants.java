@@ -25,7 +25,7 @@ import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
 public class DriveConstants {
-    // 2024 robot
+    // update max speed meters per sec
     public static final double maxSpeedMetersPerSec = 5.05;
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = Units.inchesToMeters(22.75);
@@ -66,7 +66,7 @@ public class DriveConstants {
     public static final int backRightTurnCanId = 8;
 
     // Drive motor configuration
-    public static final int driveMotorCurrentLimit = 50;
+    public static final int driveMotorCurrentLimit = 60;
     public static final DCMotor driveGearbox = DCMotor.getNEO(1);
     // 2024 robot
     // public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
@@ -94,7 +94,7 @@ public class DriveConstants {
     // Turn motor configuration
     // 2024 + 2025 robot
     public static final boolean turnInverted = true;
-    public static final int turnMotorCurrentLimit = 20;
+    public static final int turnMotorCurrentLimit = 30;
     public static final double turnMotorReduction = 150.0 / 7.0; // steering gear ratio of all MK4is
     public static final DCMotor turnGearbox = DCMotor.getNEO(1);
 
@@ -133,5 +133,6 @@ public class DriveConstants {
                     .withCustomModuleTranslations(moduleTranslations)
                     .withRobotMass(Kilogram.of(robotMassKg))
                     .withGyro(COTS.ofPigeon2())
-                    .withSwerveModule(COTS.ofMark4i(driveGearbox, turnGearbox, wheelCOF, 2));
+                    // L3 gear ratio for 2025 robot
+                    .withSwerveModule(COTS.ofMark4i(driveGearbox, turnGearbox, wheelCOF, 3));
 }
