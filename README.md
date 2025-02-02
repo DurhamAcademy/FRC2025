@@ -6,3 +6,6 @@ Download these
 - https://github.com/Mechanical-Advantage/AdvantageScope/releases/
 
 If any of these installations have the 'this application cannot be verified' error: 1) Open settings, 2) Navigate to security, 3) Scroll until you find the recently opened application and click 'open anyway'
+
+
+Go DARC SIDE!!!
