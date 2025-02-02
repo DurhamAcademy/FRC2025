@@ -397,4 +397,10 @@ public class Drive extends SubsystemBase {
         }
         this.targetedReef = (int) targetedReef;
     }
+
+    public boolean[] getTargetedReefBooleanArray() {
+        boolean[] reefBoolArray = new boolean[12];
+        reefBoolArray[targetedReef - 1] = true;
+        return reefBoolArray;
+    }
 }

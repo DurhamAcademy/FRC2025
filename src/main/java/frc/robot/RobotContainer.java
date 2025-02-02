@@ -211,13 +211,18 @@ public class RobotContainer {
     }
 
     public void sendDataToSmartDashboard() {
-        SmartDashboard.putData(
-                "Target Reef",
-                builder -> {
-                    builder.setSmartDashboardType("Target Reef");
-                    builder.addIntegerProperty(
-                            "Target Reef", drive::getTargetedReef, drive::setTargetedReef);
-                });
+        for (int i = 1; i <= 12; i++) {
+            final int index = i;
+            SmartDashboard.putData(
+                    "Target Reef",
+                    builder -> {
+                        builder.setSmartDashboardType("Target Reef");
+                        builder.addBooleanProperty(
+                                "Target Reef" + index,
+                                () -> drive.getTargetedReefBooleanArray()[index - 1],
+                                null);
+                    });
+        }
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
