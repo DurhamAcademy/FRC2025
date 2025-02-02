@@ -154,6 +154,7 @@ public class Drive extends SubsystemBase {
         }
         odometryLock.unlock();
         Logger.recordOutput("Drive/poseEstimate", poseEstimator.getEstimatedPosition());
+        Logger.recordOutput("Drive/reefToAlign", reefToAlign);
 
         // Stop moving when disabled
         if (DriverStation.isDisabled()) {
@@ -383,7 +384,7 @@ public class Drive extends SubsystemBase {
     }
 
     public Constants.ReefConstants getReefToAlign() {
-        // findClosestReef();
+        Logger.recordOutput("Drive/reefButAtThisPlace", reefToAlign);
         return reefToAlign;
     }
 

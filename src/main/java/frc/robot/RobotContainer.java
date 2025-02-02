@@ -167,12 +167,13 @@ public class RobotContainer {
                 .b()
                 .onTrue(
                         sequence(
-                                //  DriveCommands.setGamePieceOriented(drive, true),
-                                drive.findClosestReef()))
-                .whileTrue(
-                        DriveCommands.reefAlign(
-                                drive,
-                                drive::getReefToAlign)) // todo: lock in to target while pressed?
+                                DriveCommands.setGamePieceOriented(drive, true),
+                                drive.findClosestReef(), // Ensure reefToAlign is set,
+                                DriveCommands.reefAlign(drive, drive::getReefToAlign)))
+                /*.whileTrue(
+                Commands.defer(
+                        () -> DriveCommands.reefAlign(drive, drive::getReefToAlign),
+                        Set.of(drive)))*/
                 .onFalse(DriveCommands.setGamePieceOriented(drive, false));
 
         // Align to left reef

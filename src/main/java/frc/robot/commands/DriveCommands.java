@@ -117,55 +117,33 @@ public class DriveCommands {
                                     linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                                     omega * drive.getMaxAngularSpeedRadPerSec());
 
-                    if (drive.isGamePieceOriented
-                            && DriverStation.getAlliance().isPresent()
-                            && false) {
-                        // Target pose based on alliance
-                        Pose2d targetPose =
+                    // reorient movement to reef if autoaligning
+                    if (drive.isGamePieceOriented && DriverStation.getAlliance().isPresent()) {
+                        Alliance alliance = DriverStation.getAlliance().get();
+                        // Get reef target position
+                        Pose2d reefPose =
                                 Constants.LocationConstants.ReefLocations.get(drive.reefToAlign)[
-                                        Constants.getAllianceColor(
-                                                DriverStation.getAlliance().get())];
+                                        Constants.getAllianceColor(alliance)];
 
-                        // Compute direction to target
-                        Translation2d targetDirection =
-                                targetPose
-                                        .getTranslation()
-                                        .minus(
-                                                drive.poseEstimator
-                                                        .getEstimatedPosition()
-                                                        .getTranslation());
+                        // find angle of reef and rotate the inputs to match
+                        Rotation2d reefAngle = reefPose.getRotation();
+                        Translation2d rotatedVelocity = linearVelocity.rotateBy(reefAngle);
 
-                        // Normalize the target direction
-                        targetDirection = targetDirection.div(targetDirection.getNorm());
+                        if (alliance == Alliance.Blue) {
+                            // have to flip for blue alliance cuz otherwise it's backwards
+                            rotatedVelocity =
+                                    new Translation2d(
+                                            -rotatedVelocity.getX(), -rotatedVelocity.getY());
+                        }
 
-                        // Compute dot product manually to project joystick velocity onto target
-                        // direction
-                        double forwardComponent =
-                                linearVelocity.getX() * targetDirection.getX()
-                                        + linearVelocity.getY() * targetDirection.getY();
-
-                        // Adjust movement along the reef-aligned direction
-                        Translation2d adjustedVelocity = targetDirection.times(forwardComponent);
-
-                        // Compute angle to target
-                        double angleToTarget =
-                                Math.atan2(targetDirection.getY(), targetDirection.getX());
-
-                        // Compute angle error
-                        double angleError = angleToTarget - drive.getRotation().getRadians();
-
-                        Logger.recordOutput(
-                                "Drive/TargetAngleDegrees", Math.toDegrees(angleToTarget));
-                        Logger.recordOutput("Drive/AngleErrorDegrees", Math.toDegrees(angleError));
-
-                        // Apply reoriented motion based on projection
+                        // apply rotation to ChassisSpeeds
                         speeds =
                                 new ChassisSpeeds(
-                                        adjustedVelocity.getX()
+                                        rotatedVelocity.getX()
                                                 * drive.getMaxLinearSpeedMetersPerSec(),
-                                        adjustedVelocity.getY()
+                                        rotatedVelocity.getY()
                                                 * drive.getMaxLinearSpeedMetersPerSec(),
-                                        angleError); // Keep omega controlled for smooth rotation
+                                        omega * drive.getMaxAngularSpeedRadPerSec());
                     }
 
                     // See if rotation should be flipped, red = flipped, blue = normal
@@ -464,6 +442,7 @@ public class DriveCommands {
                                                             .getSin(), // Move backward in Y based
                                     // on rotation
                                     newRotation);
+                    Logger.recordOutput("Drive/reefToAlignButHere", reef.get());
                     Logger.recordOutput("Drive/REEFYREEFY", reefPose);
                     Logger.recordOutput("Drive/goalPose", goalPose);
 
