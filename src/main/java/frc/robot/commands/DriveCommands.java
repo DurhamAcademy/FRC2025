@@ -44,19 +44,19 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
-    private static final double DEADBAND = 0.1;
-    private static final double ANGLE_KP = 5.0;
-    private static final double ANGLE_KD = 0.4;
+    public static final double DEADBAND = 0.1;
+    public static final double ANGLE_KP = 1.0;
+    public static final double ANGLE_KD = 0.4;
 
     // TODO: FIX THESE NUMBERS, AND WHY ARE THEY DIFFERENT FROM DRIVE CONSTANTS
     /* private static final double LINEAR_MAX_VELOCITY = 0.2;
     private static final double LINEAR_MAX_ACCELERATION = 1.0;
     private static final double ANGLE_MAX_VELOCITY = 0.2;
     private static final double ANGLE_MAX_ACCELERATION = 1.0;*/
-    private static final double LINEAR_MAX_VELOCITY = 2;
-    private static final double LINEAR_MAX_ACCELERATION = 3.0;
-    private static final double ANGLE_MAX_VELOCITY = 3;
-    private static final double ANGLE_MAX_ACCELERATION = 3.0;
+    public static final double LINEAR_MAX_VELOCITY = 20;
+    public static final double LINEAR_MAX_ACCELERATION = 30.0;
+    public static final double ANGLE_MAX_VELOCITY = 30;
+    public static final double ANGLE_MAX_ACCELERATION = 30.0;
 
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
@@ -454,6 +454,14 @@ public class DriveCommands {
 
     public static Command setGamePieceOriented(Drive drive, boolean value) {
         return new InstantCommand(() -> drive.isGamePieceOriented = value);
+    }
+
+    public static Command cancelPath(Drive drive) {
+        Logger.recordOutput("Drive/runningPath", false);
+        return new InstantCommand(
+                () -> {
+                    if (drive.currentPathCommand != null) drive.currentPathCommand.cancel();
+                });
     }
 
     public Command shootAlign(

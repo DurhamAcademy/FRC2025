@@ -21,6 +21,7 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -46,6 +47,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.commands.DriveCommands;
 import frc.robot.util.LocalADStarAK;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -83,6 +85,8 @@ public class Drive extends SubsystemBase {
     public SwerveDriveSimulation driveSimulation = null;
     public boolean isGamePieceOriented =
             false; // want to reorient to game piece when aligning to reef
+    private Pose2d lastGoalPose = null;
+    public Command currentPathCommand = null;
 
     Vision vision;
 
@@ -385,6 +389,9 @@ public class Drive extends SubsystemBase {
 
     public Constants.ReefConstants getReefToAlign() {
         Logger.recordOutput("Drive/reefButAtThisPlace", reefToAlign);
+        Logger.recordOutput(
+                "Drive/alignReefPose",
+                Constants.LocationConstants.ReefLocations.get(reefToAlign)[0]);
         return reefToAlign;
     }
 
@@ -428,6 +435,53 @@ public class Drive extends SubsystemBase {
                                     .orElse(null);
                     reefToAlign = closestReefConstantValue;
                 });
+    }
+
+    public void followPath(Command pathCommand) {
+        // If there's an existing path command, cancel it before starting a new one
+        if (currentPathCommand != null && currentPathCommand.isScheduled()) {
+            currentPathCommand.cancel();
+        }
+        System.out.println("running");
+
+        // Start the new path
+        currentPathCommand = pathCommand;
+        currentPathCommand.schedule();
+        Logger.recordOutput("Drive/runningPath", true);
+    }
+
+    public void alignToReef() {
+        if (reefToAlign == null) {
+            return; // Prevent errors if reefToAlign isn't set yet
+        }
+
+        // Get updated reef position
+        Pose2d reefPose = getReefPosition(reefToAlign);
+
+        double shiftDistance = 0.8;
+        Rotation2d newRotation =
+                Rotation2d.fromDegrees(
+                        reefPose.getRotation().getDegrees() + 180); // Reverse rotation
+
+        // Continuously updated goal position
+        Pose2d goalPose =
+                new Pose2d(
+                        reefPose.getX() - shiftDistance * newRotation.getCos(),
+                        reefPose.getY() - shiftDistance * newRotation.getSin(),
+                        newRotation);
+
+        Logger.recordOutput("Drive/Updated Reef Pose", reefPose);
+        Logger.recordOutput("Drive/Updated Goal Pose", goalPose);
+        // Path constraints
+        PathConstraints constraints =
+                new PathConstraints(
+                        DriveCommands.LINEAR_MAX_VELOCITY,
+                        DriveCommands.LINEAR_MAX_ACCELERATION,
+                        DriveCommands.ANGLE_MAX_VELOCITY,
+                        DriveCommands.ANGLE_MAX_ACCELERATION);
+
+        // Only set a new path if needed
+        followPath(AutoBuilder.pathfindToPose(goalPose, constraints, 0.0));
     }
 
     /** Gets the reef position left of current reef position */

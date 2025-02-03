@@ -13,8 +13,7 @@
 
 package frc.robot;
 
-import static edu.wpi.first.wpilibj2.command.Commands.run;
-import static edu.wpi.first.wpilibj2.command.Commands.sequence;
+import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -22,7 +21,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -160,7 +158,7 @@ public class RobotContainer {
                                 () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
-        driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+        driverController.x().onTrue(runOnce(drive::stopWithX, drive));
 
         // Align to the closest reef
         driverController
@@ -168,19 +166,21 @@ public class RobotContainer {
                 .onTrue(
                         sequence(
                                 DriveCommands.setGamePieceOriented(drive, true),
-                                drive.findClosestReef(), // Ensure reefToAlign is set,
-                                DriveCommands.reefAlign(drive, drive::getReefToAlign)))
-                /*.whileTrue(
-                Commands.defer(
-                        () -> DriveCommands.reefAlign(drive, drive::getReefToAlign),
-                        Set.of(drive)))*/
-                .onFalse(DriveCommands.setGamePieceOriented(drive, false));
+                                drive.findClosestReef() // Ensure reefToAlign is set
+                                ))
+                .whileTrue(run(() -> drive.alignToReef()))
+                .onFalse(
+                        sequence(
+                                DriveCommands.setGamePieceOriented(drive, false),
+                                DriveCommands.cancelPath(drive)));
 
         // Align to left reef
         driverController.leftBumper().onTrue(run(drive::alignToLeftReef));
 
         // Align to right reef
-        driverController.rightBumper().onTrue(run(drive::alignToRightReef));
+        driverController
+                .a() // todo: switch back to bumper
+                .onTrue(runOnce(drive::alignToRightReef));
 
         //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
         //            ? () -> drive.setPose(
