@@ -377,10 +377,11 @@ public class DriveCommands {
         return Commands.defer(
                         () -> {
                             // Get position of reef
-                            // TODO add alliance color
+                            int alliance =
+                                    Constants.getAllianceColor(DriverStation.getAlliance().get());
                             Pose2d reefPose =
                                     Constants.LocationConstants.ReefLocations.get(
-                                            drive.getTargetReef())[0];
+                                            drive.getTargetReef())[alliance];
 
                             double shiftDistance = DriveConstants.robotWidth;
                             Rotation2d shiftRotation =

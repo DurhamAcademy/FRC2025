@@ -60,6 +60,7 @@ public class Drive extends SubsystemBase {
     static final Lock odometryLock = new ReentrantLock();
     private final Consumer<Pose2d> resetSimulationPoseCallBack;
     private final SysIdRoutine sysId;
+    private Vision vision;
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
     private final SwerveModulePosition[] lastModulePositions = // For delta tracking
@@ -76,7 +77,7 @@ public class Drive extends SubsystemBase {
                     lastModulePositions,
                     new Pose2d(3, 3, new Rotation2d()));
 
-    public Constants.ReefConstants targetReef = Constants.ReefConstants.TWELVE;
+    public Constants.ReefConstants targetReef = Constants.ReefConstants.SEVEN;
 
     public Drive(
             GyroIO gyroIO,
@@ -132,6 +133,7 @@ public class Drive extends SubsystemBase {
                                         Logger.recordOutput("Drive/SysIdState", state.toString())),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+        vision = new Vision(gyroInputs, this);
     }
 
     @Override
