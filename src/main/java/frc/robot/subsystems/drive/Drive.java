@@ -21,13 +21,11 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -36,38 +34,34 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import frc.robot.commands.DriveCommands;
 import frc.robot.util.LocalADStarAK;
-import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
-    static final Lock odometryLock = new ReentrantLock();
     private final GyroIO gyroIO;
-    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
-    private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-    private final SysIdRoutine sysId;
     private final Alert gyroDisconnectedAlert =
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
+    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+    private Rotation2d rawGyroRotation = new Rotation2d();
+
+    private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+    static final Lock odometryLock = new ReentrantLock();
+    private final Consumer<Pose2d> resetSimulationPoseCallBack;
+    private final SysIdRoutine sysId;
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
-    private Rotation2d rawGyroRotation = new Rotation2d();
     private final SwerveModulePosition[] lastModulePositions = // For delta tracking
             new SwerveModulePosition[] {
                 new SwerveModulePosition(),
@@ -82,16 +76,7 @@ public class Drive extends SubsystemBase {
                     lastModulePositions,
                     new Pose2d(3, 3, new Rotation2d()));
 
-    public Constants.ReefConstants reefToAlign = Constants.ReefConstants.TWELVE;
-    public SwerveDriveSimulation driveSimulation = null;
-    public boolean isGamePieceOriented =
-            false; // want to reorient to game piece when aligning to reef
-    private Pose2d lastGoalPose = null;
-    public Command currentPathCommand = null;
-
-    private final Consumer<Pose2d> resetSimulationPoseCallBack;
-
-    Vision vision;
+    public Constants.ReefConstants targetReef = Constants.ReefConstants.TWELVE;
 
     public Drive(
             GyroIO gyroIO,
@@ -147,8 +132,6 @@ public class Drive extends SubsystemBase {
                                         Logger.recordOutput("Drive/SysIdState", state.toString())),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
-
-        vision = new Vision(gyroInputs, this);
     }
 
     @Override
@@ -161,7 +144,7 @@ public class Drive extends SubsystemBase {
         }
         odometryLock.unlock();
         Logger.recordOutput("Drive/poseEstimate", poseEstimator.getEstimatedPosition());
-        Logger.recordOutput("Drive/reefToAlign", reefToAlign);
+        Logger.recordOutput("Drive/reefToAlign", targetReef);
 
         // Stop moving when disabled
         if (DriverStation.isDisabled()) {
@@ -369,13 +352,8 @@ public class Drive extends SubsystemBase {
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     }
 
-    /** Adds a new timestamped vision measurement. */
-    public void addVisionMeasurement(
-            Pose2d visionRobotPoseMeters,
-            double timestampSeconds,
-            Matrix<N3, N1> visionMeasurementStdDevs) {
-        poseEstimator.addVisionMeasurement(
-                visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+    public SwerveDrivePoseEstimator getPoseEstimator() {
+        return poseEstimator;
     }
 
     /** Returns the maximum linear speed in meters per sec. */
@@ -388,138 +366,15 @@ public class Drive extends SubsystemBase {
         return maxSpeedMetersPerSec / driveBaseRadius;
     }
 
-    public Constants.ReefConstants getReefToAlign() {
-        Logger.recordOutput("Drive/reefButAtThisPlace", reefToAlign);
-        Logger.recordOutput(
-                "Drive/alignReefPose",
-                Constants.LocationConstants.ReefLocations.get(reefToAlign)[0]);
-        return reefToAlign;
-    }
-
-    public Pose2d getReefPosition(Constants.ReefConstants reef) {
-        int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
-        return Constants.LocationConstants.ReefLocations.get(reef)[color];
-    }
-
-    /**
-     * Gets the closes reef position relative to current vision pos
-     *
-     * @return ReefConstant value of closest reef position
-     */
-    public Command findClosestReef() {
-        return Commands.runOnce(
-                () -> {
-                    int color = Constants.getAllianceColor(DriverStation.getAlliance().get());
-
-                    // Find closest reef position to current pose
-                    Pose2d estimatedReefPose =
-                            poseEstimator
-                                    .getEstimatedPosition()
-                                    .nearest(
-                                            Constants.LocationConstants.PosesOfAllReefLocations(
-                                                    color));
-
-                    Logger.recordOutput(
-                            "Drive/Poses" + color,
-                            Constants.LocationConstants.PosesOfAllReefLocations(color)
-                                    .toArray(new Pose2d[0]));
-
-                    // Find corresponding reef constant value
-                    Constants.ReefConstants closestReefConstantValue =
-                            Constants.LocationConstants.ReefLocations.entrySet().stream()
-                                    .filter(
-                                            entry ->
-                                                    entry.getValue()[color].equals(
-                                                            estimatedReefPose))
-                                    .map(Map.Entry::getKey)
-                                    .findFirst()
-                                    .orElse(null);
-                    reefToAlign = closestReefConstantValue;
-                });
-    }
-
-    public void followPath(Command pathCommand) {
-        // If there's an existing path command, cancel it before starting a new one
-        if (currentPathCommand != null && currentPathCommand.isScheduled()) {
-            currentPathCommand.cancel();
-        }
-        System.out.println("running");
-
-        // Start the new path
-        currentPathCommand = pathCommand;
-        currentPathCommand.schedule();
-        Logger.recordOutput("Drive/runningPath", true);
-    }
-
-    public void alignToReef() {
-        if (reefToAlign == null) {
-            return; // Prevent errors if reefToAlign isn't set yet
-        }
-
-        // Get updated reef position
-        Pose2d reefPose = getReefPosition(reefToAlign);
-
-        double shiftDistance = 0.8;
-        Rotation2d newRotation =
-                Rotation2d.fromDegrees(
-                        reefPose.getRotation().getDegrees() + 180); // Reverse rotation
-
-        // Continuously updated goal position
-        Pose2d goalPose =
-                new Pose2d(
-                        reefPose.getX() - shiftDistance * newRotation.getCos(),
-                        reefPose.getY() - shiftDistance * newRotation.getSin(),
-                        newRotation);
-
-        Logger.recordOutput("Drive/Updated Reef Pose", reefPose);
-        Logger.recordOutput("Drive/Updated Goal Pose", goalPose);
-        // Path constraints
-        PathConstraints constraints =
-                new PathConstraints(
-                        DriveCommands.LINEAR_MAX_VELOCITY,
-                        DriveCommands.LINEAR_MAX_ACCELERATION,
-                        DriveCommands.ANGLE_MAX_VELOCITY,
-                        DriveCommands.ANGLE_MAX_ACCELERATION);
-
-        // Only set a new path if needed
-        followPath(AutoBuilder.pathfindToPose(goalPose, constraints, 0.0));
-    }
-
-    /** Gets the reef position left of current reef position */
-    public void alignToLeftReef() {
-        int currentReefLocationsIndex =
-                Constants.LocationConstants.AllReefLocations.indexOf(reefToAlign);
-        int toGetReefLocationsIndex =
-                currentReefLocationsIndex != 0 ? currentReefLocationsIndex - 1 : 11;
-        reefToAlign = Constants.LocationConstants.AllReefLocations.get(toGetReefLocationsIndex);
-    }
-
-    /** Gets the reef position right of current reef position */
-    public void alignToRightReef() {
-        int currentReefLocationsIndex =
-                Constants.LocationConstants.AllReefLocations.indexOf(reefToAlign);
-        int toGetReefLocationsIndex =
-                currentReefLocationsIndex != 11 ? currentReefLocationsIndex + 1 : 0;
-        reefToAlign = Constants.LocationConstants.AllReefLocations.get(toGetReefLocationsIndex);
-    }
-
-    /**
-     * Retrieves the module at the specified index.
-     *
-     * @param index The index of the module to retrieve (0-3).
-     * @return the module[index]
-     */
     public Module getModule(int index) {
         return modules[index];
     }
 
-    /**
-     * Retrieves the swerve drive pose estimator used for tracking the robot's position on the
-     * field.
-     *
-     * @return The current instance of the SwerveDrivePoseEstimator.
-     */
-    public SwerveDrivePoseEstimator getPoseEstimator() {
-        return poseEstimator;
+    public Constants.ReefConstants getTargetReef() {
+        return targetReef;
+    }
+
+    public void setTargetReef(Constants.ReefConstants reef) {
+        targetReef = reef;
     }
 }

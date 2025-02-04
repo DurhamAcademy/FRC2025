@@ -30,7 +30,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -48,15 +47,10 @@ public class DriveCommands {
     public static final double ANGLE_KP = 1.0;
     public static final double ANGLE_KD = 0.4;
 
-    // TODO: FIX THESE NUMBERS, AND WHY ARE THEY DIFFERENT FROM DRIVE CONSTANTS
-    /* private static final double LINEAR_MAX_VELOCITY = 0.2;
-    private static final double LINEAR_MAX_ACCELERATION = 1.0;
-    private static final double ANGLE_MAX_VELOCITY = 0.2;
-    private static final double ANGLE_MAX_ACCELERATION = 1.0;*/
-    public static final double LINEAR_MAX_VELOCITY = 20;
-    public static final double LINEAR_MAX_ACCELERATION = 30.0;
-    public static final double ANGLE_MAX_VELOCITY = 30;
-    public static final double ANGLE_MAX_ACCELERATION = 30.0;
+    // TODO: update these numbers
+    public static final double LINEAR_MAX_ACCELERATION = 11.77;
+    public static final double ANGLE_MAX_VELOCITY = 12.37;
+    public static final double ANGLE_MAX_ACCELERATION = 74.34;
 
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
@@ -116,35 +110,6 @@ public class DriveCommands {
                                     linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                                     linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                                     omega * drive.getMaxAngularSpeedRadPerSec());
-
-                    // reorient movement to reef if autoaligning
-                    if (drive.isGamePieceOriented && DriverStation.getAlliance().isPresent()) {
-                        Alliance alliance = DriverStation.getAlliance().get();
-                        // Get reef target position
-                        Pose2d reefPose =
-                                Constants.LocationConstants.ReefLocations.get(drive.reefToAlign)[
-                                        Constants.getAllianceColor(alliance)];
-
-                        // find angle of reef and rotate the inputs to match
-                        Rotation2d reefAngle = reefPose.getRotation();
-                        Translation2d rotatedVelocity = linearVelocity.rotateBy(reefAngle);
-
-                        if (alliance == Alliance.Blue) {
-                            // have to flip for blue alliance cuz otherwise it's backwards
-                            rotatedVelocity =
-                                    new Translation2d(
-                                            -rotatedVelocity.getX(), -rotatedVelocity.getY());
-                        }
-
-                        // apply rotation to ChassisSpeeds
-                        speeds =
-                                new ChassisSpeeds(
-                                        rotatedVelocity.getX()
-                                                * drive.getMaxLinearSpeedMetersPerSec(),
-                                        rotatedVelocity.getY()
-                                                * drive.getMaxLinearSpeedMetersPerSec(),
-                                        omega * drive.getMaxAngularSpeedRadPerSec());
-                    }
 
                     // See if rotation should be flipped, red = flipped, blue = normal
                     boolean isFlipped =
@@ -392,16 +357,8 @@ public class DriveCommands {
     /*-----------------
     ------ ALIGN ------
     -----------------*/
-    public Command coralAlign(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            DoubleSupplier omegaSupplier) {
-        return null;
-    }
 
-    public static Command reefAlign(Drive drive, Supplier<Constants.ReefConstants> reef) {
-        // Create PID controller that deals with rotation
+    public static Command alignToTarget(Drive drive) {
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
                         ANGLE_KP,
@@ -409,74 +366,49 @@ public class DriveCommands {
                         ANGLE_KD,
                         new TrapezoidProfile.Constraints(
                                 ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-
-        // Enable continuous input
         angleController.enableContinuousInput(-Math.PI, Math.PI);
-
         PathConstraints constraints =
                 new PathConstraints(
-                        LINEAR_MAX_VELOCITY,
+                        DriveConstants.maxSpeedMetersPerSec,
                         LINEAR_MAX_ACCELERATION,
                         ANGLE_MAX_VELOCITY,
                         ANGLE_MAX_ACCELERATION);
+
         return Commands.defer(
-                () -> {
-                    // Get position of reef
-                    Pose2d reefPose = drive.getReefPosition(reef.get());
+                        () -> {
+                            // Get position of reef
+                            // TODO add alliance color
+                            Pose2d reefPose =
+                                    Constants.LocationConstants.ReefLocations.get(
+                                            drive.getTargetReef())[0];
 
-                    double shiftDistance = 0.8;
-                    Rotation2d newRotation =
-                            Rotation2d.fromDegrees(
-                                    reefPose.getRotation().getDegrees()
-                                            + 180); // Reverse the rotation by 180 degrees
-                    Pose2d goalPose =
-                            new Pose2d(
-                                    reefPose.getX()
-                                            - shiftDistance
-                                                    * newRotation
-                                                            .getCos(), // Move backward in X based
-                                    // on rotation
-                                    reefPose.getY()
-                                            - shiftDistance
-                                                    * newRotation
-                                                            .getSin(), // Move backward in Y based
-                                    // on rotation
-                                    newRotation);
-                    Logger.recordOutput("Drive/reefToAlignButHere", reef.get());
-                    Logger.recordOutput("Drive/REEFYREEFY", reefPose);
-                    Logger.recordOutput("Drive/goalPose", goalPose);
+                            double shiftDistance = DriveConstants.robotWidth;
+                            Rotation2d shiftRotation =
+                                    Rotation2d.fromDegrees(
+                                            reefPose.getRotation().getDegrees()
+                                                    + 180); // Reverse the rotation by 180 degrees
+                            Pose2d goalPose =
+                                    new Pose2d(
+                                            reefPose.getX()
+                                                    - shiftDistance
+                                                            * shiftRotation
+                                                                    .getCos(), // Move backward in X
+                                            // based
+                                            // on rotation
+                                            reefPose.getY()
+                                                    - shiftDistance
+                                                            * shiftRotation
+                                                                    .getSin(), // Move backward in Y
+                                            // based
+                                            // on rotation
+                                            shiftRotation);
+                            Logger.recordOutput("DriveCommands/reefPose", reefPose);
+                            Logger.recordOutput("DriveCommands/goalPose", goalPose);
 
-                    // Return the actual pathfinding command
-                    return AutoBuilder.pathfindToPose(goalPose, constraints, 0.0);
-                },
-                Set.of(drive));
-    }
-
-    public static Command setGamePieceOriented(Drive drive, boolean value) {
-        return new InstantCommand(() -> drive.isGamePieceOriented = value);
-    }
-
-    public static Command cancelPath(Drive drive) {
-        Logger.recordOutput("Drive/runningPath", false);
-        return new InstantCommand(
-                () -> {
-                    if (drive.currentPathCommand != null) drive.currentPathCommand.cancel();
-                });
-    }
-
-    public Command shootAlign(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            DoubleSupplier omegaSupplier) {
-        return null;
-    }
-
-    public Command processorAlign(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            DoubleSupplier omegaSupplier) {
-        return null;
+                            // Return the actual pathfinding command
+                            return AutoBuilder.pathfindToPose(goalPose, constraints, 0.0);
+                        },
+                        Set.of(drive))
+                .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
     }
 }
