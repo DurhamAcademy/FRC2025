@@ -33,10 +33,10 @@ public class DriveConstants {
     public static final double driveBaseRadius = Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
     public static final Translation2d[] moduleTranslations =
             new Translation2d[] {
-                    new Translation2d(trackWidth / 2.0, wheelBase / 2.0),
-                    new Translation2d(trackWidth / 2.0, -wheelBase / 2.0),
-                    new Translation2d(-trackWidth / 2.0, wheelBase / 2.0),
-                    new Translation2d(-trackWidth / 2.0, -wheelBase / 2.0)
+                new Translation2d(trackWidth / 2.0, wheelBase / 2.0),
+                new Translation2d(trackWidth / 2.0, -wheelBase / 2.0),
+                new Translation2d(-trackWidth / 2.0, wheelBase / 2.0),
+                new Translation2d(-trackWidth / 2.0, -wheelBase / 2.0)
             };
 
     // Zeroed rotation values for each module
