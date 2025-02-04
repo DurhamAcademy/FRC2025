@@ -369,7 +369,7 @@ public class DriveCommands {
         // gets reef goal pose
         Pose2d reefPose = drive.getTargetReefPose();
 
-        double shiftDistance = DriveConstants.robotWidth;
+        double shiftDistance = DriveConstants.robotWidth - .25;
         Rotation2d shiftRotation =
                 Rotation2d.fromDegrees(
                         reefPose.getRotation().getDegrees()
