@@ -384,4 +384,14 @@ public class Drive extends SubsystemBase {
     public void setTargetReef(Constants.ReefConstants reef) {
         targetReef = reef;
     }
+
+    public void setTargetReef(int reef) {
+        targetReef = Constants.ReefConstants.values()[reef];
+    }
+
+    public boolean[] getTargetedReefBooleanArray() {
+        boolean[] reefBoolArray = new boolean[12];
+        reefBoolArray[targetReef.ordinal() - 1] = true;
+        return reefBoolArray;
+    }
 }

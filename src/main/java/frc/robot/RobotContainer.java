@@ -223,6 +223,20 @@ public class RobotContainer {
                                                             && rotationError
                                                                     < 5.0; // <5 cm and < 5 degrees
                                                 })));
+        driverController
+                .leftBumper()
+                .onTrue(
+                        runOnce(
+                                () -> {
+                                    drive.setTargetReef(drive.getTargetReef().ordinal() - 1);
+                                }));
+        driverController
+                .rightBumper()
+                .onTrue(
+                        runOnce(
+                                () -> {
+                                    drive.setTargetReef(drive.getTargetReef().ordinal() + 1);
+                                }));
 
         //        // Align to left reef
         //        driverController.leftBumper().onTrue(run(drive::alignToLeftReef));
@@ -276,6 +290,18 @@ public class RobotContainer {
     }
 
     public void sendDataToSmartDashboard() {
+        for (int i = 1; i <= 12; i++) {
+            final int index = i;
+            SmartDashboard.putData(
+                    "Target Reef",
+                    builder -> {
+                        builder.setSmartDashboardType("Target Reef");
+                        builder.addBooleanProperty(
+                                "Target Reef" + index,
+                                () -> drive.getTargetedReefBooleanArray()[index - 1],
+                                null);
+                    });
+        }
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
