@@ -218,13 +218,11 @@ public class RobotContainer {
 
                                                     // Stop when BOTH distance and orientation are
                                                     // within the thresholds
-                                                    if (distance < 0.05 && rotationError < 5.0) {
-                                                    }
+                                                    if (distance < 0.05 && rotationError < 5.0) {}
                                                     return distance < 0.05
                                                             && rotationError
                                                                     < 5.0; // <5 cm and < 5 degrees
-                                                })
-                        ));
+                                                })));
 
         //        // Align to left reef
         //        driverController.leftBumper().onTrue(run(drive::alignToLeftReef));
