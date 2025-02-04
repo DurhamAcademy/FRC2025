@@ -229,6 +229,7 @@ public class RobotContainer {
                         runOnce(
                                 () -> {
                                     drive.setTargetReef(drive.getTargetReef().ordinal() - 1);
+                                    System.out.println(drive.getTargetReef().ordinal());
                                 }));
         driverController
                 .rightBumper()
@@ -236,6 +237,7 @@ public class RobotContainer {
                         runOnce(
                                 () -> {
                                     drive.setTargetReef(drive.getTargetReef().ordinal() + 1);
+                                    System.out.println(drive.getTargetReef().ordinal());
                                 }));
 
         //        // Align to left reef
@@ -287,6 +289,21 @@ public class RobotContainer {
 
     public SwerveDriveSimulation getDriveSimulation() {
         return driveSimulation;
+    }
+
+    public void sendTargetReef() {
+        for (int i = 1; i <= 12; i++) {
+            final int index = i;
+            SmartDashboard.putData(
+                    "Target Reef",
+                    builder -> {
+                        builder.setSmartDashboardType("Target Reef");
+                        builder.addBooleanProperty(
+                                "Target Reef" + index,
+                                () -> drive.getTargetedReefBooleanArray()[index - 1],
+                                null);
+                    });
+        }
     }
 
     public void sendDataToSmartDashboard() {

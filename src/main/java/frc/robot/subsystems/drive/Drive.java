@@ -37,6 +37,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -386,7 +387,26 @@ public class Drive extends SubsystemBase {
     }
 
     public void setTargetReef(int reef) {
+        if (reef < 0) {
+            reef = 11;
+        }
+        if (reef > 11) {
+            reef = 0;
+        }
         targetReef = Constants.ReefConstants.values()[reef];
+
+        final int r = reef;
+
+        for (int i = 1; i <= 12; i++) {
+            final int index = i;
+            SmartDashboard.putData(
+                    "Target Reef",
+                    builder -> {
+                        builder.setSmartDashboardType("Target Reef");
+                        builder.addBooleanProperty(
+                                "Target Reef" + index, () -> r + 1 == index, null);
+                    });
+        }
     }
 
     public boolean[] getTargetedReefBooleanArray() {
