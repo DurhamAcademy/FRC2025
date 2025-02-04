@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -60,7 +61,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
                                 new ModuleIOSpark(3),
-                                null);
+                                (pose) -> {});
                 break;
 
             case SIM:
@@ -78,7 +79,7 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[1]),
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
-                                driveSimulation);
+                                driveSimulation::setSimulationWorldPose);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -100,7 +101,7 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {},
-                                null);
+                                (pose) -> {});
                 break;
         }
 
@@ -129,6 +130,7 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
+        sendDataToSmartDashboard();
     }
 
     /**
@@ -201,10 +203,10 @@ public class RobotContainer {
         return autoChooser.get();
     }
 
+    /** Sets the robot to a default position and reset's the simulation field. */
     public void resetSimulationField() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-
-        driveSimulation.setSimulationWorldPose(drive.getPose());
+        drive.setPose(drive.getPose());
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 
@@ -223,5 +225,52 @@ public class RobotContainer {
 
     public SwerveDriveSimulation getDriveSimulation() {
         return driveSimulation;
+    }
+
+    public void sendDataToSmartDashboard() {
+        SmartDashboard.putData(
+                "Swerve Drive",
+                builder -> {
+                    builder.setSmartDashboardType("SwerveDrive");
+
+                    builder.addDoubleProperty(
+                            "Front Left Angle",
+                            () -> drive.getModule(0).getAngle().getRadians(),
+                            null);
+                    builder.addDoubleProperty(
+                            "Front Left Velocity",
+                            () -> drive.getModule(0).getVelocityMetersPerSec(),
+                            null);
+
+                    builder.addDoubleProperty(
+                            "Front Right Angle",
+                            () -> drive.getModule(1).getAngle().getRadians(),
+                            null);
+                    builder.addDoubleProperty(
+                            "Front Right Velocity",
+                            () -> drive.getModule(1).getVelocityMetersPerSec(),
+                            null);
+
+                    builder.addDoubleProperty(
+                            "Back Left Angle",
+                            () -> drive.getModule(2).getAngle().getRadians(),
+                            null);
+                    builder.addDoubleProperty(
+                            "Back Left Velocity",
+                            () -> drive.getModule(2).getVelocityMetersPerSec(),
+                            null);
+
+                    builder.addDoubleProperty(
+                            "Back Right Angle",
+                            () -> drive.getModule(3).getAngle().getRadians(),
+                            null);
+                    builder.addDoubleProperty(
+                            "Back Right Velocity",
+                            () -> drive.getModule(3).getVelocityMetersPerSec(),
+                            null);
+
+                    builder.addDoubleProperty(
+                            "Robot Angle", () -> drive.getPose().getRotation().getRadians(), null);
+                });
     }
 }
