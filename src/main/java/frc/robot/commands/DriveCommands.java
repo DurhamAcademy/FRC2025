@@ -16,6 +16,8 @@ package frc.robot.commands;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.HolonomicDriveController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -30,7 +32,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import java.text.DecimalFormat;
@@ -358,7 +359,44 @@ public class DriveCommands {
     ------ ALIGN ------
     -----------------*/
 
-    public static Command alignToTarget(Drive drive) {
+    /**
+     * Calculates the target pose for the robot using the target reef pose
+     *
+     * @param drive, the drive subsystem
+     * @return Pose2d, the target pose for the robot
+     */
+    private static Pose2d calculateRobotTargetPose(Drive drive) {
+        // gets reef goal pose
+        Pose2d reefPose = drive.getTargetReefPose();
+
+        double shiftDistance = DriveConstants.robotWidth;
+        Rotation2d shiftRotation =
+                Rotation2d.fromDegrees(
+                        reefPose.getRotation().getDegrees()
+                                + 180); // Reverse the rotation by 180 degrees
+        Pose2d goalPose =
+                new Pose2d(
+                        reefPose.getX()
+                                - shiftDistance * shiftRotation.getCos(), // Move backward in X
+                        // based
+                        // on rotation
+                        reefPose.getY()
+                                - shiftDistance * shiftRotation.getSin(), // Move backward in Y
+                        // based
+                        // on rotation
+                        shiftRotation);
+        Logger.recordOutput("DriveCommands/reefPose", reefPose);
+        Logger.recordOutput("DriveCommands/goalPose", goalPose);
+        return goalPose;
+    }
+
+    /**
+     * Roughly aligns to target position using AutoBuilder
+     *
+     * @param drive
+     * @return Command, command containing auto builder to goal location
+     */
+    public static Command roughtAlignToTarget(Drive drive) {
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
                         ANGLE_KP,
@@ -376,40 +414,53 @@ public class DriveCommands {
 
         return Commands.defer(
                         () -> {
-                            // Get position of reef
-                            int alliance =
-                                    Constants.getAllianceColor(DriverStation.getAlliance().get());
-                            Pose2d reefPose =
-                                    Constants.LocationConstants.ReefLocations.get(
-                                            drive.getTargetReef())[alliance];
-
-                            double shiftDistance = DriveConstants.robotWidth;
-                            Rotation2d shiftRotation =
-                                    Rotation2d.fromDegrees(
-                                            reefPose.getRotation().getDegrees()
-                                                    + 180); // Reverse the rotation by 180 degrees
-                            Pose2d goalPose =
-                                    new Pose2d(
-                                            reefPose.getX()
-                                                    - shiftDistance
-                                                            * shiftRotation
-                                                                    .getCos(), // Move backward in X
-                                            // based
-                                            // on rotation
-                                            reefPose.getY()
-                                                    - shiftDistance
-                                                            * shiftRotation
-                                                                    .getSin(), // Move backward in Y
-                                            // based
-                                            // on rotation
-                                            shiftRotation);
-                            Logger.recordOutput("DriveCommands/reefPose", reefPose);
-                            Logger.recordOutput("DriveCommands/goalPose", goalPose);
+                            // Get goal position of robot
+                            Pose2d goalPose = calculateRobotTargetPose(drive);
 
                             // Return the actual pathfinding command
                             return AutoBuilder.pathfindToPose(goalPose, constraints, 0.0);
                         },
                         Set.of(drive))
                 .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+    }
+
+    /**
+     * Precisely aligns to target position using chassis speeds & set precision values
+     *
+     * @param drive
+     * @return Command, command containing drive.runVelocity() to goal location
+     */
+    public static Command preciseAlignToTarget(Drive drive) {
+        // makes a new controller with PID values for correction
+        HolonomicDriveController holonomicDriveController =
+                new HolonomicDriveController(
+                        // a value in the kp param is how many meters the robot should adjust by, if
+                        // off by a meter
+                        new PIDController(1, 0, 0),
+                        new PIDController(1, 0, 0),
+                        new ProfiledPIDController(
+                                // max velocity of 1 rotation/s
+                                1,
+                                0,
+                                0,
+                                // max velocity and max acceleration TODO check these values
+                                new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, 3.14)));
+        // sets 5cm and 5 degree precision
+        holonomicDriveController.setTolerance(new Pose2d(0.05, 0.05, Rotation2d.fromDegrees(5)));
+
+        return Commands.run(
+                () -> {
+                    // Get goal pose for robot
+                    Pose2d goalPose = calculateRobotTargetPose(drive);
+
+                    // get speeds to move to goal pose
+                    ChassisSpeeds speeds =
+                            holonomicDriveController.calculate(
+                                    drive.getPose(), goalPose, 0, goalPose.getRotation());
+
+                    // go to goal pose
+                    drive.runVelocity(
+                            ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+                });
     }
 }

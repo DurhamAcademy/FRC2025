@@ -372,6 +372,11 @@ public class Drive extends SubsystemBase {
         return modules[index];
     }
 
+    public Pose2d getTargetReefPose() {
+        int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
+        return Constants.LocationConstants.ReefLocations.get(targetReef)[alliance];
+    }
+
     public Constants.ReefConstants getTargetReef() {
         return targetReef;
     }
