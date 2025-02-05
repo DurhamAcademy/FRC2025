@@ -169,7 +169,7 @@ public class RobotContainer {
                 .b()
                 .whileTrue(
                         Commands.repeatingSequence(
-                                new ConditionalCommand(
+                                        new ConditionalCommand(
                                                 // goalPose > 1m away
                                                 DriveCommands.roughtAlignToTarget(drive),
                                                 // goalPose <= 1m away
@@ -190,39 +190,34 @@ public class RobotContainer {
                                                                             targetPose
                                                                                     .getTranslation());
 
-                                                    // Return true if distance is less than the
-                                                    // threshold
+                                                    // true if distance > threshold distance (m)
                                                     return distance > 1.0;
-                                                })
-                                        .until(
-                                                () -> {
-                                                    // Overall condition to stop this command (robot
-                                                    // must be at goal pose)
-                                                    Pose2d currentPose = drive.getPose();
-                                                    Pose2d targetPose = drive.getTargetReefPose();
-                                                    // Calculate distance and rotation
-                                                    double distance =
-                                                            currentPose
-                                                                    .getTranslation()
-                                                                    .getDistance(
-                                                                            targetPose
-                                                                                    .getTranslation());
-                                                    double rotationError =
-                                                            Math.abs(
-                                                                    currentPose
-                                                                                    .getRotation()
-                                                                                    .getDegrees()
-                                                                            - targetPose
-                                                                                    .getRotation()
-                                                                                    .getDegrees());
+                                                }))
+                                .until(
+                                        () -> {
+                                            // Overall condition to stop this command (robot
+                                            // must be at goal pose)
+                                            Pose2d currentPose = drive.getPose();
+                                            Pose2d targetPose = drive.getTargetReefPose();
+                                            // Calculate distance and rotation
+                                            double distance =
+                                                    currentPose
+                                                            .getTranslation()
+                                                            .getDistance(
+                                                                    targetPose.getTranslation());
+                                            double rotationError =
+                                                    Math.abs(
+                                                            currentPose.getRotation().getDegrees()
+                                                                    - targetPose
+                                                                            .getRotation()
+                                                                            .getDegrees());
 
-                                                    // Stop when BOTH distance and orientation are
-                                                    // within the thresholds
-                                                    if (distance < 0.05 && rotationError < 5.0) {}
-                                                    return distance < 0.05
-                                                            && rotationError
-                                                                    < 5.0; // <5 cm and < 5 degrees
-                                                })));
+                                            // Stop when BOTH distance and orientation are
+                                            // within the thresholds
+                                            return distance < 0.05
+                                                    && rotationError < 5.0; // <5 cm and < 5 degrees
+                                        }));
+
         driverController
                 .leftBumper()
                 .onTrue(
@@ -239,23 +234,6 @@ public class RobotContainer {
                                     drive.setTargetReef(drive.getTargetReef().ordinal() + 1);
                                     System.out.println(drive.getTargetReef().ordinal());
                                 }));
-
-        //        // Align to left reef
-        //        driverController.leftBumper().onTrue(run(drive::alignToLeftReef));
-        //
-        //        // Align to right reef
-        //        driverController
-        //                .a() // todo: switch back to bumper
-        //                .onTrue(runOnce(drive::alignToRightReef));
-
-        //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
-        //            ? () -> drive.setPose(
-        //            driveSimulation
-        //                    .getSimulatedDriveTrainPose()) // reset odometry to actual robot pose
-        // during simulation
-        //            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new
-        // Rotation2d())); // zero gyro
-        //    controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
     }
 
     /**
@@ -291,34 +269,8 @@ public class RobotContainer {
         return driveSimulation;
     }
 
-    public void sendTargetReef() {
-        for (int i = 1; i <= 12; i++) {
-            final int index = i;
-            SmartDashboard.putData(
-                    "Target Reef",
-                    builder -> {
-                        builder.setSmartDashboardType("Target Reef");
-                        builder.addBooleanProperty(
-                                "Target Reef" + index,
-                                () -> drive.getTargetedReefBooleanArray()[index - 1],
-                                null);
-                    });
-        }
-    }
-
     public void sendDataToSmartDashboard() {
-        for (int i = 1; i <= 12; i++) {
-            final int index = i;
-            SmartDashboard.putData(
-                    "Target Reef",
-                    builder -> {
-                        builder.setSmartDashboardType("Target Reef");
-                        builder.addBooleanProperty(
-                                "Target Reef" + index,
-                                () -> drive.getTargetedReefBooleanArray()[index - 1],
-                                null);
-                    });
-        }
+        drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {

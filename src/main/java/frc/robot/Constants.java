@@ -211,7 +211,7 @@ public final class Constants {
                         double changeYLarge = Units.inchesToMeters(31.612332);
 
                         put(
-                                ReefConstants.ONE,
+                                ReefConstants.SEVEN,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX - changeXLarge,
@@ -223,7 +223,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(0))
                                 });
                         put(
-                                ReefConstants.TWO,
+                                ReefConstants.SIX,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX - changeXLarge,
@@ -235,7 +235,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(0))
                                 });
                         put(
-                                ReefConstants.THREE,
+                                ReefConstants.FIVE,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX - changeXMedium,
@@ -259,7 +259,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(60))
                                 });
                         put(
-                                ReefConstants.FIVE,
+                                ReefConstants.THREE,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX + changeXSmall,
@@ -271,7 +271,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(120))
                                 });
                         put(
-                                ReefConstants.SIX,
+                                ReefConstants.TWO,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX + changeXMedium,
@@ -283,7 +283,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(120))
                                 });
                         put(
-                                ReefConstants.SEVEN,
+                                ReefConstants.ONE,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX + changeXLarge,
@@ -295,7 +295,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(180))
                                 });
                         put(
-                                ReefConstants.EIGHT,
+                                ReefConstants.TWELVE,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX + changeXLarge,
@@ -307,7 +307,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(180))
                                 });
                         put(
-                                ReefConstants.NINE,
+                                ReefConstants.ELEVEN,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX + changeXMedium,
@@ -331,7 +331,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(240))
                                 });
                         put(
-                                ReefConstants.ELEVEN,
+                                ReefConstants.NINE,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX - changeXSmall,
@@ -343,7 +343,7 @@ public final class Constants {
                                             Rotation2d.fromDegrees(300))
                                 });
                         put(
-                                ReefConstants.TWELVE,
+                                ReefConstants.EIGHT,
                                 new Pose2d[] {
                                     new Pose2d(
                                             blueX - changeXMedium,

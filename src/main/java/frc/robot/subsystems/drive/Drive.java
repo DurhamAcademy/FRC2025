@@ -395,8 +395,10 @@ public class Drive extends SubsystemBase {
         }
         targetReef = Constants.ReefConstants.values()[reef];
 
-        final int r = reef;
+        updateDashboardReefVisualization(reef);
+    }
 
+    public void updateDashboardReefVisualization(int reefIndex) {
         for (int i = 1; i <= 12; i++) {
             final int index = i;
             SmartDashboard.putData(
@@ -404,14 +406,8 @@ public class Drive extends SubsystemBase {
                     builder -> {
                         builder.setSmartDashboardType("Target Reef");
                         builder.addBooleanProperty(
-                                "Target Reef" + index, () -> r + 1 == index, null);
+                                "Target Reef" + index, () -> reefIndex + 1 == index, null);
                     });
         }
-    }
-
-    public boolean[] getTargetedReefBooleanArray() {
-        boolean[] reefBoolArray = new boolean[12];
-        reefBoolArray[targetReef.ordinal() - 1] = true;
-        return reefBoolArray;
     }
 }

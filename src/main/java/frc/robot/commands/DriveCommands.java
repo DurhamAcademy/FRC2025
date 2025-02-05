@@ -385,8 +385,9 @@ public class DriveCommands {
                         // based
                         // on rotation
                         shiftRotation);
-        Logger.recordOutput("DriveCommands/reefPose", reefPose);
+
         Logger.recordOutput("DriveCommands/goalPose", goalPose);
+
         return goalPose;
     }
 
@@ -450,17 +451,24 @@ public class DriveCommands {
 
         return Commands.run(
                 () -> {
+
                     // Get goal pose for robot
                     Pose2d goalPose = calculateRobotTargetPose(drive);
 
-                    // get speeds to move to goal pose
-                    ChassisSpeeds speeds =
-                            holonomicDriveController.calculate(
-                                    drive.getPose(), goalPose, 0, goalPose.getRotation());
+                    // todo get rid of weirdness when auto align button held for too long
+                    // if already on target, don't make small adjustments that compound to failure
+                    // (jank bug fix)
+                    if (drive.getPose().getTranslation().getDistance(goalPose.getTranslation())
+                            > 0.05) {
+                        // get speeds to move to goal pose
+                        ChassisSpeeds speeds =
+                                holonomicDriveController.calculate(
+                                        drive.getPose(), goalPose, 0, goalPose.getRotation());
 
-                    // go to goal pose
-                    drive.runVelocity(
-                            ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+                        // go to goal pose
+                        drive.runVelocity(
+                                ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+                    }
                 });
     }
 }
