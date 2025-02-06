@@ -445,30 +445,46 @@ public class DriveCommands {
                                 0,
                                 0,
                                 // max velocity and max acceleration TODO check these values
-                                new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, 3.14)));
+                                new TrapezoidProfile.Constraints(1, 3.14)));
+        holonomicDriveController.getThetaController().enableContinuousInput(-Math.PI, Math.PI);
         // sets 5cm and 5 degree precision
         holonomicDriveController.setTolerance(new Pose2d(0.05, 0.05, Rotation2d.fromDegrees(5)));
 
         return Commands.run(
-                () -> {
+                        () -> {
 
-                    // Get goal pose for robot
-                    Pose2d goalPose = calculateRobotTargetPose(drive);
+                            // Get goal pose for robot
+                            Pose2d goalPose = calculateRobotTargetPose(drive);
 
-                    // todo get rid of weirdness when auto align button held for too long
-                    // if already on target, don't make small adjustments that compound to failure
-                    // (jank bug fix)
-                    if (drive.getPose().getTranslation().getDistance(goalPose.getTranslation())
-                            > 0.05) {
-                        // get speeds to move to goal pose
-                        ChassisSpeeds speeds =
-                                holonomicDriveController.calculate(
-                                        drive.getPose(), goalPose, 0, goalPose.getRotation());
+                            double distance =
+                                    drive.getPose()
+                                            .getTranslation()
+                                            .getDistance(goalPose.getTranslation());
+                            double rotationError =
+                                    Math.abs(
+                                            drive.getPose().getRotation().getDegrees()
+                                                    - goalPose.getRotation().getDegrees());
 
-                        // go to goal pose
-                        drive.runVelocity(
-                                ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
-                    }
-                });
+                            // only run if not on target
+                            if (distance > 0.05 && rotationError > 2.0) {
+                                // get speeds to move to goal pose
+                                ChassisSpeeds speeds =
+                                        holonomicDriveController.calculate(
+                                                drive.getPose(),
+                                                goalPose,
+                                                0,
+                                                goalPose.getRotation());
+
+                                // go to goal pose
+                                // TODO figure out why this isn't field relative?
+                                drive.runVelocity(speeds);
+                            }
+                        },
+                        drive)
+                .beforeStarting(
+                        () ->
+                                holonomicDriveController
+                                        .getThetaController()
+                                        .reset(drive.getRotation().getRadians()));
     }
 }

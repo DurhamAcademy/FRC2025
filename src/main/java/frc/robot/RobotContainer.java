@@ -63,7 +63,8 @@ public class RobotContainer {
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
                                 new ModuleIOSpark(3),
-                                (pose) -> {});
+                                (pose) -> {},
+                                this);
                 break;
 
             case SIM:
@@ -81,7 +82,8 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[1]),
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
-                                driveSimulation::setSimulationWorldPose);
+                                driveSimulation::setSimulationWorldPose,
+                                this);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -103,7 +105,8 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {},
-                                (pose) -> {});
+                                (pose) -> {},
+                                this);
                 break;
         }
 
@@ -191,7 +194,7 @@ public class RobotContainer {
                                                                                     .getTranslation());
 
                                                     // true if distance > threshold distance (m)
-                                                    return distance > 1.0;
+                                                    return distance > 1;
                                                 }))
                                 .until(
                                         () -> {
@@ -215,7 +218,7 @@ public class RobotContainer {
                                             // Stop when BOTH distance and orientation are
                                             // within the thresholds
                                             return distance < 0.05
-                                                    && rotationError < 5.0; // <5 cm and < 5 degrees
+                                                    && rotationError < 2.0; // <5 cm and < 5 degrees
                                         }));
 
         driverController

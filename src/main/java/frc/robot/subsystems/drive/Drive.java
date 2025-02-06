@@ -43,6 +43,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.RobotContainer;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -62,6 +63,7 @@ public class Drive extends SubsystemBase {
     private final Consumer<Pose2d> resetSimulationPoseCallBack;
     private final SysIdRoutine sysId;
     private Vision vision;
+    private RobotContainer robotContainer;
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
     private final SwerveModulePosition[] lastModulePositions = // For delta tracking
@@ -86,7 +88,9 @@ public class Drive extends SubsystemBase {
             ModuleIO frModuleIO,
             ModuleIO blModuleIO,
             ModuleIO brModuleIO,
-            Consumer<Pose2d> resetSimulationPoseCallBack) {
+            Consumer<Pose2d> resetSimulationPoseCallBack,
+            RobotContainer robotContainer) {
+        this.robotContainer = robotContainer;
         this.gyroIO = gyroIO;
         this.resetSimulationPoseCallBack = resetSimulationPoseCallBack;
         modules[0] = new Module(flModuleIO, 0);
@@ -341,11 +345,17 @@ public class Drive extends SubsystemBase {
     /** Returns the current odometry pose. */
     @AutoLogOutput(key = "Odometry/Robot")
     public Pose2d getPose() {
+        if (Constants.currentMode == Mode.SIM && robotContainer.driveSimulation != null) {
+            return robotContainer.driveSimulation.getSimulatedDriveTrainPose();
+        }
         return poseEstimator.getEstimatedPosition();
     }
 
     /** Returns the current odometry rotation. */
     public Rotation2d getRotation() {
+        if (Constants.currentMode == Mode.SIM && robotContainer.driveSimulation != null) {
+            return robotContainer.driveSimulation.getSimulatedDriveTrainPose().getRotation();
+        }
         return getPose().getRotation();
     }
 
