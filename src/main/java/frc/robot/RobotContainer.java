@@ -170,6 +170,7 @@ public class RobotContainer {
         // Align to the closest reef
         driverController
                 .b()
+                .onTrue()
                 .whileTrue(
                         Commands.repeatingSequence(
                                         new ConditionalCommand(
