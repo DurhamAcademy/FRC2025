@@ -152,8 +152,6 @@ public class Drive extends SubsystemBase {
             module.periodic();
         }
         odometryLock.unlock();
-        Logger.recordOutput("Drive/poseEstimate", poseEstimator.getEstimatedPosition());
-        Logger.recordOutput("Drive/reefToAlign", targetReef);
 
         // Stop moving when disabled
         if (DriverStation.isDisabled()) {
@@ -162,17 +160,6 @@ public class Drive extends SubsystemBase {
             }
         }
 
-        if (DriverStation.getAlliance().isPresent()) {
-            Pose2d estimatedReefPose =
-                    poseEstimator
-                            .getEstimatedPosition()
-                            .nearest(
-                                    Constants.LocationConstants.PosesOfAllReefLocations(
-                                            Constants.getAllianceColor(
-                                                    DriverStation.getAlliance().get())));
-
-            Logger.recordOutput("Drive/closestReefPose", estimatedReefPose);
-        }
         // Log empty setpoint states when disabled
         if (DriverStation.isDisabled()) {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});

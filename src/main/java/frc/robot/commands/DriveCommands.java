@@ -386,7 +386,7 @@ public class DriveCommands {
                         // on rotation
                         shiftRotation);
 
-        Logger.recordOutput("DriveCommands/goalPose", goalPose);
+        Logger.recordOutput("AutoAlign/goalPose", goalPose);
 
         return goalPose;
     }
