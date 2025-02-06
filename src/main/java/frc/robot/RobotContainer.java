@@ -132,8 +132,8 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
-        sendDataToSmartDashboard();
         configureSmartDashboard();
+        sendDataToSmartDashboard();
     }
 
     private void configureSmartDashboard() {
@@ -170,7 +170,10 @@ public class RobotContainer {
 
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
-                        drive, () -> -yInput, () -> -xInput, () -> -controller.getRightX()));
+                        drive,
+                        () -> -controller.getLeftY(),
+                        () -> -controller.getLeftX(),
+                        () -> -controller.getRightX()));
 
         // Lock to 0° when A button is held
         controller

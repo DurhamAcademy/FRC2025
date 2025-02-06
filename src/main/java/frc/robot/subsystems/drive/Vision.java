@@ -130,7 +130,7 @@ public class Vision extends SubsystemBase {
     @Override
     public void periodic() {
         //        poseEstimator.update(gyro.yawPosition, modulePositions); // update rotation
-        // updateEstimatedPose(); // use camera data to estimate position
+        updateEstimatedPose(); // use camera data to estimate position
         //        currentPosition = getPosition();
         //        logRobotPosition(); // show field visualization in shuffleboard
     }
