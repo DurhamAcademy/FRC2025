@@ -163,21 +163,6 @@ public class Robot extends LoggedRobot {
     /** This function is called once when the robot is first started up. */
     @Override
     public void simulationInit() {
-        int index = 1;
-        // Iterate through all enum values, logging all april tag locations
-        for (AprilTagLocations location : AprilTagLocations.values()) {
-            Logger.recordOutput("AprilTagLocations/" + index, location.getValue());
-            index++;
-        }
-        index = 1;
-        Pose2d[] test =
-                Constants.LocationConstants.PosesOfAllReefLocations(0).toArray(new Pose2d[0]);
-
-        Logger.recordOutput("ReefLocations/Array", test);
-        for (Pose2d location : Constants.LocationConstants.PosesOfAllReefLocations(0)) {
-            Logger.recordOutput("ReefLocations/" + index, location);
-            index++;
-        }
     }
 
     /** This function is called periodically whilst in simulation. */
