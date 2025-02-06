@@ -50,6 +50,8 @@ public class RobotContainer {
     // inverse axises
     private boolean invertX = false;
     private boolean invertY = false;
+    private double xDirect = 1;
+    private double yDirect = 1;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -106,7 +108,6 @@ public class RobotContainer {
                                 (pose) -> {});
                 break;
         }
-
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -131,29 +132,22 @@ public class RobotContainer {
                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
-        configureButtonBindings();
-        configureSmartDashboard();
         sendDataToSmartDashboard();
+        configureButtonBindings();
     }
 
-    private void configureSmartDashboard() {
-        // create buttons on smart dashboard
-        SmartDashboard.putBoolean("Invert X", invertX);
-        SmartDashboard.putBoolean("Invert Y", invertY);
-    }
+    public void getSwerveDirection() {
 
-    public void updateControls() {
-        // read the toggle states from SmartDashboard
-        invertX = SmartDashboard.getBoolean("Invert X", false);
-        invertY = SmartDashboard.getBoolean("Invert Y", false);
-    }
-
-    public double getSwerveXInput(double joystickX) {
-        return invertX ? -joystickX : joystickX;
-    }
-
-    public double getSwerveYInput(double joystickY) {
-        return invertY ? -joystickY : joystickY;
+        if (invertX) {
+            xDirect = -1;
+        } else {
+            xDirect = 1;
+        }
+        if (invertY) {
+            yDirect = -1;
+        } else {
+            yDirect = 1;
+        }
     }
 
     /**
@@ -164,15 +158,11 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
-        updateControls();
-        double xInput = getSwerveXInput(controller.getLeftX());
-        double yInput = getSwerveYInput(controller.getLeftY());
-
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -controller.getLeftY(),
-                        () -> -controller.getLeftX(),
+                        () -> (yDirect * controller.getLeftY()),
+                        () -> (xDirect * controller.getLeftX()),
                         () -> -controller.getRightX()));
 
         // Lock to 0° when A button is held
@@ -181,8 +171,8 @@ public class RobotContainer {
                 .whileTrue(
                         DriveCommands.reefAlign(
                                         drive,
-                                        () -> -yInput,
-                                        () -> -xInput,
+                                        () -> (yDirect * controller.getLeftY()),
+                                        () -> (xDirect * controller.getLeftX()),
                                         drive::getClosestReefPosition)
                                 .getCommand());
 
@@ -230,7 +220,8 @@ public class RobotContainer {
 
     public void displaySimFieldToAdvantageScope() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-
+        Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXIES/X INVERT", false));
+        Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXIES/Y INVERT", false));
         Logger.recordOutput(
                 "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
@@ -242,6 +233,14 @@ public class RobotContainer {
     }
 
     public void sendDataToSmartDashboard() {
+        SmartDashboard.putData(
+                "INVERT AXIES",
+                builder -> {
+                    builder.setSmartDashboardType("boolean");
+                    builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
+                    builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
+                });
+
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
