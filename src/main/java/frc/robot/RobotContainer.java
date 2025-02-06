@@ -170,7 +170,7 @@ public class RobotContainer {
         // Align to the closest reef
         driverController
                 .b()
-                .onTrue()
+                .onTrue(runOnce(drive::setTargetReefToClosest, drive))
                 .whileTrue(
                         Commands.repeatingSequence(
                                         new ConditionalCommand(
@@ -275,6 +275,17 @@ public class RobotContainer {
 
     public void sendDataToSmartDashboard() {
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
+        SmartDashboard.putData(
+                "Override",
+                builder -> {
+                    builder.setSmartDashboardType("Boolean");
+                    builder.addBooleanProperty(
+                            "Override Reef AA",
+                            // Getter to read the current value
+                            () -> drive.overrideReefAutoAlign,
+                            // Setter to update the value
+                            val -> drive.overrideReefAutoAlign = val);
+                });
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {

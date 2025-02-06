@@ -45,6 +45,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotContainer;
 import frc.robot.util.LocalADStarAK;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -81,6 +82,7 @@ public class Drive extends SubsystemBase {
                     new Pose2d(3, 3, new Rotation2d()));
 
     public Constants.ReefConstants targetReef = Constants.ReefConstants.SEVEN;
+    public boolean overrideReefAutoAlign = false;
 
     public Drive(
             GyroIO gyroIO,
@@ -383,8 +385,25 @@ public class Drive extends SubsystemBase {
         return modules[index];
     }
 
-    public void setTargetReefToClosest(){
+    public void setTargetReefToClosest() {
+        if (!overrideReefAutoAlign) {
+            int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
 
+            // Find closest reef position to current pose
+            Pose2d estimatedReefPose =
+                    poseEstimator
+                            .getEstimatedPosition()
+                            .nearest(Constants.LocationConstants.PosesOfAllReefLocations(alliance));
+
+            // Find corresponding reef constant value
+            targetReef =
+                    Constants.LocationConstants.ReefLocations.entrySet().stream()
+                            .filter(entry -> entry.getValue()[alliance].equals(estimatedReefPose))
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(Constants.ReefConstants.SIX);
+            updateDashboardReefVisualization(targetReef.ordinal());
+        }
     }
 
     public Pose2d getTargetReefPose() {
@@ -418,7 +437,7 @@ public class Drive extends SubsystemBase {
             SmartDashboard.putData(
                     "Target Reef",
                     builder -> {
-                        builder.setSmartDashboardType("Target Reef");
+                        builder.setSmartDashboardType("Boolean");
                         builder.addBooleanProperty(
                                 "Target Reef" + index, () -> reefIndex + 1 == index, null);
                     });
