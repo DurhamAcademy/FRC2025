@@ -220,8 +220,8 @@ public class RobotContainer {
 
     public void displaySimFieldToAdvantageScope() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-        Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXIES/X INVERT", false));
-        Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXIES/Y INVERT", false));
+        Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
+        Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
         Logger.recordOutput(
                 "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
@@ -234,7 +234,7 @@ public class RobotContainer {
 
     public void sendDataToSmartDashboard() {
         SmartDashboard.putData(
-                "INVERT AXIES",
+                "INVERT AXES",
                 builder -> {
                     builder.setSmartDashboardType("boolean");
                     builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
