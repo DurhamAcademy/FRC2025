@@ -175,7 +175,7 @@ public class RobotContainer {
                         Commands.repeatingSequence(
                                         new ConditionalCommand(
                                                 // goalPose > 1m away
-                                                DriveCommands.roughtAlignToTarget(drive),
+                                                DriveCommands.roughAlignToTarget(drive),
                                                 // goalPose <= 1m away
                                                 DriveCommands.preciseAlignToTarget(drive),
                                                 () -> {

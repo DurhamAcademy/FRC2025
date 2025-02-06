@@ -397,7 +397,7 @@ public class DriveCommands {
      * @param drive
      * @return Command, command containing auto builder to goal location
      */
-    public static Command roughtAlignToTarget(Drive drive) {
+    public static Command roughAlignToTarget(Drive drive) {
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
                         ANGLE_KP,
