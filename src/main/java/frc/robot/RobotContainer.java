@@ -47,6 +47,10 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
+    // inverse axises
+    private boolean invertX = false;
+    private boolean invertY = false;
+
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
@@ -129,6 +133,27 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
         sendDataToSmartDashboard();
+        configureSmartDashboard();
+    }
+
+    private void configureSmartDashboard() {
+        // create buttons on smart dashboard
+        SmartDashboard.putBoolean("Invert X", invertX);
+        SmartDashboard.putBoolean("Invert Y", invertY);
+    }
+
+    public void updateControls() {
+        // read the toggle states from SmartDashboard
+        invertX = SmartDashboard.getBoolean("Invert X", false);
+        invertY = SmartDashboard.getBoolean("Invert Y", false);
+    }
+
+    public double getSwerveXInput(double joystickX) {
+        return invertX ? -joystickX : joystickX;
+    }
+
+    public double getSwerveYInput(double joystickY) {
+        return invertY ? -joystickY : joystickY;
     }
 
     /**
@@ -139,12 +164,13 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
+        updateControls();
+        double xInput = getSwerveXInput(controller.getLeftX());
+        double yInput = getSwerveYInput(controller.getLeftY());
+
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
-                        drive,
-                        () -> -controller.getLeftY(),
-                        () -> -controller.getLeftX(),
-                        () -> -controller.getRightX()));
+                        drive, () -> -yInput, () -> -xInput, () -> -controller.getRightX()));
 
         // Lock to 0° when A button is held
         controller
@@ -152,8 +178,8 @@ public class RobotContainer {
                 .whileTrue(
                         DriveCommands.reefAlign(
                                         drive,
-                                        () -> -controller.getLeftY(),
-                                        () -> -controller.getLeftX(),
+                                        () -> -yInput,
+                                        () -> -xInput,
                                         drive::getClosestReefPosition)
                                 .getCommand());
 
