@@ -14,6 +14,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
+import org.littletonrobotics.junction.Logger;
 
 public class ElevatorIOSparkMax implements ElevatorIO {
     // some credit to https://chiefdelphi.com/t/elevator-subsystem-example-code/482648
@@ -38,7 +39,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         followerMotor = new SparkMax(ElevatorConstants.rightElevatorCanId, MotorType.kBrushless);
 
         SparkMaxConfig followerConfig = new SparkMaxConfig();
-        followerConfig.follow(primaryMotor);
+        followerConfig.follow(primaryMotor, true);
 
         followerMotor.configure(followerConfig, null, null);
 
@@ -64,7 +65,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
         constraints =
                 new TrapezoidProfile.Constraints(
-                        ElevatorConstants.maxVelocity, ElevatorConstants.maxAcceleration);
+                        ElevatorConstants.maxVelocity, // in/s
+                        ElevatorConstants.maxAcceleration); // in/s
         currentState = new TrapezoidProfile.State(0, 0);
         goalState = new TrapezoidProfile.State(0, 0);
         profile = new TrapezoidProfile(constraints);
@@ -106,15 +108,15 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
         inputs.isLimitSwitchPressed = limitSwitch.get();
-        inputs.leftHeightInches = primaryEncoder.getPosition() / ElevatorConstants.countsPerInch;
-        inputs.rightHeightInches = followerEncoder.getPosition() / ElevatorConstants.countsPerInch;
+        inputs.leftHeightInches = primaryEncoder.getPosition() * ElevatorConstants.countsPerInch;
+        inputs.rightHeightInches = followerEncoder.getPosition() * ElevatorConstants.countsPerInch;
         inputs.targetHeightInches = targetHeightInches;
         inputs.velocityInches = primaryEncoder.getVelocity() / ElevatorConstants.countsPerInch;
         inputs.isAtTargetLevel =
                 Math.abs(inputs.leftHeightInches - targetHeightInches) < 0.5
                         && Math.abs(inputs.velocityInches) < 0.1;
-        inputs.leftVoltage = primaryMotor.getBusVoltage();
-        inputs.rightVoltage = followerMotor.getBusVoltage();
+        inputs.leftVoltage = primaryMotor.getAppliedOutput() * primaryMotor.getBusVoltage();
+        inputs.rightVoltage = followerMotor.getAppliedOutput() * followerMotor.getBusVoltage();
     }
 
     @Override
@@ -123,8 +125,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
                 MathUtil.clamp(
                         heightInches, ElevatorConstants.minHeight, ElevatorConstants.maxHeight);
 
-        goalState =
-                new TrapezoidProfile.State(targetHeightInches * ElevatorConstants.countsPerInch, 0);
+        goalState = new TrapezoidProfile.State(targetHeightInches, 0);
     }
 
     @Override
@@ -134,6 +135,9 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         double ffVolts = feedForward.calculate(currentState.velocity);
 
         // Use the profiler's position as the target for the motor controller
+        Logger.recordOutput("Elevator/ProfilerVelocity", currentState.velocity);
+        Logger.recordOutput("Elevator/ProfilerPosition", currentState.position);
+
         primaryController.setReference(
                 currentState.position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
     }

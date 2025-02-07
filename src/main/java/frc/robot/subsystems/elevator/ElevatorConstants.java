@@ -13,7 +13,7 @@ public class ElevatorConstants {
     // Elevator PID Configuration
     // Manually tune PID?
     // TODO: FIGURE OUT
-    public static final double elevatorKp = 0.0;
+    public static final double elevatorKp = 1.0;
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
     // Elevator FF can be found through SysID
@@ -30,10 +30,9 @@ public class ElevatorConstants {
     public static final double L4 = 21.0; // max height
 
     // TODO: MEASURE
-    public static final double maxVelocity = 0.0;
-    public static final double maxAcceleration = 0.0;
-    public static final double minHeight =
-            ZERO; // i wanted to add just for code clarity but idk if i should remove or nah
+    public static final double maxVelocity = 1.0;
+    public static final double maxAcceleration = 1.0;
+    public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
-    public static final double countsPerInch = 0.1;
+    public static final double countsPerInch = 35;
 }
