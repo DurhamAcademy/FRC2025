@@ -217,9 +217,7 @@ public class DriveCommands {
                         }),
 
                 // Allow modules to orient
-                Commands.run(
-                                () -> drive.runCharacterization(0.0),
-                                drive)
+                Commands.run(() -> drive.runCharacterization(0.0), drive)
                         .withTimeout(FF_START_DELAY),
 
                 // Start timer
@@ -271,8 +269,7 @@ public class DriveCommands {
                 // Drive control sequence
                 Commands.sequence(
                         // Reset acceleration limiter
-                        Commands.runOnce(
-                                () -> limiter.reset(0.0)),
+                        Commands.runOnce(() -> limiter.reset(0.0)),
 
                         // Turn in place, accelerating up to full speed
                         Commands.run(

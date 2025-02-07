@@ -224,12 +224,10 @@ public class RobotContainer {
 
         driverController
                 .leftBumper()
-                .onTrue(
-                        runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
+                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
         driverController
                 .rightBumper()
-                .onTrue(
-                        runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
+                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
     }
 
     /**

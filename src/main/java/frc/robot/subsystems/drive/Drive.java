@@ -121,8 +121,8 @@ public class Drive extends SubsystemBase {
         Pathfinding.setPathfinder(new LocalADStarAK());
         PathPlannerLogging.setLogActivePathCallback(
                 (activePath) ->
-                    Logger.recordOutput(
-                            "Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
+                        Logger.recordOutput(
+                                "Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
         PathPlannerLogging.setLogTargetPoseCallback(
                 (targetPose) -> {
                     Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
@@ -393,7 +393,10 @@ public class Drive extends SubsystemBase {
     }
 
     public Pose2d getTargetReefPose() {
-        int alliance = DriverStation.getAlliance().isPresent() ? Constants.getAllianceColor(DriverStation.getAlliance().get()) : 0;
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
         return Constants.LocationConstants.ReefLocations.get(targetReef)[alliance];
     }
 
@@ -406,7 +409,10 @@ public class Drive extends SubsystemBase {
     }
 
     public void setTargetReef(int reef) {
-        reef = (reef + 12) % 12; // if reef is less than 0 or greater than 11 it will loop around (ex 11 -> 12 would turn into 11 -> 0 for target reef
+        reef =
+                (reef + 12)
+                        % 12; // if reef is less than 0 or greater than 11 it will loop around (ex
+        // 11 -> 12 would turn into 11 -> 0 for target reef
         targetReef = Constants.ReefConstants.values()[reef];
 
         updateDashboardReefVisualization(reef);
