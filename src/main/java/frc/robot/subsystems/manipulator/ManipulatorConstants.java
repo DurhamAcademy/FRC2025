@@ -1,0 +1,26 @@
+package frc.robot.subsystems.manipulator;
+
+public class ManipulatorConstants {
+    // Device CAN IDs
+    // update when robot built
+    public static final int MANIPULATOR_ROLLERL_CanId = -1;
+    public static final int MANIPULATOR_ROLLERR_CanId = -1;
+
+    // the gear ratio of the gear box
+    public static final double manipulatorGearRatio = -1;
+
+    // Manipulator PID Configuration
+    // TODO: FIGURE OUT
+    public static final double manipulatorKp = 0.0;
+    public static final double manipulatorKi = 0.0;
+    public static final double manipulatorKd = 0.0;
+    // Manipulator FF can be found through SysID
+    public static final double manipulatorKs = 0.0;
+    public static final double manipulatorKg = 0.0;
+    public static final double manipulatorKv = 0.0;
+    public static final double manipulatorKa = 0.0;
+
+    // TODO: MEASURE
+    public static final double maxVelocity = 0.0;
+    public static final double maxAcceleration = 0.0;
+}
