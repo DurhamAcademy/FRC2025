@@ -63,8 +63,8 @@ public class Drive extends SubsystemBase {
     static final Lock odometryLock = new ReentrantLock();
     private final Consumer<Pose2d> resetSimulationPoseCallBack;
     private final SysIdRoutine sysId;
-    private Vision vision;
-    private RobotContainer robotContainer;
+    private final Vision vision;
+    private final RobotContainer robotContainer;
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
     private final SwerveModulePosition[] lastModulePositions = // For delta tracking
@@ -120,10 +120,9 @@ public class Drive extends SubsystemBase {
                 this);
         Pathfinding.setPathfinder(new LocalADStarAK());
         PathPlannerLogging.setLogActivePathCallback(
-                (activePath) -> {
+                (activePath) ->
                     Logger.recordOutput(
-                            "Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-                });
+                            "Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
         PathPlannerLogging.setLogTargetPoseCallback(
                 (targetPose) -> {
                     Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
@@ -334,16 +333,16 @@ public class Drive extends SubsystemBase {
     /** Returns the current odometry pose. */
     @AutoLogOutput(key = "Odometry/Robot")
     public Pose2d getPose() {
-        if (Constants.currentMode == Mode.SIM && robotContainer.driveSimulation != null) {
-            return robotContainer.driveSimulation.getSimulatedDriveTrainPose();
+        if (Constants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
+            return robotContainer.getDriveSimulation().getSimulatedDriveTrainPose();
         }
         return poseEstimator.getEstimatedPosition();
     }
 
     /** Returns the current odometry rotation. */
     public Rotation2d getRotation() {
-        if (Constants.currentMode == Mode.SIM && robotContainer.driveSimulation != null) {
-            return robotContainer.driveSimulation.getSimulatedDriveTrainPose().getRotation();
+        if (Constants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
+            return robotContainer.getDriveSimulation().getSimulatedDriveTrainPose().getRotation();
         }
         return getPose().getRotation();
     }
@@ -373,7 +372,7 @@ public class Drive extends SubsystemBase {
     }
 
     public void setTargetReefToClosest() {
-        if (!overrideReefAutoAlign) {
+        if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
             int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
 
             // Find closest reef position to current pose
@@ -394,7 +393,7 @@ public class Drive extends SubsystemBase {
     }
 
     public Pose2d getTargetReefPose() {
-        int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
+        int alliance = DriverStation.getAlliance().isPresent() ? Constants.getAllianceColor(DriverStation.getAlliance().get()) : 0;
         return Constants.LocationConstants.ReefLocations.get(targetReef)[alliance];
     }
 
@@ -407,12 +406,7 @@ public class Drive extends SubsystemBase {
     }
 
     public void setTargetReef(int reef) {
-        if (reef < 0) {
-            reef = 11;
-        }
-        if (reef > 11) {
-            reef = 0;
-        }
+        reef = (reef + 12) % 12; // if reef is less than 0 or greater than 11 it will loop around (ex 11 -> 12 would turn into 11 -> 0 for target reef
         targetReef = Constants.ReefConstants.values()[reef];
 
         updateDashboardReefVisualization(reef);

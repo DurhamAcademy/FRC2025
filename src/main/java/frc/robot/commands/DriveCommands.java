@@ -218,9 +218,7 @@ public class DriveCommands {
 
                 // Allow modules to orient
                 Commands.run(
-                                () -> {
-                                    drive.runCharacterization(0.0);
-                                },
+                                () -> drive.runCharacterization(0.0),
                                 drive)
                         .withTimeout(FF_START_DELAY),
 
@@ -274,9 +272,7 @@ public class DriveCommands {
                 Commands.sequence(
                         // Reset acceleration limiter
                         Commands.runOnce(
-                                () -> {
-                                    limiter.reset(0.0);
-                                }),
+                                () -> limiter.reset(0.0)),
 
                         // Turn in place, accelerating up to full speed
                         Commands.run(
@@ -394,7 +390,7 @@ public class DriveCommands {
     /**
      * Roughly aligns to target position using AutoBuilder
      *
-     * @param drive
+     * @param drive subsystem
      * @return Command, command containing auto builder to goal location
      */
     public static Command roughAlignToTarget(Drive drive) {
@@ -428,7 +424,7 @@ public class DriveCommands {
     /**
      * Precisely aligns to target position using chassis speeds & set precision values
      *
-     * @param drive
+     * @param drive subsystem
      * @return Command, command containing drive.runVelocity() to goal location
      */
     public static Command preciseAlignToTarget(Drive drive) {

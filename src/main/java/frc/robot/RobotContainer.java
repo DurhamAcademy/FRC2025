@@ -42,7 +42,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
-    public SwerveDriveSimulation driveSimulation = null;
+    private SwerveDriveSimulation driveSimulation = null;
 
     // Controllers
     private final CommandXboxController driverController = new CommandXboxController(0);
@@ -162,7 +162,7 @@ public class RobotContainer {
                                 drive,
                                 () -> -driverController.getLeftY(),
                                 () -> -driverController.getLeftX(),
-                                () -> new Rotation2d()));
+                                Rotation2d::new));
 
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(runOnce(drive::stopWithX, drive));
@@ -225,19 +225,11 @@ public class RobotContainer {
         driverController
                 .leftBumper()
                 .onTrue(
-                        runOnce(
-                                () -> {
-                                    drive.setTargetReef(drive.getTargetReef().ordinal() - 1);
-                                    System.out.println(drive.getTargetReef().ordinal());
-                                }));
+                        runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
         driverController
                 .rightBumper()
                 .onTrue(
-                        runOnce(
-                                () -> {
-                                    drive.setTargetReef(drive.getTargetReef().ordinal() + 1);
-                                    System.out.println(drive.getTargetReef().ordinal());
-                                }));
+                        runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
     }
 
     /**
@@ -252,7 +244,6 @@ public class RobotContainer {
     /** Sets the robot to a default position and reset's the simulation field. */
     public void resetSimulationField() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-        drive.setPose(drive.getPose());
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 
