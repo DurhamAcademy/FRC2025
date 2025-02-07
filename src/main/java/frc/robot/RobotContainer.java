@@ -13,6 +13,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.wpilibj2.command.Commands.*;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,6 +23,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -41,8 +44,9 @@ public class RobotContainer {
     private final Drive drive;
     private SwerveDriveSimulation driveSimulation = null;
 
-    // Controller
-    private final CommandXboxController controller = new CommandXboxController(0);
+    // Controllers
+    private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController operatorController = new CommandXboxController(1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
@@ -59,7 +63,8 @@ public class RobotContainer {
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
                                 new ModuleIOSpark(3),
-                                (pose) -> {});
+                                (pose) -> {},
+                                this);
                 break;
 
             case SIM:
@@ -77,7 +82,8 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[1]),
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
-                                driveSimulation::setSimulationWorldPose);
+                                driveSimulation::setSimulationWorldPose,
+                                this);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -99,7 +105,8 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {},
-                                (pose) -> {});
+                                (pose) -> {},
+                                this);
                 break;
         }
 
@@ -142,45 +149,85 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -controller.getLeftY(),
-                        () -> -controller.getLeftX(),
-                        () -> -controller.getRightX()));
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX()));
 
+        // DRIVER CONTROLLER
         // Lock to 0° when A button is held
-        controller
+        driverController
                 .a()
                 .whileTrue(
-                        DriveCommands.reefAlign(
-                                        drive,
-                                        () -> -controller.getLeftY(),
-                                        () -> -controller.getLeftX(),
-                                        drive::getClosestReefPosition)
-                                .getCommand());
+                        DriveCommands.joystickDriveAtAngle(
+                                drive,
+                                () -> -driverController.getLeftY(),
+                                () -> -driverController.getLeftX(),
+                                Rotation2d::new));
 
         // Switch to X pattern when X button is pressed
-        controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+        driverController.x().onTrue(runOnce(drive::stopWithX, drive));
 
-        // Reset gyro to 0° when B button is pressed
-        controller
+        // Align to the closest reef
+        driverController
                 .b()
-                .onTrue(
-                        Commands.runOnce(
-                                        () ->
-                                                drive.setPose(
-                                                        new Pose2d(
-                                                                drive.getPose().getTranslation(),
-                                                                new Rotation2d())),
-                                        drive)
-                                .ignoringDisable(true));
+                .onTrue(runOnce(drive::setTargetReefToClosest, drive))
+                .whileTrue(
+                        Commands.repeatingSequence(
+                                        new ConditionalCommand(
+                                                // goalPose > 1m away
+                                                DriveCommands.roughAlignToTarget(drive),
+                                                // goalPose <= 1m away
+                                                DriveCommands.preciseAlignToTarget(drive),
+                                                () -> {
+                                                    // Calculate the distance between the robot and
+                                                    // the target.
+                                                    Pose2d currentPose =
+                                                            drive.getPose(); // Get current robot
+                                                    // pose
+                                                    Pose2d targetPose =
+                                                            drive.getTargetReefPose(); // Target
+                                                    // pose
+                                                    double distance =
+                                                            currentPose
+                                                                    .getTranslation()
+                                                                    .getDistance(
+                                                                            targetPose
+                                                                                    .getTranslation());
 
-        //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
-        //            ? () -> drive.setPose(
-        //            driveSimulation
-        //                    .getSimulatedDriveTrainPose()) // reset odometry to actual robot pose
-        // during simulation
-        //            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new
-        // Rotation2d())); // zero gyro
-        //    controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+                                                    // true if distance > threshold distance (m)
+                                                    return distance > 1;
+                                                }))
+                                .until(
+                                        () -> {
+                                            // Overall condition to stop this command (robot
+                                            // must be at goal pose)
+                                            Pose2d currentPose = drive.getPose();
+                                            Pose2d targetPose = drive.getTargetReefPose();
+                                            // Calculate distance and rotation
+                                            double distance =
+                                                    currentPose
+                                                            .getTranslation()
+                                                            .getDistance(
+                                                                    targetPose.getTranslation());
+                                            double rotationError =
+                                                    Math.abs(
+                                                            currentPose.getRotation().getDegrees()
+                                                                    - targetPose
+                                                                            .getRotation()
+                                                                            .getDegrees());
+
+                                            // Stop when BOTH distance and orientation are
+                                            // within the thresholds
+                                            return distance < 0.05
+                                                    && rotationError < 2.0; // <5 cm and < 5 degrees
+                                        }));
+
+        driverController
+                .leftBumper()
+                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
+        driverController
+                .rightBumper()
+                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
     }
 
     /**
@@ -195,7 +242,6 @@ public class RobotContainer {
     /** Sets the robot to a default position and reset's the simulation field. */
     public void resetSimulationField() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-        drive.setPose(new Pose2d(3, 3, new Rotation2d()));
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 
@@ -212,7 +258,23 @@ public class RobotContainer {
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
     }
 
+    public SwerveDriveSimulation getDriveSimulation() {
+        return driveSimulation;
+    }
+
     public void sendDataToSmartDashboard() {
+        drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
+        SmartDashboard.putData(
+                "Override",
+                builder -> {
+                    builder.setSmartDashboardType("Boolean");
+                    builder.addBooleanProperty(
+                            "Override Reef AA",
+                            // Getter to read the current value
+                            () -> drive.overrideReefAutoAlign,
+                            // Setter to update the value
+                            val -> drive.overrideReefAutoAlign = val);
+                });
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
