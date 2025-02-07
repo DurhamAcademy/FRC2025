@@ -32,6 +32,7 @@ import org.littletonrobotics.urcl.URCL;
  * project.
  */
 public class Robot extends LoggedRobot {
+
     private Command autonomousCommand;
     private RobotContainer robotContainer;
 
@@ -91,6 +92,7 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during all modes. */
     @Override
     public void robotPeriodic() {
+        robotContainer.getSwerveDirection();
         // Switch thread to high priority to improve loop timing
         Threads.setCurrentThreadPriority(true, 99);
 

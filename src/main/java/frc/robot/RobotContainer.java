@@ -51,6 +51,12 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
+    // inverse axises
+    private boolean invertX = false;
+    private boolean invertY = false;
+    private double xDirect = 1;
+    private double yDirect = 1;
+
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
@@ -109,7 +115,6 @@ public class RobotContainer {
                                 this);
                 break;
         }
-
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -134,8 +139,22 @@ public class RobotContainer {
                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
-        configureButtonBindings();
         sendDataToSmartDashboard();
+        configureButtonBindings();
+    }
+
+    public void getSwerveDirection() {
+
+        if (invertX) {
+            xDirect = -1;
+        } else {
+            xDirect = 1;
+        }
+        if (invertY) {
+            yDirect = -1;
+        } else {
+            yDirect = 1;
+        }
     }
 
     /**
@@ -149,8 +168,8 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -driverController.getLeftY(),
-                        () -> -driverController.getLeftX(),
+                        () -> (yDirect * driverController.getLeftY()),
+                        () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
         // DRIVER CONTROLLER
@@ -160,8 +179,8 @@ public class RobotContainer {
                 .whileTrue(
                         DriveCommands.joystickDriveAtAngle(
                                 drive,
-                                () -> -driverController.getLeftY(),
-                                () -> -driverController.getLeftX(),
+                                () -> (yDirect * driverController.getLeftY()),
+                                () -> (xDirect * driverController.getLeftX()),
                                 Rotation2d::new));
 
         // Switch to X pattern when X button is pressed
@@ -247,7 +266,8 @@ public class RobotContainer {
 
     public void displaySimFieldToAdvantageScope() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-
+        Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
+        Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
         Logger.recordOutput(
                 "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
@@ -275,6 +295,14 @@ public class RobotContainer {
                             // Setter to update the value
                             val -> drive.overrideReefAutoAlign = val);
                 });
+        SmartDashboard.putData(
+                "INVERT AXES",
+                builder -> {
+                    builder.setSmartDashboardType("boolean");
+                    builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
+                    builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
+                });
+
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
