@@ -108,6 +108,9 @@ public class ManipulatorIOSparkFlex {
 
         // Use the profiler's position as the target for the motor controller
         primaryController.setReference(
-                currentState.position, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
+                currentState.position,
+                SparkBase.ControlType.kPosition,
+                ClosedLoopSlot.kSlot0,
+                ffVolts);
     }
 }
