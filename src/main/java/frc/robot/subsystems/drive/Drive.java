@@ -26,7 +26,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -35,16 +34,16 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.RobotContainer;
 import frc.robot.util.LocalADStarAK;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -54,16 +53,20 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
-    static final Lock odometryLock = new ReentrantLock();
     private final GyroIO gyroIO;
-    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
-    private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-    private final SysIdRoutine sysId;
     private final Alert gyroDisconnectedAlert =
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
+    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+    private Rotation2d rawGyroRotation = new Rotation2d();
+
+    private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+    static final Lock odometryLock = new ReentrantLock();
+    private final Consumer<Pose2d> resetSimulationPoseCallBack;
+    private final SysIdRoutine sysId;
+    private final Vision vision;
+    private final RobotContainer robotContainer;
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
-    private Rotation2d rawGyroRotation = new Rotation2d();
     private final SwerveModulePosition[] lastModulePositions = // For delta tracking
             new SwerveModulePosition[] {
                 new SwerveModulePosition(),
@@ -73,11 +76,13 @@ public class Drive extends SubsystemBase {
             };
     private final SwerveDrivePoseEstimator poseEstimator =
             new SwerveDrivePoseEstimator(
-                    kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+                    kinematics,
+                    rawGyroRotation,
+                    lastModulePositions,
+                    new Pose2d(3, 3, new Rotation2d()));
 
-    private final Consumer<Pose2d> resetSimulationPoseCallBack;
-
-    Vision vision;
+    public Constants.ReefConstants targetReef = Constants.ReefConstants.SEVEN;
+    public boolean overrideReefAutoAlign = false;
 
     public Drive(
             GyroIO gyroIO,
@@ -85,7 +90,9 @@ public class Drive extends SubsystemBase {
             ModuleIO frModuleIO,
             ModuleIO blModuleIO,
             ModuleIO brModuleIO,
-            Consumer<Pose2d> resetSimulationPoseCallBack) {
+            Consumer<Pose2d> resetSimulationPoseCallBack,
+            RobotContainer robotContainer) {
+        this.robotContainer = robotContainer;
         this.gyroIO = gyroIO;
         this.resetSimulationPoseCallBack = resetSimulationPoseCallBack;
         modules[0] = new Module(flModuleIO, 0);
@@ -113,11 +120,9 @@ public class Drive extends SubsystemBase {
                 this);
         Pathfinding.setPathfinder(new LocalADStarAK());
         PathPlannerLogging.setLogActivePathCallback(
-                (activePath) -> {
-                    Logger.recordOutput(
-                            "Odometry/Trajectory",
-                            activePath.toArray(new Pose2d[activePath.size()]));
-                });
+                (activePath) ->
+                        Logger.recordOutput(
+                                "Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
         PathPlannerLogging.setLogTargetPoseCallback(
                 (targetPose) -> {
                     Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
@@ -134,7 +139,6 @@ public class Drive extends SubsystemBase {
                                         Logger.recordOutput("Drive/SysIdState", state.toString())),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
-
         vision = new Vision(gyroInputs, this);
     }
 
@@ -195,7 +199,6 @@ public class Drive extends SubsystemBase {
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode == Mode.SIM);
-        Logger.recordOutput("Drive/closestReef", getClosestReefPosition());
     }
 
     /**
@@ -204,6 +207,29 @@ public class Drive extends SubsystemBase {
      * @param speeds Speeds in meters/sec
      */
     public void runVelocity(ChassisSpeeds speeds) {
+        // Check if we are in game-piece-oriented mode
+        /*if (isGamePieceOriented && DriverStation.getAlliance().isPresent()) {
+            // Get the desired direction for the game piece
+            Pose2d targetPose =
+                    Constants.LocationConstants.ReefLocations.get(reefToAlign)[
+                            Constants.getAllianceColor(DriverStation.getAlliance().get())];
+            Translation2d targetDirection =
+                    targetPose
+                            .getTranslation()
+                            .minus(poseEstimator.getEstimatedPosition().getTranslation());
+            double angleToTarget = Math.atan2(targetDirection.getY(), targetDirection.getX());
+            Rotation2d targetRotation = new Rotation2d(angleToTarget);
+
+            // Rotate input speeds to align with target direction
+            speeds =
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                            speeds.vxMetersPerSecond,
+                            speeds.vyMetersPerSecond,
+                            speeds.omegaRadiansPerSecond,
+                            targetRotation // Override field orientation with target orientation
+                            );
+        }*/
+
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
@@ -307,11 +333,17 @@ public class Drive extends SubsystemBase {
     /** Returns the current odometry pose. */
     @AutoLogOutput(key = "Odometry/Robot")
     public Pose2d getPose() {
+        if (Constants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
+            return robotContainer.getDriveSimulation().getSimulatedDriveTrainPose();
+        }
         return poseEstimator.getEstimatedPosition();
     }
 
     /** Returns the current odometry rotation. */
     public Rotation2d getRotation() {
+        if (Constants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
+            return robotContainer.getDriveSimulation().getSimulatedDriveTrainPose().getRotation();
+        }
         return getPose().getRotation();
     }
 
@@ -321,13 +353,8 @@ public class Drive extends SubsystemBase {
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     }
 
-    /** Adds a new timestamped vision measurement. */
-    public void addVisionMeasurement(
-            Pose2d visionRobotPoseMeters,
-            double timestampSeconds,
-            Matrix<N3, N1> visionMeasurementStdDevs) {
-        poseEstimator.addVisionMeasurement(
-                visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+    public SwerveDrivePoseEstimator getPoseEstimator() {
+        return poseEstimator;
     }
 
     /** Returns the maximum linear speed in meters per sec. */
@@ -340,52 +367,67 @@ public class Drive extends SubsystemBase {
         return maxSpeedMetersPerSec / driveBaseRadius;
     }
 
-    public Pose2d getReefPosition(Constants.ReefConstants reef) {
-        int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
-        return Constants.LocationConstants.ReefLocations.get(reef)[color];
-    }
-
-    /**
-     * Gets the closes reef position relative to current vision pos
-     *
-     * @return ReefConstant value of closest reef position
-     */
-    public Constants.ReefConstants getClosestReefPosition() {
-        int color = DriverStation.getAlliance().orElse(Blue) == Red ? 1 : 0;
-        // finds closest reef position to current pose
-        Pose2d estimatedReefPose =
-                poseEstimator
-                        .getEstimatedPosition()
-                        .nearest(Constants.LocationConstants.PosesOfAllReefLocations(color));
-        Logger.recordOutput("Drive/closetReefPose", estimatedReefPose);
-        // Return null if no matching reef is found
-        Constants.ReefConstants closestReefConstantValue =
-                Constants.LocationConstants.ReefLocations.entrySet().stream()
-                        .filter(entry -> entry.getValue()[color].equals(estimatedReefPose))
-                        .map(Map.Entry::getKey)
-                        .findFirst()
-                        .orElse(null);
-        Logger.recordOutput("Drive/closestReef", closestReefConstantValue);
-        return closestReefConstantValue;
-    }
-
-    /**
-     * Retrieves the module at the specified index.
-     *
-     * @param index The index of the module to retrieve (0-3).
-     * @return the module[index]
-     */
     public Module getModule(int index) {
         return modules[index];
     }
 
-    /**
-     * Retrieves the swerve drive pose estimator used for tracking the robot's position on the
-     * field.
-     *
-     * @return The current instance of the SwerveDrivePoseEstimator.
-     */
-    public SwerveDrivePoseEstimator getPoseEstimator() {
-        return poseEstimator;
+    public void setTargetReefToClosest() {
+        if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
+            int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
+
+            // Find closest reef position to current pose
+            Pose2d estimatedReefPose =
+                    poseEstimator
+                            .getEstimatedPosition()
+                            .nearest(Constants.LocationConstants.PosesOfAllReefLocations(alliance));
+
+            // Find corresponding reef constant value
+            targetReef =
+                    Constants.LocationConstants.ReefLocations.entrySet().stream()
+                            .filter(entry -> entry.getValue()[alliance].equals(estimatedReefPose))
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(Constants.ReefConstants.SIX);
+            updateDashboardReefVisualization(targetReef.ordinal());
+        }
+    }
+
+    public Pose2d getTargetReefPose() {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        return Constants.LocationConstants.ReefLocations.get(targetReef)[alliance];
+    }
+
+    public Constants.ReefConstants getTargetReef() {
+        return targetReef;
+    }
+
+    public void setTargetReef(Constants.ReefConstants reef) {
+        targetReef = reef;
+    }
+
+    public void setTargetReef(int reef) {
+        reef =
+                (reef + 12)
+                        % 12; // if reef is less than 0 or greater than 11 it will loop around (ex
+        // 11 -> 12 would turn into 11 -> 0 for target reef
+        targetReef = Constants.ReefConstants.values()[reef];
+
+        updateDashboardReefVisualization(reef);
+    }
+
+    public void updateDashboardReefVisualization(int reefIndex) {
+        for (int i = 1; i <= 12; i++) {
+            final int index = i;
+            SmartDashboard.putData(
+                    "Target Reef",
+                    builder -> {
+                        builder.setSmartDashboardType("Boolean");
+                        builder.addBooleanProperty(
+                                "Target Reef" + index, () -> reefIndex + 1 == index, null);
+                    });
+        }
     }
 }
