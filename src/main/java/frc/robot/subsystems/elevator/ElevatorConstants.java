@@ -30,8 +30,8 @@ public class ElevatorConstants {
     public static final double L4 = 21.0; // max height
 
     // TODO: MEASURE
-    public static final double maxVelocity = 1.0;
-    public static final double maxAcceleration = 1.0;
+    public static final double maxVelocity = 10.0;
+    public static final double maxAcceleration = 10.0;
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
     public static final double countsPerInch = 35;
