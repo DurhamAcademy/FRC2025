@@ -108,11 +108,10 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
         inputs.isLimitSwitchPressed = limitSwitch.get();
-        // todo I dont think this should be math.toradians around the .getPosition but it is what worked on the robot
-        inputs.leftHeightInches =
-                primaryEncoder.getPosition() * ElevatorConstants.countsPerInch;
-        inputs.rightHeightInches =
-                followerEncoder.getPosition() * ElevatorConstants.countsPerInch;
+        // todo I dont think this should be math.toradians around the .getPosition but it is what
+        // worked on the robot
+        inputs.leftHeightInches = primaryEncoder.getPosition() * ElevatorConstants.countsPerInch;
+        inputs.rightHeightInches = followerEncoder.getPosition() * ElevatorConstants.countsPerInch;
         inputs.targetHeightInches = targetHeightInches;
         inputs.velocityInches = primaryEncoder.getVelocity() / ElevatorConstants.countsPerInch;
         inputs.isAtTargetLevel =
