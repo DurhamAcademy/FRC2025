@@ -6,6 +6,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.simulation.*;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -29,8 +30,7 @@ public class ElevatorIOSim implements ElevatorIO {
     private final Encoder m_encoder =
             new Encoder(ElevatorConstants.rightElevatorCanId, ElevatorConstants.leftElevatorCanId);
     // also this is inaccruate
-    private final PWMSparkMax m_motor =
-            new PWMSparkMax(ElevatorConstants.limitSwitchPort); // change this and it works
+    private final PWMSparkMax m_motor = new PWMSparkMax(17); // change this and it works
 
     // ***Elevator motorport --> limit switch port? PWMsparkmax() rel freq nl***
 
@@ -84,4 +84,12 @@ public class ElevatorIOSim implements ElevatorIO {
                     new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), 90));
 
 
+
+    public void simulationPeriodic() {
+        elevatorSim.setInput(m_motorSim.getSpeed()* RobotController.getBatteryVoltage());
+        elevatorSim.update(0.02);
+        m_encoderSim.setDistance(elevatorSim.getPositionMeters());
+        RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps()));
+    }
 }
+
