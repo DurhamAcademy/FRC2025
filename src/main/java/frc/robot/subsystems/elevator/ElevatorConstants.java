@@ -17,10 +17,10 @@ public class ElevatorConstants {
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
     // Elevator FF can be found through SysID
-    public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 0.0;
-    public static final double elevatorKv = 0.0;
-    public static final double elevatorKa = 0.0;
+    public static final double elevatorKs = 0.0; // static friction
+    public static final double elevatorKg = 0.0; // gravity
+    public static final double elevatorKv = 0.0; // velocity
+    public static final double elevatorKa = 0.0; // acceleration
 
     // Elevator Levels in inches
     public static final double ZERO = 0.0; // min height
