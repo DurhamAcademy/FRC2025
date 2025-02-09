@@ -61,7 +61,9 @@ public class ElevatorIOSparkMax implements ElevatorIO {
                         ElevatorConstants.elevatorKi,
                         ElevatorConstants.elevatorKd);
 
-        configureMotors();
+        primaryMotor.configure(resetConfig, ResetMode.kResetSafeParameters, null);
+
+        followerMotor.configure(resetConfig, ResetMode.kResetSafeParameters, null);
 
         constraints =
                 new TrapezoidProfile.Constraints(
@@ -77,12 +79,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
                         ElevatorConstants.elevatorKg,
                         ElevatorConstants.elevatorKv,
                         ElevatorConstants.elevatorKa);
-    }
-
-    private void configureMotors() {
-        primaryMotor.configure(resetConfig, ResetMode.kResetSafeParameters, null);
-
-        followerMotor.configure(resetConfig, ResetMode.kResetSafeParameters, null);
     }
 
     @Override

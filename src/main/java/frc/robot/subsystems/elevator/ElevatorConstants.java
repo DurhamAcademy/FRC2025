@@ -27,22 +27,35 @@ public class ElevatorConstants {
     public static final double wristKi = 0.0;
     public static final double wristKd = 0.0;
 
+    public static final double wristKs = 0.0;
+    public static final double wristKg = 0.0;
+    public static final double wristKv = 0.0;
+    public static final double wristKa = 0.0;
+
     public static final double maxWristPosition = 100.0;
     public static final double minWristPosition = 0.0;
     public static final double wristMaxVelocity = 10.0;
     public static final double wristMaxAcceleration = 10.0;
 
     // Elevator Levels in inches
-    public static final double ZERO = 0.0; // min height
-    public static final double L1 = 3.0;
-    public static final double L2 = 8.0;
-    public static final double L3 = 13.5;
-    public static final double L4 = 21.0; // max height
+    public static final double ELEVATOR_ZERO = 0.0; // min height
+    public static final double ELEVATOR_L1 = 3.0;
+    public static final double ELEVATOR_L2 = 8.0;
+    public static final double ELEVATOR_L3 = 13.5;
+    public static final double ELEVATOR_L4 = 21.0; // max height
+
+    // Wrist angles in radians
+    public static final double WRIST_ANGLE_ZERO = Math.toRadians(90.0); // min height
+    public static final double WRIST_ANGLE_INTAKE = Math.toRadians(-40.0);
+    public static final double WRIST_ANGLE_L1 = Math.toRadians(-30.0);
+    public static final double WRIST_ANGLE_L2 = Math.toRadians(-35.0);
+    public static final double WRIST_ANGLE_L3 = Math.toRadians(-35.0);
+    public static final double WRIST_ANGLE_L4 = Math.toRadians(-25.0); // max height
 
     // TODO: MEASURE
     public static final double elevatorMaxVelocity = 10.0;
     public static final double elevatorMaxAcceleration = 10.0;
-    public static final double minHeight = ZERO;
-    public static final double maxHeight = L4;
+    public static final double minHeight = ELEVATOR_ZERO;
+    public static final double maxHeight = ELEVATOR_L4;
     public static final double countsPerInch = 35;
 }

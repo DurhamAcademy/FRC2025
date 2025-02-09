@@ -7,13 +7,16 @@ import frc.robot.subsystems.elevator.Elevator;
 public class ElevatorCommands {
 
     public static Command moveElevatorLevel(Elevator elevator, double targetLevel) {
-        return Commands.run(() -> elevator.setTargetHeight(targetLevel), elevator);
+        return Commands.run(() -> {
+            elevator.setElevatorTargetHeight(targetLevel);
+            elevator.setWristTargetAngle(0);
+        }, elevator);
     }
 
     public static Command moveElevator(Elevator elevator, double power) {
         return Commands.run(
                 () -> {
-                    elevator.setPower(power);
+                    elevator.setElevatorPower(power);
                 },
                 elevator);
     }

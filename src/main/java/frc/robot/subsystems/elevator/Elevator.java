@@ -4,17 +4,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
-    private final ElevatorIO io;
-    private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+    private final ElevatorIO elevatorIO;
+    private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
+    private final WristIO wristIO;
+    private final WristIOInputsAutoLogged wristInputs = new WristIOInputsAutoLogged();
 
     private boolean hasZeroed = true;
 
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ZERO),
-        L1(ElevatorConstants.L1),
-        L2(ElevatorConstants.L2),
-        L3(ElevatorConstants.L3),
-        L4(ElevatorConstants.L4);
+        ZERO(ElevatorConstants.ELEVATOR_ZERO),
+        L1(ElevatorConstants.ELEVATOR_L1),
+        L2(ElevatorConstants.ELEVATOR_L2),
+        L3(ElevatorConstants.ELEVATOR_L3),
+        L4(ElevatorConstants.ELEVATOR_L4);
 
         public final double heightInches;
 
@@ -23,29 +25,59 @@ public class Elevator extends SubsystemBase {
         }
     }
 
-    public Elevator(ElevatorIO io) {
-        this.io = io;
+    public enum WristAngle {
+        ZERO(ElevatorConstants.WRIST_ANGLE_ZERO),
+        INTAKE(ElevatorConstants.WRIST_ANGLE_INTAKE),
+        L1(ElevatorConstants.WRIST_ANGLE_L1),
+        L2(ElevatorConstants.WRIST_ANGLE_L2),
+        L3(ElevatorConstants.WRIST_ANGLE_L3),
+        L4(ElevatorConstants.WRIST_ANGLE_L4);
+
+        public final double angleRadians;
+
+        WristAngle(double angleRadians) {
+            this.angleRadians = angleRadians;
+        }
+    }
+
+    public Elevator(ElevatorIO elevatorIO, WristIO wristIO) {
+        this.elevatorIO = elevatorIO;
+        this.wristIO = wristIO;
     }
 
     @Override
     public void periodic() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Elevator", inputs);
+        elevatorIO.updateInputs(elevatorInputs);
+        wristIO.updateInputs(wristInputs);
+        Logger.processInputs("Elevator", elevatorInputs);
 
         //        if (inputs.isLimitSwitchPressed) {
         //            io.setEncoder(ElevatorConstants.minHeight * ElevatorConstants.countsPerInch);
         //            hasZeroed = true;
         //        }
 
-        io.updateProfile();
+        elevatorIO.updateProfile();
+        wristIO.updateProfile();
     }
 
-    public void setTargetHeight(double heightInches) {
-        io.setTargetHeightInches(heightInches);
+    public void setElevatorTargetHeight(double heightInches) {
+        elevatorIO.setTargetHeightInches(heightInches);
     }
 
-    public void setPower(double power) {
-        io.setPower(power);
+    /**
+     * Sets the target angle of the wrist
+     * @param targetAngle in radians, 0 being horizontal with the ground
+     */
+    public void setWristTargetAngle(double targetAngle){
+        wristIO.setTargetAngle(targetAngle);
+    }
+
+    public void setElevatorPower(double power) {
+        elevatorIO.setPower(power);
+    }
+
+    public void setWristPower(double power) {
+        wristIO.setPower(power);
     }
 
     public boolean hasZeroed() {
@@ -53,6 +85,6 @@ public class Elevator extends SubsystemBase {
     }
 
     public boolean isZeroed() {
-        return inputs.isLimitSwitchPressed;
+        return elevatorInputs.isLimitSwitchPressed;
     }
 }

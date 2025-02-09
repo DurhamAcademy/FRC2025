@@ -27,10 +27,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.subsystems.drive.*;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.elevator.ElevatorIO;
-import frc.robot.subsystems.elevator.ElevatorIOSim;
-import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
+import frc.robot.subsystems.elevator.*;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -67,7 +64,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
                                 new ModuleIOSpark(3));
-                elevator = new Elevator(new ElevatorIOSparkMax());
+        elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax());
                 break;
 
             case SIM:
@@ -86,7 +83,7 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
                                 new ModuleIOSim(driveSimulation.getModules()[3]));
                 // TODO: Elevator SIM
-                elevator = new Elevator(new ElevatorIOSim() {});
+                elevator = new Elevator(new ElevatorIOSim(), new WristIOSim());
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -108,7 +105,7 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {});
-                elevator = new Elevator(new ElevatorIO() {});
+        elevator = new Elevator(new ElevatorIO() {}, new WristIO() {});
                 break;
         }
 
