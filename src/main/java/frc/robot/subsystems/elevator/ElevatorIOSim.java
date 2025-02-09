@@ -83,13 +83,11 @@ public class ElevatorIOSim implements ElevatorIO {
             m_mech2d_root.append(
                     new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), 90));
 
-
-
     public void simulationPeriodic() {
-        elevatorSim.setInput(m_motorSim.getSpeed()* RobotController.getBatteryVoltage());
+        elevatorSim.setInput(m_motorSim.getSpeed() * RobotController.getBatteryVoltage());
         elevatorSim.update(0.02);
         m_encoderSim.setDistance(elevatorSim.getPositionMeters());
-        RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps()));
+        RoboRioSim.setVInVoltage(
+                BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps()));
     }
 }
-
