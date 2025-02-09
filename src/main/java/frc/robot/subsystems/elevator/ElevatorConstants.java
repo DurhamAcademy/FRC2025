@@ -32,8 +32,6 @@ public class ElevatorConstants {
     public static final double wristMaxVelocity = 10.0;
     public static final double wristMaxAcceleration = 10.0;
 
-
-
     // Elevator Levels in inches
     public static final double ZERO = 0.0; // min height
     public static final double L1 = 3.0;
