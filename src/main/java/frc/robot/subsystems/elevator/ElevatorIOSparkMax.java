@@ -65,8 +65,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
         constraints =
                 new TrapezoidProfile.Constraints(
-                        ElevatorConstants.maxVelocity, // in/s
-                        ElevatorConstants.maxAcceleration); // in/s
+                        ElevatorConstants.elevatorMaxVelocity, // in/s
+                        ElevatorConstants.elevatorMaxAcceleration); // in/s
         currentState = new TrapezoidProfile.State(0, 0);
         goalState = new TrapezoidProfile.State(0, 0);
         profile = new TrapezoidProfile(constraints);
