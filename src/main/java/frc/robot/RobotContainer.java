@@ -64,7 +64,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
                                 new ModuleIOSpark(3));
-        elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax());
+                elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax());
                 break;
 
             case SIM:
@@ -105,7 +105,7 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {});
-        elevator = new Elevator(new ElevatorIO() {}, new WristIO() {});
+                elevator = new Elevator(new ElevatorIO() {}, new WristIO() {});
                 break;
         }
 

@@ -66,9 +66,10 @@ public class Elevator extends SubsystemBase {
 
     /**
      * Sets the target angle of the wrist
+     *
      * @param targetAngle in radians, 0 being horizontal with the ground
      */
-    public void setWristTargetAngle(double targetAngle){
+    public void setWristTargetAngle(double targetAngle) {
         wristIO.setTargetAngle(targetAngle);
     }
 
