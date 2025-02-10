@@ -60,7 +60,8 @@ public class ElevatorConstants {
     public static final double wristMaxAcceleration = 10.0;
 
     public static final double wristMotorReduction = 28.0 / 18.0;
-    public static final double wristEncoderPositionFactor = 2 * Math.PI / wristMotorReduction; // Rotations => Radians
-    public static final double wristEncoderVelocityFactor = 2 * Math.PI / 60.0 / wristMotorReduction; // RPM => Radians per second
-
+    public static final double wristEncoderPositionFactor =
+            2 * Math.PI / wristMotorReduction; // Rotations => Radians
+    public static final double wristEncoderVelocityFactor =
+            2 * Math.PI / 60.0 / wristMotorReduction; // RPM => Radians per second
 }
