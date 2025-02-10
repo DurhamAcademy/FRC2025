@@ -8,15 +8,15 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import org.littletonrobotics.junction.Logger;
-
-import static frc.robot.subsystems.drive.DriveConstants.driveEncoderPositionFactor;
-import static frc.robot.subsystems.drive.DriveConstants.driveEncoderVelocityFactor;
 
 public class WristIOSparkMax implements WristIO {
     private final SparkMax wristMotor;
     private final SparkClosedLoopController wristController;
-    private final RelativeEncoder wristEncoder;
+    private final RelativeEncoder wristRelativeEncoder;
+    private final DutyCycleEncoder wristAbsoluteEncoder;
+
     private final SparkMaxConfig resetConfig = new SparkMaxConfig();
 
     private final TrapezoidProfile.Constraints constraints;
@@ -25,11 +25,12 @@ public class WristIOSparkMax implements WristIO {
     private TrapezoidProfile.State goalState;
     private final ArmFeedforward feedForward;
 
-    private Rotation2d targetAngle = Rotation2d.fromDegrees(0);
+    private Rotation2d targetAngle = Rotation2d.fromRadians(0);
 
     public WristIOSparkMax() {
         wristMotor = new SparkMax(ElevatorConstants.wristCanId, SparkLowLevel.MotorType.kBrushless);
-        wristEncoder = wristMotor.getEncoder();
+        wristRelativeEncoder = wristMotor.getEncoder();
+        wristAbsoluteEncoder = new DutyCycleEncoder(0);
         wristController = wristMotor.getClosedLoopController();
 
         resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
@@ -66,7 +67,7 @@ public class WristIOSparkMax implements WristIO {
 
     @Override
     public void setEncoder(double position) {
-        wristEncoder.setPosition(position);
+        wristRelativeEncoder.setPosition(position);
     }
 
     @Override
@@ -86,9 +87,9 @@ public class WristIOSparkMax implements WristIO {
 
     @Override
     public void updateInputs(WristIO.WristIOInputs inputs) {
-        inputs.angle = Rotation2d.fromRadians(wristEncoder.getPosition());
+        inputs.angle = Rotation2d.fromRotations(wristAbsoluteEncoder.get());
         inputs.targetAngle = targetAngle;
-        inputs.velocity = wristEncoder.getVelocity();
+        inputs.velocity = wristRelativeEncoder.getVelocity();
         // TODO adjust how precise angle needs to be
         inputs.isAtTargetAngle =
                 Math.abs(inputs.angle.getDegrees() - inputs.targetAngle.getDegrees()) < 2
