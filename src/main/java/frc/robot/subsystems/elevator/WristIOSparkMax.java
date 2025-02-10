@@ -10,6 +10,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import org.littletonrobotics.junction.Logger;
 
+import static frc.robot.subsystems.drive.DriveConstants.driveEncoderPositionFactor;
+import static frc.robot.subsystems.drive.DriveConstants.driveEncoderVelocityFactor;
+
 public class WristIOSparkMax implements WristIO {
     private final SparkMax wristMotor;
     private final SparkClosedLoopController wristController;
@@ -39,6 +42,11 @@ public class WristIOSparkMax implements WristIO {
                         ElevatorConstants.wristKp,
                         ElevatorConstants.wristKi,
                         ElevatorConstants.wristKd);
+        resetConfig
+                .encoder
+                .positionConversionFactor(ElevatorConstants.wristEncoderPositionFactor)
+                .velocityConversionFactor(ElevatorConstants.wristEncoderVelocityFactor);
+
         wristMotor.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
 
         constraints =
@@ -78,7 +86,7 @@ public class WristIOSparkMax implements WristIO {
 
     @Override
     public void updateInputs(WristIO.WristIOInputs inputs) {
-        inputs.angle = Rotation2d.fromRotations(wristEncoder.getPosition());
+        inputs.angle = Rotation2d.fromRadians(wristEncoder.getPosition());
         inputs.targetAngle = targetAngle;
         inputs.velocity = wristEncoder.getVelocity();
         // TODO adjust how precise angle needs to be

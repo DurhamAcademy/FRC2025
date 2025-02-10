@@ -4,10 +4,16 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface WristIO {
+    /**
+     * Represents a data container for the inputs to the wrist subsystem.
+     * Used to track the state of the wrist, including its current angle,
+     * target angle, velocity, voltage, and whether it has reached its target angle.
+     */
     @AutoLog
     public static class WristIOInputs {
         public Rotation2d angle;
         public Rotation2d targetAngle;
+        // Radians per second
         public double velocity;
         public double voltage;
         public boolean isAtTargetAngle;

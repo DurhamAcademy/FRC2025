@@ -32,11 +32,6 @@ public class ElevatorConstants {
     public static final double wristKv = 0.0;
     public static final double wristKa = 0.0;
 
-    public static final double maxWristPosition = 100.0;
-    public static final double minWristPosition = 0.0;
-    public static final double wristMaxVelocity = 10.0;
-    public static final double wristMaxAcceleration = 10.0;
-
     // Elevator Levels in inches
     public static final double ELEVATOR_ZERO = 0.0; // min height
     public static final double ELEVATOR_L1 = 3.0;
@@ -58,4 +53,14 @@ public class ElevatorConstants {
     public static final double minHeight = ELEVATOR_ZERO;
     public static final double maxHeight = ELEVATOR_L4;
     public static final double countsPerInch = 35;
+
+    public static final double maxWristPosition = WRIST_ANGLE_ZERO;
+    public static final double minWristPosition = WRIST_ANGLE_INTAKE;
+    public static final double wristMaxVelocity = 10.0;
+    public static final double wristMaxAcceleration = 10.0;
+
+    public static final double wristMotorReduction = 28.0 / 18.0;
+    public static final double wristEncoderPositionFactor = 2 * Math.PI / wristMotorReduction; // Rotations => Radians
+    public static final double wristEncoderVelocityFactor = 2 * Math.PI / 60.0 / wristMotorReduction; // RPM => Radians per second
+
 }
