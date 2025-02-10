@@ -157,7 +157,7 @@ public class RobotContainer {
 
         elevator.setDefaultCommand(
                 either(
-                        ElevatorCommands.moveElevator(elevator, ElevatorLevel.ZERO),
+                        ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO),
                         ElevatorCommands.zeroElevator(elevator),
                         elevator::hasZeroed));
 
@@ -202,28 +202,16 @@ public class RobotContainer {
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
         operatorController
                 .a()
-                .onTrue(
-                        Commands.run(
-                                () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L1),
-                                elevator));
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1
         operatorController
                 .x()
-                .onTrue(
-                        Commands.run(
-                                () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L2),
-                                elevator));
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)); // L2
         operatorController
                 .b()
-                .onTrue(
-                        Commands.run(
-                                () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L3),
-                                elevator));
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)); // L3
         operatorController
                 .y()
-                .onTrue(
-                        Commands.run(
-                                () -> ElevatorCommands.moveElevator(elevator, ElevatorLevel.L4),
-                                elevator));
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
     }
 
     /**

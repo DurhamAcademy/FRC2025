@@ -7,7 +7,7 @@ public class Elevator extends SubsystemBase {
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
-    private boolean hasZeroed = false;
+    private boolean hasZeroed = true;
 
     public enum ElevatorLevel {
         ZERO(ElevatorConstants.ZERO),
@@ -32,16 +32,16 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
-        if (inputs.isLimitSwitchPressed) {
-            io.setEncoder(ElevatorConstants.minHeight * ElevatorConstants.countsPerInch);
-            hasZeroed = true;
-        }
+        //        if (inputs.isLimitSwitchPressed) {
+        //            io.setEncoder(ElevatorConstants.minHeight * ElevatorConstants.countsPerInch);
+        //            hasZeroed = true;
+        //        }
 
         io.updateProfile();
     }
 
-    public void setTargetHeight(ElevatorLevel level) {
-        io.setTargetHeightInches(level.heightInches);
+    public void setTargetHeight(double heightInches) {
+        io.setTargetHeightInches(heightInches);
     }
 
     public void setPower(double power) {

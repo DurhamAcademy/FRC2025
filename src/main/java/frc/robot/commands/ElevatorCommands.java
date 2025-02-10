@@ -7,12 +7,8 @@ import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 
 public class ElevatorCommands {
 
-    public static Command moveElevator(Elevator elevator, ElevatorLevel targetLevel) {
-        return Commands.run(
-                () -> {
-                    elevator.setTargetHeight(targetLevel);
-                },
-                elevator);
+    public static Command moveElevatorLevel(Elevator elevator, ElevatorLevel level) {
+        return Commands.run(() -> elevator.setTargetHeight(level.heightInches), elevator);
     }
 
     public static Command moveElevator(Elevator elevator, double power) {
