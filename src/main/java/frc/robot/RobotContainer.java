@@ -172,18 +172,9 @@ public class RobotContainer {
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-        // Reset gyro to 0° when B button is pressed
         driverController
                 .b()
-                .onTrue(
-                        Commands.runOnce(
-                                        () ->
-                                                drive.setPose(
-                                                        new Pose2d(
-                                                                drive.getPose().getTranslation(),
-                                                                new Rotation2d())),
-                                        drive)
-                                .ignoringDisable(true));
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4));
 
         //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
         //            ? () -> drive.setPose(
