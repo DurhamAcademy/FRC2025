@@ -110,10 +110,10 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         inputs.isLimitSwitchPressed = limitSwitch.get();
         // todo I dont think this should be math.toradians around the .getPosition but it is what
         // worked on the robot
-        inputs.leftHeightInches = primaryEncoder.getPosition() * ElevatorConstants.countsPerInch;
-        inputs.rightHeightInches = followerEncoder.getPosition() * ElevatorConstants.countsPerInch;
+        inputs.leftHeightInches = primaryEncoder.getPosition() / ElevatorConstants.countsPerInch;
+        inputs.rightHeightInches = followerEncoder.getPosition() / ElevatorConstants.countsPerInch;
         inputs.targetHeightInches = targetHeightInches;
-        inputs.velocityInches = primaryEncoder.getVelocity() / ElevatorConstants.countsPerInch;
+        inputs.velocityInches = primaryEncoder.getVelocity() / ElevatorConstants.countsPerInch / 60;
         inputs.isAtTargetLevel =
                 Math.abs(inputs.leftHeightInches - targetHeightInches) < 0.5
                         && Math.abs(inputs.velocityInches) < 0.1;
@@ -136,14 +136,15 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         double oldVelocity = currentState.velocity;
         currentState = profile.calculate(0.02, currentState, goalState);
         double ffVolts = feedForward.calculate(currentState.velocity);
-        double ffVoltsOtherWay =
-                feedForward.calculateWithVelocities(oldVelocity, currentState.velocity);
 
         // Use the profiler's position as the target for the motor controller
         Logger.recordOutput("Elevator/ProfilerVelocity", currentState.velocity);
         Logger.recordOutput("Elevator/ProfilerPosition", currentState.position);
 
         primaryController.setReference(
-                currentState.position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
+                currentState.position * ElevatorConstants.countsPerInch,
+                ControlType.kPosition,
+                ClosedLoopSlot.kSlot0,
+                ffVolts);
     }
 }

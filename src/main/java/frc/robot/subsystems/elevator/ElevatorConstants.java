@@ -40,9 +40,13 @@ public class ElevatorConstants {
     public static final double L4 = 58.211229; // max height
 
     // TODO: MEASURE
-    public static final double elevatorMaxVelocity = 10.0;
+    public static final double driveEncoderPositionFactor =
+            2 * Math.PI / elevatorMotorReduction; // Rotor Rotations -> Wheel Radians
+    public static final double driveEncoderVelocityFactor =
+            (2 * Math.PI) / 60.0 / elevatorMotorReduction; // Rotor RPM -> Wheel Rad/Sec
+    public static final double elevatorMaxVelocity = 10;
     public static final double elevatorMaxAcceleration = 10.0;
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
-    public static final double countsPerInch = 35;
+    public static final double countsPerInch = 14;
 }
