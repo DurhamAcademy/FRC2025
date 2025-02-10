@@ -14,7 +14,7 @@ public interface WristIO {
     }
 
     /** Update the set of loggable inputs. */
-    public default void updateInputs(WristIO.WristIOInputs inputs) {}
+    public default void updateInputs(WristIOInputs inputs) {}
 
     /** Sets the motors' power */
     public default void setPower(double power) {}

@@ -53,8 +53,8 @@ public class ElevatorConstants {
     public static final double WRIST_ANGLE_L4 = Math.toRadians(-25.0); // max height
 
     // TODO: MEASURE
-    public static final double elevatorMaxVelocity = 10.0;
-    public static final double elevatorMaxAcceleration = 10.0;
+    public static final double elevatorMaxVelocity = 10.0; // in/s
+    public static final double elevatorMaxAcceleration = 10.0; // in/s
     public static final double minHeight = ELEVATOR_ZERO;
     public static final double maxHeight = ELEVATOR_L4;
     public static final double countsPerInch = 35;

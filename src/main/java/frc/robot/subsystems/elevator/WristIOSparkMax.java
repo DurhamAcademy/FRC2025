@@ -99,6 +99,8 @@ public class WristIOSparkMax implements WristIO {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
         // TODO double check these are supposed to be current state not goal state
+        // Note to ryan: this is fine because current state is calculating the
+        // goal position and velocity based off the profiler
         double ffVolts = feedForward.calculate(currentState.position, currentState.velocity);
 
         // Use the profiler's position as the target for the motor controller

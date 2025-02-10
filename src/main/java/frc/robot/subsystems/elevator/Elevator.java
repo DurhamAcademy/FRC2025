@@ -12,30 +12,18 @@ public class Elevator extends SubsystemBase {
     private boolean hasZeroed = true;
 
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ELEVATOR_ZERO),
-        L1(ElevatorConstants.ELEVATOR_L1),
-        L2(ElevatorConstants.ELEVATOR_L2),
-        L3(ElevatorConstants.ELEVATOR_L3),
-        L4(ElevatorConstants.ELEVATOR_L4);
+        ZERO(ElevatorConstants.ELEVATOR_ZERO, ElevatorConstants.WRIST_ANGLE_ZERO),
+        INTAKE(ElevatorConstants.ELEVATOR_ZERO, ElevatorConstants.WRIST_ANGLE_INTAKE),
+        L1(ElevatorConstants.ELEVATOR_L1, ElevatorConstants.WRIST_ANGLE_L1),
+        L2(ElevatorConstants.ELEVATOR_L2, ElevatorConstants.WRIST_ANGLE_L2),
+        L3(ElevatorConstants.ELEVATOR_L3, ElevatorConstants.WRIST_ANGLE_L3),
+        L4(ElevatorConstants.ELEVATOR_L4, ElevatorConstants.WRIST_ANGLE_L4),;
 
         public final double heightInches;
-
-        ElevatorLevel(double heightInches) {
-            this.heightInches = heightInches;
-        }
-    }
-
-    public enum WristAngle {
-        ZERO(ElevatorConstants.WRIST_ANGLE_ZERO),
-        INTAKE(ElevatorConstants.WRIST_ANGLE_INTAKE),
-        L1(ElevatorConstants.WRIST_ANGLE_L1),
-        L2(ElevatorConstants.WRIST_ANGLE_L2),
-        L3(ElevatorConstants.WRIST_ANGLE_L3),
-        L4(ElevatorConstants.WRIST_ANGLE_L4);
-
         public final double angleRadians;
 
-        WristAngle(double angleRadians) {
+        ElevatorLevel(double heightInches, double angleRadians) {
+            this.heightInches = heightInches;
             this.angleRadians = angleRadians;
         }
     }

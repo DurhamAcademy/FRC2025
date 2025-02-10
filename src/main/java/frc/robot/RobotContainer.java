@@ -28,6 +28,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
+import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -153,7 +154,7 @@ public class RobotContainer {
 
         elevator.setDefaultCommand(
                 either(
-                        ElevatorCommands.moveElevatorLevel(elevator, 0),
+                        ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO),
                         ElevatorCommands.zeroElevator(elevator),
                         elevator::hasZeroed));
 
@@ -194,12 +195,14 @@ public class RobotContainer {
         //    controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
         // OPERATOR CONTROLLER
-        // Elevator
+        // Elevator (includes wrist angles)
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
-        operatorController.a().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, 3)); // L1
-        operatorController.x().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, 8.0)); // L2
-        operatorController.b().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, 13.5)); // L3
-        operatorController.y().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, 21.0)); // L4
+        operatorController.a().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+        operatorController.x().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+        operatorController.b().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+        operatorController.y().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+
+        operatorController.leftTrigger().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.INTAKE));
     }
 
     /**
