@@ -28,6 +28,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -42,6 +46,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
+    private final Intake intake;
     private SwerveDriveSimulation driveSimulation = null;
 
     // Controllers
@@ -71,6 +76,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
+                intake = new Intake(new IntakeIOSparkMax());
                 break;
 
             case SIM:
@@ -90,6 +96,7 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
                                 driveSimulation::setSimulationWorldPose,
                                 this);
+                intake = new Intake(new IntakeIOSim());
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -113,6 +120,7 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
+                intake = new Intake(new IntakeIOSparkMax());
                 break;
         }
         // Set up auto routines
