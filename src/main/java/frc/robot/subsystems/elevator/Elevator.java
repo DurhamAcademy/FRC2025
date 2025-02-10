@@ -17,7 +17,8 @@ public class Elevator extends SubsystemBase {
         L1(ElevatorConstants.ELEVATOR_L1, ElevatorConstants.WRIST_ANGLE_L1),
         L2(ElevatorConstants.ELEVATOR_L2, ElevatorConstants.WRIST_ANGLE_L2),
         L3(ElevatorConstants.ELEVATOR_L3, ElevatorConstants.WRIST_ANGLE_L3),
-        L4(ElevatorConstants.ELEVATOR_L4, ElevatorConstants.WRIST_ANGLE_L4),;
+        L4(ElevatorConstants.ELEVATOR_L4, ElevatorConstants.WRIST_ANGLE_L4),
+        ;
 
         public final double heightInches;
         public final double angleRadians;

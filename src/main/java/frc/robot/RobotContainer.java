@@ -197,12 +197,22 @@ public class RobotContainer {
         // OPERATOR CONTROLLER
         // Elevator (includes wrist angles)
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
-        operatorController.a().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1
-        operatorController.x().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)); // L2
-        operatorController.b().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)); // L3
-        operatorController.y().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+        operatorController
+                .a()
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+        operatorController
+                .x()
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+        operatorController
+                .b()
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+        operatorController
+                .y()
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
 
-        operatorController.leftTrigger().whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.INTAKE));
+        operatorController
+                .leftTrigger()
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.INTAKE));
     }
 
     /**
