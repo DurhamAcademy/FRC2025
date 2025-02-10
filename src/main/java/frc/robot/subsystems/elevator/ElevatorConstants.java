@@ -32,12 +32,12 @@ public class ElevatorConstants {
     public static final double wristMaxVelocity = 10.0;
     public static final double wristMaxAcceleration = 10.0;
 
-    // Elevator Levels in inches
+    // Elevator Levels in inches from master sketch
     public static final double ZERO = 0.0; // min height
-    public static final double L1 = 3.0;
-    public static final double L2 = 8.0;
-    public static final double L3 = 13.5;
-    public static final double L4 = 21.0; // max height
+    public static final double L1 = 9.271975;
+    public static final double L2 = 17.031579;
+    public static final double L3 = 32.041099;
+    public static final double L4 = 58.211229; // max height
 
     // TODO: MEASURE
     public static final double elevatorMaxVelocity = 10.0;
