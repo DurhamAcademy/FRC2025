@@ -40,12 +40,15 @@ public class ElevatorConstants {
     public static final double L4 = 58.211229; // max height
 
     public static final double elevatorMotorReduction = 2.0; // Motor gear reduction 22t -> 44t
-    public static final double elevatorEffectiveDrumRadius = 0.955 * 3; // Drum radius in inches multiplied by 3 because 3-stage elevator
+    public static final double elevatorEffectiveDrumRadius =
+            0.955 * 3; // Drum radius in inches multiplied by 3 because 3-stage elevator
 
     public static final double elevatorEncoderPositionFactor =
-            (2 * Math.PI * elevatorEffectiveDrumRadius) / elevatorMotorReduction; // rotations -> inches
+            (2 * Math.PI * elevatorEffectiveDrumRadius)
+                    / elevatorMotorReduction; // rotations -> inches
     public static final double elevatorEncoderVelocityFactor =
-            (2 * Math.PI * elevatorEffectiveDrumRadius) / (60 * elevatorMotorReduction); // RPM -> inches/sec
+            (2 * Math.PI * elevatorEffectiveDrumRadius)
+                    / (60 * elevatorMotorReduction); // RPM -> inches/sec
     public static final double elevatorMaxVelocity = 10;
     public static final double elevatorMaxAcceleration = 10.0;
     public static final double minHeight = ZERO;

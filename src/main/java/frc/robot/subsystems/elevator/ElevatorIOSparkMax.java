@@ -147,9 +147,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         Logger.recordOutput("Elevator/ProfilerPosition", currentState.position);
 
         primaryController.setReference(
-                currentState.position,
-                ControlType.kPosition,
-                ClosedLoopSlot.kSlot0,
-                ffVolts);
+                currentState.position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
     }
 }
