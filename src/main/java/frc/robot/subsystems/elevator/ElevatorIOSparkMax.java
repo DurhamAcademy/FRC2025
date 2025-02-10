@@ -54,6 +54,12 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         resetConfig.smartCurrentLimit(40);
         resetConfig.voltageCompensation(12.0);
         resetConfig
+                .encoder
+                .positionConversionFactor(ElevatorConstants.elevatorEncoderPositionFactor)
+                .velocityConversionFactor(ElevatorConstants.elevatorEncoderVelocityFactor)
+                .uvwMeasurementPeriod(10)
+                .uvwAverageDepth(2);
+        resetConfig
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
                 .pid(
@@ -110,10 +116,10 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         inputs.isLimitSwitchPressed = limitSwitch.get();
         // todo I dont think this should be math.toradians around the .getPosition but it is what
         // worked on the robot
-        inputs.leftHeightInches = primaryEncoder.getPosition() / ElevatorConstants.countsPerInch;
-        inputs.rightHeightInches = followerEncoder.getPosition() / ElevatorConstants.countsPerInch;
+        inputs.leftHeightInches = primaryEncoder.getPosition();
+        inputs.rightHeightInches = followerEncoder.getPosition();
         inputs.targetHeightInches = targetHeightInches;
-        inputs.velocityInches = primaryEncoder.getVelocity() / ElevatorConstants.countsPerInch / 60;
+        inputs.velocityInches = primaryEncoder.getVelocity();
         inputs.isAtTargetLevel =
                 Math.abs(inputs.leftHeightInches - targetHeightInches) < 0.5
                         && Math.abs(inputs.velocityInches) < 0.1;
@@ -133,7 +139,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     @Override
     public void updateProfile() {
         // Calculate the next state (position and velocity)
-        double oldVelocity = currentState.velocity;
         currentState = profile.calculate(0.02, currentState, goalState);
         double ffVolts = feedForward.calculate(currentState.velocity);
 
@@ -142,7 +147,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         Logger.recordOutput("Elevator/ProfilerPosition", currentState.position);
 
         primaryController.setReference(
-                currentState.position * ElevatorConstants.countsPerInch,
+                currentState.position,
                 ControlType.kPosition,
                 ClosedLoopSlot.kSlot0,
                 ffVolts);

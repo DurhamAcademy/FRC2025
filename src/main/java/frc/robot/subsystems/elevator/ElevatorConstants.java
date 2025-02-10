@@ -39,14 +39,15 @@ public class ElevatorConstants {
     public static final double L3 = 32.041099;
     public static final double L4 = 58.211229; // max height
 
-    // TODO: MEASURE
-    public static final double driveEncoderPositionFactor =
-            2 * Math.PI / elevatorMotorReduction; // Rotor Rotations -> Wheel Radians
-    public static final double driveEncoderVelocityFactor =
-            (2 * Math.PI) / 60.0 / elevatorMotorReduction; // Rotor RPM -> Wheel Rad/Sec
+    public static final double elevatorMotorReduction = 2.0; // Motor gear reduction 22t -> 44t
+    public static final double elevatorEffectiveDrumRadius = 0.955 * 3; // Drum radius in inches multiplied by 3 because 3-stage elevator
+
+    public static final double elevatorEncoderPositionFactor =
+            (2 * Math.PI * elevatorEffectiveDrumRadius) / elevatorMotorReduction; // rotations -> inches
+    public static final double elevatorEncoderVelocityFactor =
+            (2 * Math.PI * elevatorEffectiveDrumRadius) / (60 * elevatorMotorReduction); // RPM -> inches/sec
     public static final double elevatorMaxVelocity = 10;
     public static final double elevatorMaxAcceleration = 10.0;
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
-    public static final double countsPerInch = 14;
 }
