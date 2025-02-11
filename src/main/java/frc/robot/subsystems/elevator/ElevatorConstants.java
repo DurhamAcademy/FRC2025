@@ -53,4 +53,6 @@ public class ElevatorConstants {
     public static final double elevatorMaxAcceleration = 10.0;
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
+
+    public static final double carriageWeightKg = 1.0;
 }
