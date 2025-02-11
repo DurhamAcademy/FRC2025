@@ -22,6 +22,7 @@ public class WristIOSim implements WristIO {
     private TrapezoidProfile.State goalState;
     private final ArmFeedforward feedForward;
 
+    // TODO have base mech2d instead of separate one
     public LoggedMechanism2d wristMechanism2d = new LoggedMechanism2d(3, 3);
     public LoggedMechanismRoot2d root;
     public LoggedMechanismLigament2d wristLigament;
