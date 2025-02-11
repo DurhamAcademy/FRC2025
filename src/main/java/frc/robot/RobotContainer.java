@@ -16,6 +16,7 @@ package frc.robot;
 import static edu.wpi.first.wpilibj2.command.Commands.either;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -112,6 +113,31 @@ public class RobotContainer {
                 elevator = new Elevator(new ElevatorIO() {});
                 break;
         }
+
+        NamedCommands.registerCommand(
+                "Elevator L1",
+                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)
+                );
+
+        NamedCommands.registerCommand(
+                "Elevator L2",
+                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)
+        );
+
+        NamedCommands.registerCommand(
+                "Elevator L3",
+                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)
+        );
+
+        NamedCommands.registerCommand(
+                "Elevator L4",
+                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)
+        );
+
+        NamedCommands.registerCommand(
+                "Elevator Intake",
+                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.)
+        )
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
