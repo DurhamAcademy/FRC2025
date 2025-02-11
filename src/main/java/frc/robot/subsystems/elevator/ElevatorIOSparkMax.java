@@ -137,7 +137,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     public void updateProfile() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
-        double ffVolts = feedForward.calculate(currentState.velocity);
+        double ffVolts = 0;
 
         // Use the profiler's position as the target for the motor controller
         Logger.recordOutput("Elevator/ProfilerVelocity", currentState.velocity);

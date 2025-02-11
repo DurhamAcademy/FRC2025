@@ -13,8 +13,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.wpilibj2.command.Commands.either;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -155,13 +153,7 @@ public class RobotContainer {
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX()));
 
-        elevator.setDefaultCommand(
-                either(
-                        ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO),
-                        ElevatorCommands.moveElevatorLevel(
-                                elevator,
-                                ElevatorLevel.ZERO), // ElevatorCommands.zeroElevator(elevator),
-                        elevator::hasZeroed));
+        elevator.setDefaultCommand(null);
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
@@ -201,7 +193,9 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
         // Elevator
-        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
+        operatorController
+                .start()
+                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO));
         operatorController
                 .a()
                 .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1

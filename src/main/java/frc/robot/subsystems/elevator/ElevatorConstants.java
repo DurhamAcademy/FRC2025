@@ -19,8 +19,8 @@ public class ElevatorConstants {
     public static final double elevatorKd = 0.0;
     // Elevator FF can be found through SysID
     public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 0.0;
-    public static final double elevatorKv = 0.0;
+    public static final double elevatorKg = 0.09;
+    public static final double elevatorKv = 0.14;
     public static final double elevatorKa = 0.0;
 
     public static final double wristKp = 1.0;
@@ -29,8 +29,8 @@ public class ElevatorConstants {
 
     public static final double maxWristPosition = 100.0;
     public static final double minWristPosition = 0.0;
-    public static final double wristMaxVelocity = 10.0;
-    public static final double wristMaxAcceleration = 10.0;
+    public static final double wristMaxVelocity = 1;
+    public static final double wristMaxAcceleration = 1;
 
     // Elevator Levels in inches from master sketch
     public static final double ZERO = 0.0; // min height

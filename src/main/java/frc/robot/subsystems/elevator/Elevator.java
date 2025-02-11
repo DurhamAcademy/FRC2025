@@ -1,6 +1,10 @@
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Volts;
+
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
@@ -23,8 +27,21 @@ public class Elevator extends SubsystemBase {
         }
     }
 
+    SysIdRoutine routine;
+
     public Elevator(ElevatorIO io) {
         this.io = io;
+        routine =
+                new SysIdRoutine(
+                        new SysIdRoutine.Config(
+                                null,
+                                null,
+                                null,
+                                (state ->
+                                        Logger.recordOutput(
+                                                "Elevator/SysIdTestState", state.toString()))),
+                        new SysIdRoutine.Mechanism(
+                                (voltage) -> io.setVoltage(voltage.in(Volts)), null, this));
     }
 
     @Override
@@ -55,4 +72,28 @@ public class Elevator extends SubsystemBase {
     public boolean isZeroed() {
         return inputs.isLimitSwitchPressed;
     }
+
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return routine.quasistatic(direction);
+    }
+
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return routine.dynamic(direction);
+    }
+
+    /*
+    TODO this is sys ID stuff to do later
+    operatorController
+                .povUp()
+                .whileTrue(elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        operatorController
+                .povDown()
+                .whileTrue(elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        operatorController
+                .povLeft()
+                .whileTrue(elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        operatorController
+                .povRight()
+                .whileTrue(elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+     */
 }
