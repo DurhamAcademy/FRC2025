@@ -132,11 +132,6 @@ public class RobotContainer {
                 ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)
         );
 
-        NamedCommands.registerCommand(
-                "Elevator Intake",
-                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.)
-        )
-
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
