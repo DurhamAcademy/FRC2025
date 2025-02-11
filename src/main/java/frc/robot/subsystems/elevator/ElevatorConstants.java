@@ -3,8 +3,8 @@ package frc.robot.subsystems.elevator;
 public class ElevatorConstants {
     // Device CAN IDs
     // todo is this facing from the front or the back?
-    public static final int leftElevatorCanId = 10;
-    public static final int rightElevatorCanId = 11;
+    public static final int leftElevatorCanId = 11;
+    public static final int rightElevatorCanId = 10;
     public static final int wristCanId = 12;
 
     // Limit Switch DIO #
@@ -39,13 +39,13 @@ public class ElevatorConstants {
     public static final double L3 = 32.041099;
     public static final double L4 = 58.211229; // max height
 
-    public static final double elevatorMotorReduction = 2.0; // Motor gear reduction 22t -> 44t
+    public static final double elevatorMotorReduction = 10.0; // Motor gear reduction 22t -> 44t
     public static final double elevatorEffectiveDrumRadius =
             0.955 * 3; // Drum radius in inches multiplied by 3 because 3-stage elevator
 
     public static final double elevatorEncoderPositionFactor =
             (2 * Math.PI * elevatorEffectiveDrumRadius)
-                    / elevatorMotorReduction; // rotations -> inches
+                    / (elevatorMotorReduction); // rotations -> inches
     public static final double elevatorEncoderVelocityFactor =
             (2 * Math.PI * elevatorEffectiveDrumRadius)
                     / (60 * elevatorMotorReduction); // RPM -> inches/sec

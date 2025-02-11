@@ -158,7 +158,9 @@ public class RobotContainer {
         elevator.setDefaultCommand(
                 either(
                         ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO),
-                        ElevatorCommands.zeroElevator(elevator),
+                        ElevatorCommands.moveElevatorLevel(
+                                elevator,
+                                ElevatorLevel.ZERO), // ElevatorCommands.zeroElevator(elevator),
                         elevator::hasZeroed));
 
         // DRIVER CONTROLLER

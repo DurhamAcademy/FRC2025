@@ -38,11 +38,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         primaryMotor = new SparkMax(ElevatorConstants.leftElevatorCanId, MotorType.kBrushless);
         followerMotor = new SparkMax(ElevatorConstants.rightElevatorCanId, MotorType.kBrushless);
 
-        SparkMaxConfig followerConfig = new SparkMaxConfig();
-        followerConfig.follow(primaryMotor, true);
-
-        followerMotor.configure(followerConfig, null, null);
-
         primaryEncoder = primaryMotor.getEncoder();
         followerEncoder = followerMotor.getEncoder();
 
@@ -87,6 +82,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     private void configureMotors() {
         primaryMotor.configure(resetConfig, ResetMode.kResetSafeParameters, null);
+
+        resetConfig.follow(primaryMotor, true);
 
         followerMotor.configure(resetConfig, ResetMode.kResetSafeParameters, null);
     }
