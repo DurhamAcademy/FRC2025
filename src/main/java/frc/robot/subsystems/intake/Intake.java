@@ -17,7 +17,6 @@ public class Intake extends SubsystemBase {
         intakeVoltageSetpoint = voltage;
     }
 
-
     public void simAddCoral(Pose2d robotPose) {
         io.simAddCoral(robotPose);
     }
