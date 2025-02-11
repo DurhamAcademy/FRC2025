@@ -3,7 +3,13 @@ package frc.robot.subsystems.elevator;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 public class WristIOSim implements WristIO {
     private double currentPositionRadians = 0.0; // Simulated position of the wrist (in radians)
@@ -15,6 +21,10 @@ public class WristIOSim implements WristIO {
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
     private final ArmFeedforward feedForward;
+
+    public LoggedMechanism2d wristMechanism2d = new LoggedMechanism2d(3, 3);
+    public LoggedMechanismRoot2d root;
+    public LoggedMechanismLigament2d wristLigament;
 
     public WristIOSim() {
         // Initialize feedforward controller and constraints
@@ -30,6 +40,12 @@ public class WristIOSim implements WristIO {
                         ElevatorConstants.wristKg,
                         ElevatorConstants.wristKv,
                         ElevatorConstants.wristKa);
+
+        root = wristMechanism2d.getRoot("wrist", 1.5, 1);
+        wristLigament =
+                root.append(
+                        new LoggedMechanismLigament2d(
+                                "wrist", 15, 90, 6, new Color8Bit(Color.kPurple)));
     }
 
     @Override
@@ -70,6 +86,8 @@ public class WristIOSim implements WristIO {
         Logger.recordOutput("WristSim/Angle", currentPositionRadians);
         Logger.recordOutput("WristSim/Velocity", currentVelocityRadiansPerSec);
         Logger.recordOutput("WristSim/TargetAngle", targetAngle.getRadians());
+        Logger.recordOutput("WristSim/Mechanism2d", wristMechanism2d);
+        wristLigament.setAngle(Units.radiansToDegrees(currentPositionRadians));
     }
 
     @Override
