@@ -7,8 +7,6 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 
 public class IntakeIOSparkMax implements IntakeIO {
@@ -16,7 +14,6 @@ public class IntakeIOSparkMax implements IntakeIO {
     private SparkMaxConfig resetConfig = new SparkMaxConfig();
     private SimpleMotorFeedforward feedforward;
     private RelativeEncoder intakeEncoder;
-
 
     public IntakeIOSparkMax() {
         intakeMotor = new SparkMax(IntakeConstants.motorId, SparkLowLevel.MotorType.kBrushless);
@@ -27,10 +24,7 @@ public class IntakeIOSparkMax implements IntakeIO {
         resetConfig
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                        IntakeConstants.intakeKp,
-                        IntakeConstants.intakeKi,
-                        IntakeConstants.intakeKd);
+                .pid(IntakeConstants.intakeKp, IntakeConstants.intakeKi, IntakeConstants.intakeKd);
 
         intakeMotor.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
 
@@ -43,7 +37,8 @@ public class IntakeIOSparkMax implements IntakeIO {
 
     @Override
     public void updateInputs(IntakeIOInputs inputs) {
-        inputs.velocityRadPerSec = intakeEncoder.getVelocity() * (2 * Math.PI / 60); // Convert RPM to rad/sec
+        inputs.velocityRadPerSec =
+                intakeEncoder.getVelocity() * (2 * Math.PI / 60); // Convert RPM to rad/sec
         inputs.appliedVolts = intakeMotor.getBusVoltage() * intakeMotor.getAppliedOutput();
         inputs.currentAmps = intakeMotor.getOutputCurrent();
         inputs.temperature = intakeMotor.getMotorTemperature();

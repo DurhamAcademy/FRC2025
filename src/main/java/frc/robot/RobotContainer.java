@@ -18,6 +18,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -27,13 +28,14 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnField;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -96,7 +98,7 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
                                 driveSimulation::setSimulationWorldPose,
                                 this);
-                intake = new Intake(new IntakeIOSim());
+                intake = new Intake(new IntakeIOSim(driveSimulation));
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -250,6 +252,11 @@ public class RobotContainer {
                                         }));
 
         driverController
+                .x()
+                .onTrue(IntakeCommands.runIntake(intake))
+                .onFalse(IntakeCommands.stopIntake(intake));
+
+        driverController
                 .leftBumper()
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
         driverController
@@ -284,6 +291,26 @@ public class RobotContainer {
         Logger.recordOutput(
                 "FieldSimulation/Algae",
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    }
+
+    /** For SIM only, adds a coral to the intake if the robot is at the human player station */
+    public void intakeCoralIfAtStation() {
+        if (DriverStation.getAlliance().isEmpty()) return;
+        final double DISTANCE_THRESHOLD = 1.0;
+        Logger.recordOutput(
+                "Intake/HumanPlayers",
+                Constants.LocationConstants.humanPlayerStations[
+                        Constants.getAllianceColor(DriverStation.getAlliance().get())]);
+        for (Pose2d stationPose :
+                Constants.LocationConstants.humanPlayerStations[
+                        Constants.getAllianceColor(DriverStation.getAlliance().get())]) {
+            Pose2d robotPose = drive.getPose();
+            double distance = robotPose.getTranslation().getDistance(stationPose.getTranslation());
+            Logger.recordOutput("Intake/HumanPlayerDist" + stationPose.toString(), distance);
+            if (distance < DISTANCE_THRESHOLD) {
+                intake.simAddCoral(robotPose);
+            }
+        }
     }
 
     public SwerveDriveSimulation getDriveSimulation() {

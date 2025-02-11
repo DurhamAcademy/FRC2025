@@ -1,5 +1,6 @@
 package frc.robot.subsystems.intake;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface IntakeIO {
@@ -18,4 +19,6 @@ public interface IntakeIO {
     public default void setIntakePercent(double percent) {}
 
     public default void setIntakeVoltage(double volts) {}
+
+    public default void simAddCoral(Pose2d robotPose) {}
 }
