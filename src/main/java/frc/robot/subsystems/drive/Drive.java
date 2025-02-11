@@ -233,7 +233,7 @@ public class Drive extends SubsystemBase {
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxSpeedMetersPerSec);
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxUsableSpeedMetersPerSec);
 
         // Log unoptimized setpoints
         Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
@@ -359,12 +359,12 @@ public class Drive extends SubsystemBase {
 
     /** Returns the maximum linear speed in meters per sec. */
     public double getMaxLinearSpeedMetersPerSec() {
-        return maxSpeedMetersPerSec;
+        return maxUsableSpeedMetersPerSec;
     }
 
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
-        return maxSpeedMetersPerSec / driveBaseRadius;
+        return maxUsableSpeedMetersPerSec / driveBaseRadius;
     }
 
     public Module getModule(int index) {
@@ -416,6 +416,38 @@ public class Drive extends SubsystemBase {
         targetReef = Constants.ReefConstants.values()[reef];
 
         updateDashboardReefVisualization(reef);
+    }
+
+    public void getMaxVelocity() {
+        SmartDashboard.getData("Max Speed");
+    }
+
+    public void makeMaxUsableSpeedUsable() {
+        if (maxUsableSpeedMetersPerSec > maxSpeedMetersPerSec) {
+            maxUsableSpeedMetersPerSec = maxSpeedMetersPerSec;
+        }
+        if (maxUsableSpeedMetersPerSec < 0) {
+            maxUsableSpeedMetersPerSec = 0;
+        }
+    }
+
+    public double makeMaxUsableSpeedRatio() {
+        makeMaxUsableSpeedUsable();
+        return maxUsableSpeedMetersPerSec / maxSpeedMetersPerSec;
+    }
+
+    public void updateDashboardInGeneralForDriveExceptNotReefVisualization() {
+        SmartDashboard.putData(
+                "Max Speed",
+                builder -> {
+                    builder.setSmartDashboardType("Double");
+                    builder.addDoubleProperty(
+                            "Max Speed",
+                            () -> maxUsableSpeedMetersPerSec,
+                            val -> maxUsableSpeedMetersPerSec = val);
+                });
+        makeMaxUsableSpeedUsable();
+        makeMaxUsableSpeedRatio();
     }
 
     public void updateDashboardReefVisualization(int reefIndex) {

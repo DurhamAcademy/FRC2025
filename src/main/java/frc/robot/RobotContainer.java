@@ -51,7 +51,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
-    // inverse axises
+    // inverse axes
     private boolean invertX = false;
     private boolean invertY = false;
     private double xDirect = 1;
@@ -139,6 +139,8 @@ public class RobotContainer {
                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
+        drive.makeMaxUsableSpeedUsable();
+        drive.makeMaxUsableSpeedRatio();
         sendDataToSmartDashboard();
         configureButtonBindings();
     }
@@ -168,8 +170,14 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> (yDirect * driverController.getLeftY()),
-                        () -> (xDirect * driverController.getLeftX()),
+                        () ->
+                                (drive.makeMaxUsableSpeedRatio()
+                                        * yDirect
+                                        * driverController.getLeftY()),
+                        () ->
+                                (drive.makeMaxUsableSpeedRatio()
+                                        * xDirect
+                                        * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
         // DRIVER CONTROLLER
@@ -179,8 +187,14 @@ public class RobotContainer {
                 .whileTrue(
                         DriveCommands.joystickDriveAtAngle(
                                 drive,
-                                () -> (yDirect * driverController.getLeftY()),
-                                () -> (xDirect * driverController.getLeftX()),
+                                () ->
+                                        (drive.makeMaxUsableSpeedRatio()
+                                                * yDirect
+                                                * driverController.getLeftY()),
+                                () ->
+                                        (drive.makeMaxUsableSpeedRatio()
+                                                * xDirect
+                                                * driverController.getLeftX()),
                                 Rotation2d::new));
 
         // Switch to X pattern when X button is pressed
@@ -266,6 +280,7 @@ public class RobotContainer {
 
     public void displaySimFieldToAdvantageScope() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
+        Logger.recordOutput("MAX SPEED", SmartDashboard.getNumber("Max Speed/Max Speed", 0));
         Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
         Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
         Logger.recordOutput(
@@ -284,6 +299,9 @@ public class RobotContainer {
 
     public void sendDataToSmartDashboard() {
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
+        drive.updateDashboardInGeneralForDriveExceptNotReefVisualization();
+        drive.makeMaxUsableSpeedUsable();
+        drive.makeMaxUsableSpeedRatio();
         SmartDashboard.putData(
                 "Override",
                 builder -> {
