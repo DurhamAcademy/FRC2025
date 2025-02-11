@@ -113,24 +113,16 @@ public class RobotContainer {
         }
 
         NamedCommands.registerCommand(
-                "Elevator L1",
-                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)
-                );
+                "Elevator L1", ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1));
 
         NamedCommands.registerCommand(
-                "Elevator L2",
-                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)
-        );
+                "Elevator L2", ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2));
 
         NamedCommands.registerCommand(
-                "Elevator L3",
-                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)
-        );
+                "Elevator L3", ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3));
 
         NamedCommands.registerCommand(
-                "Elevator L4",
-                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)
-        );
+                "Elevator L4", ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4));
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
