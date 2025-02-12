@@ -13,7 +13,11 @@
 
 package frc.robot.commands;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.HolonomicDriveController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -28,64 +32,33 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
-    private static final double DEADBAND = 0.1;
-    private static final double ANGLE_KP = 5.0;
-    private static final double ANGLE_KD = 0.4;
-    private static final double ANGLE_MAX_VELOCITY = 8.0;
-    private static final double ANGLE_MAX_ACCELERATION = 20.0;
+    public static final double DEADBAND = 0.1;
+    public static final double ANGLE_KP = 1.0;
+    public static final double ANGLE_KD = 0.4;
+
+    // TODO: update these numbers
+    public static final double LINEAR_MAX_ACCELERATION = 11.77;
+    public static final double ANGLE_MAX_VELOCITY = 12.37;
+    public static final double ANGLE_MAX_ACCELERATION = 74.34;
+
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
     private DriveCommands() {}
-
-    /** Class that holds command and ready supplier */
-    public static class CommandAndReadySupplier {
-        private final Command command;
-        private final BooleanSupplier readySupplier;
-
-        /**
-         * Default constructor for CommandAndReadySupplier class
-         *
-         * @param command the command
-         * @param readySupplier the function/lambda that will return a boolean
-         */
-        private CommandAndReadySupplier(Command command, BooleanSupplier readySupplier) {
-            this.command = command;
-            this.readySupplier = readySupplier;
-        }
-
-        /**
-         * Get function for command
-         *
-         * @return the command
-         */
-        public Command getCommand() {
-            return command;
-        }
-
-        /**
-         * Get function for readySupplier
-         *
-         * @return the lambda that will return a boolean
-         */
-        public BooleanSupplier getReadySupplier() {
-            return readySupplier;
-        }
-    }
 
     /*-----------------
     ----- MOVEMENT ----
@@ -143,6 +116,8 @@ public class DriveCommands {
                     boolean isFlipped =
                             DriverStation.getAlliance().isPresent()
                                     && DriverStation.getAlliance().get() == Alliance.Red;
+
+                    Logger.recordOutput("Drive/isFlipped", isFlipped);
 
                     // Run the velocity on the drive
                     drive.runVelocity(
@@ -242,11 +217,7 @@ public class DriveCommands {
                         }),
 
                 // Allow modules to orient
-                Commands.run(
-                                () -> {
-                                    drive.runCharacterization(0.0);
-                                },
-                                drive)
+                Commands.run(() -> drive.runCharacterization(0.0), drive)
                         .withTimeout(FF_START_DELAY),
 
                 // Start timer
@@ -298,10 +269,7 @@ public class DriveCommands {
                 // Drive control sequence
                 Commands.sequence(
                         // Reset acceleration limiter
-                        Commands.runOnce(
-                                () -> {
-                                    limiter.reset(0.0);
-                                }),
+                        Commands.runOnce(() -> limiter.reset(0.0)),
 
                         // Turn in place, accelerating up to full speed
                         Commands.run(
@@ -383,21 +351,46 @@ public class DriveCommands {
     /*-----------------
     ------ ALIGN ------
     -----------------*/
-    public CommandAndReadySupplier coralAlign(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            DoubleSupplier omegaSupplier) {
-        return null;
+
+    /**
+     * Calculates the target pose for the robot using the target reef pose
+     *
+     * @param drive, the drive subsystem
+     * @return Pose2d, the target pose for the robot
+     */
+    private static Pose2d calculateRobotTargetPose(Drive drive) {
+        // gets reef goal pose
+        Pose2d reefPose = drive.getTargetReefPose();
+
+        double shiftDistance = DriveConstants.robotWidth - .25;
+        Rotation2d shiftRotation =
+                Rotation2d.fromDegrees(
+                        reefPose.getRotation().getDegrees()
+                                + 180); // Reverse the rotation by 180 degrees
+        Pose2d goalPose =
+                new Pose2d(
+                        reefPose.getX()
+                                - shiftDistance * shiftRotation.getCos(), // Move backward in X
+                        // based
+                        // on rotation
+                        reefPose.getY()
+                                - shiftDistance * shiftRotation.getSin(), // Move backward in Y
+                        // based
+                        // on rotation
+                        shiftRotation);
+
+        Logger.recordOutput("AutoAlign/goalPose", goalPose);
+
+        return goalPose;
     }
 
-    public CommandAndReadySupplier reefAlign(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            DoubleSupplier omegaSupplier,
-            Constants.ReefConstants reef) {
-        // Create PID controller that deals with rotation
+    /**
+     * Roughly aligns to target position using AutoBuilder
+     *
+     * @param drive subsystem
+     * @return Command, command containing auto builder to goal location
+     */
+    public static Command roughAlignToTarget(Drive drive) {
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
                         ANGLE_KP,
@@ -405,91 +398,86 @@ public class DriveCommands {
                         ANGLE_KD,
                         new TrapezoidProfile.Constraints(
                                 ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-
-        // Enable continuous input
         angleController.enableContinuousInput(-Math.PI, Math.PI);
+        PathConstraints constraints =
+                new PathConstraints(
+                        DriveConstants.maxSpeedMetersPerSec,
+                        LINEAR_MAX_ACCELERATION,
+                        ANGLE_MAX_VELOCITY,
+                        ANGLE_MAX_ACCELERATION);
 
-        var command =
-                Commands.run(
-                                () -> {
-                                    // Get current linear velocity
-                                    Translation2d linearVelocity =
-                                            getLinearVelocityFromJoysticks(
-                                                    xSupplier.getAsDouble(),
-                                                    ySupplier.getAsDouble());
+        return Commands.defer(
+                        () -> {
+                            // Get goal position of robot
+                            Pose2d goalPose = calculateRobotTargetPose(drive);
 
-                                    // Get position of reef
-                                    Pose2d reefPose = drive.getReefPosition(reef);
-
-                                    // Get angle to reef
-                                    Rotation2d angle =
-                                            reefPose.getTranslation()
-                                                    .minus(drive.getPose().getTranslation())
-                                                    .getAngle();
-
-                                    // Calculate angular speed
-                                    double omega =
-                                            angleController.calculate(
-                                                    drive.getRotation().getRadians(),
-                                                    angle.getRadians());
-
-                                    // Convert to field relative speeds & send command
-                                    ChassisSpeeds speeds =
-                                            new ChassisSpeeds(
-                                                    linearVelocity.getX()
-                                                            * drive.getMaxLinearSpeedMetersPerSec(),
-                                                    linearVelocity.getY()
-                                                            * drive.getMaxLinearSpeedMetersPerSec(),
-                                                    omega);
-
-                                    // See if rotation should be flipped, red = flipped, blue =
-                                    // normal
-                                    boolean isFlipped =
-                                            DriverStation.getAlliance().isPresent()
-                                                    && DriverStation.getAlliance().get()
-                                                            == Alliance.Red;
-
-                                    // Run the velocity on the drive
-                                    drive.runVelocity(
-                                            ChassisSpeeds.fromFieldRelativeSpeeds(
-                                                    speeds,
-                                                    isFlipped
-                                                            ? drive.getRotation()
-                                                                    .plus(new Rotation2d(Math.PI))
-                                                            : drive.getRotation()));
-                                },
-                                drive)
-                        .beforeStarting(
-                                () -> angleController.reset(drive.getRotation().getRadians()));
-        // TODO: unsure what this code does, requires some testing
-        //                .until(
-        //                        () -> {
-        //                            // if the controller is giving a turn input, end the command
-        //                            // because the driver is trying to take back control
-        //                            var isGTE = omegaSupplier.getAsDouble() >= DEADBAND;
-        //                            var isLTE = omegaSupplier.getAsDouble() <= -DEADBAND;
-        //                            return !RobotState.isAutonomous() && (isLTE || isGTE);
-        //                            // until the driver moves the stick, and it is not during
-        // autonomous
-        //                        }
-        //                );
-
-        return new CommandAndReadySupplier(command, angleController::atGoal);
+                            // Return the actual pathfinding command
+                            return AutoBuilder.pathfindToPose(goalPose, constraints, 0.0);
+                        },
+                        Set.of(drive))
+                .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
     }
 
-    public CommandAndReadySupplier shootAlign(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            DoubleSupplier omegaSupplier) {
-        return null;
-    }
+    /**
+     * Precisely aligns to target position using chassis speeds & set precision values
+     *
+     * @param drive subsystem
+     * @return Command, command containing drive.runVelocity() to goal location
+     */
+    public static Command preciseAlignToTarget(Drive drive) {
+        // makes a new controller with PID values for correction
+        HolonomicDriveController holonomicDriveController =
+                new HolonomicDriveController(
+                        // a value in the kp param is how many meters the robot should adjust by, if
+                        // off by a meter
+                        new PIDController(1, 0, 0),
+                        new PIDController(1, 0, 0),
+                        new ProfiledPIDController(
+                                // max velocity of 1 rotation/s
+                                1,
+                                0,
+                                0,
+                                // max velocity and max acceleration TODO check these values
+                                new TrapezoidProfile.Constraints(1, 3.14)));
+        holonomicDriveController.getThetaController().enableContinuousInput(-Math.PI, Math.PI);
+        // sets 5cm and 5 degree precision
+        holonomicDriveController.setTolerance(new Pose2d(0.05, 0.05, Rotation2d.fromDegrees(5)));
 
-    public CommandAndReadySupplier processorAlign(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            DoubleSupplier omegaSupplier) {
-        return null;
+        return Commands.run(
+                        () -> {
+
+                            // Get goal pose for robot
+                            Pose2d goalPose = calculateRobotTargetPose(drive);
+
+                            double distance =
+                                    drive.getPose()
+                                            .getTranslation()
+                                            .getDistance(goalPose.getTranslation());
+                            double rotationError =
+                                    Math.abs(
+                                            drive.getPose().getRotation().getDegrees()
+                                                    - goalPose.getRotation().getDegrees());
+
+                            // only run if not on target
+                            if (distance > 0.05 && rotationError > 2.0) {
+                                // get speeds to move to goal pose
+                                ChassisSpeeds speeds =
+                                        holonomicDriveController.calculate(
+                                                drive.getPose(),
+                                                goalPose,
+                                                0,
+                                                goalPose.getRotation());
+
+                                // go to goal pose
+                                // TODO figure out why this isn't field relative?
+                                drive.runVelocity(speeds);
+                            }
+                        },
+                        drive)
+                .beforeStarting(
+                        () ->
+                                holonomicDriveController
+                                        .getThetaController()
+                                        .reset(drive.getRotation().getRadians()));
     }
 }

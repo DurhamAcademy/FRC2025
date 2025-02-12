@@ -13,14 +13,18 @@
 
 package frc.robot;
 
+import static edu.wpi.first.wpilibj2.command.Commands.*;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -55,6 +59,12 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
+    // inverse axises
+    private boolean invertX = false;
+    private boolean invertY = false;
+    private double xDirect = 1;
+    private double yDirect = 1;
+
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
@@ -66,8 +76,9 @@ public class RobotContainer {
                                 new ModuleIOSpark(0),
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
-                                new ModuleIOSpark(3));
-                elevator = new Elevator(new ElevatorIOSparkMax());
+                                new ModuleIOSpark(3),
+                                (pose) -> {},
+                                this);
                 break;
 
             case SIM:
@@ -84,7 +95,9 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[0]),
                                 new ModuleIOSim(driveSimulation.getModules()[1]),
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
-                                new ModuleIOSim(driveSimulation.getModules()[3]));
+                                new ModuleIOSim(driveSimulation.getModules()[3]),
+                                driveSimulation::setSimulationWorldPose,
+                                this);
                 // TODO: Elevator SIM
                 elevator = new Elevator(new ElevatorIOSim() {});
 
@@ -107,7 +120,10 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {},
-                                new ModuleIO() {});
+                                new ModuleIO() {},
+                                (pose) -> {},
+                                this);
+            
                 elevator = new Elevator(new ElevatorIO() {});
                 break;
         }
@@ -148,7 +164,22 @@ public class RobotContainer {
                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
+        sendDataToSmartDashboard();
         configureButtonBindings();
+    }
+
+    public void getSwerveDirection() {
+
+        if (invertX) {
+            xDirect = -1;
+        } else {
+            xDirect = 1;
+        }
+        if (invertY) {
+            yDirect = -1;
+        } else {
+            yDirect = 1;
+        }
     }
 
     /**
@@ -162,10 +193,10 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -driverController.getLeftY(),
-                        () -> -driverController.getLeftX(),
+                        () -> (yDirect * driverController.getLeftY()),
+                        () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
-
+      
         elevator.setDefaultCommand(null);
 
         // DRIVER CONTROLLER
@@ -175,34 +206,12 @@ public class RobotContainer {
                 .whileTrue(
                         DriveCommands.joystickDriveAtAngle(
                                 drive,
-                                () -> -driverController.getLeftY(),
-                                () -> -driverController.getLeftX(),
-                                () -> new Rotation2d()));
+                                () -> (yDirect * driverController.getLeftY()),
+                                () -> (xDirect * driverController.getLeftX()),
+                                Rotation2d::new));
 
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-        // Reset gyro to 0° when B button is pressed
-        driverController
-                .b()
-                .onTrue(
-                        Commands.runOnce(
-                                        () ->
-                                                drive.setPose(
-                                                        new Pose2d(
-                                                                drive.getPose().getTranslation(),
-                                                                new Rotation2d())),
-                                        drive)
-                                .ignoringDisable(true));
-
-        //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
-        //            ? () -> drive.setPose(
-        //            driveSimulation
-        //                    .getSimulatedDriveTrainPose()) // reset odometry to actual robot pose
-        // during simulation
-        //            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new
-        // Rotation2d())); // zero gyro
-        //    controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
         // OPERATOR CONTROLLER
         // Elevator
@@ -221,6 +230,68 @@ public class RobotContainer {
         operatorController
                 .y()
                 .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+
+        // Align to the closest reef
+        driverController
+                .b()
+                .onTrue(runOnce(drive::setTargetReefToClosest, drive))
+                .whileTrue(
+                        Commands.repeatingSequence(
+                                        new ConditionalCommand(
+                                                // goalPose > 1m away
+                                                DriveCommands.roughAlignToTarget(drive),
+                                                // goalPose <= 1m away
+                                                DriveCommands.preciseAlignToTarget(drive),
+                                                () -> {
+                                                    // Calculate the distance between the robot and
+                                                    // the target.
+                                                    Pose2d currentPose =
+                                                            drive.getPose(); // Get current robot
+                                                    // pose
+                                                    Pose2d targetPose =
+                                                            drive.getTargetReefPose(); // Target
+                                                    // pose
+                                                    double distance =
+                                                            currentPose
+                                                                    .getTranslation()
+                                                                    .getDistance(
+                                                                            targetPose
+                                                                                    .getTranslation());
+
+                                                    // true if distance > threshold distance (m)
+                                                    return distance > 1;
+                                                }))
+                                .until(
+                                        () -> {
+                                            // Overall condition to stop this command (robot
+                                            // must be at goal pose)
+                                            Pose2d currentPose = drive.getPose();
+                                            Pose2d targetPose = drive.getTargetReefPose();
+                                            // Calculate distance and rotation
+                                            double distance =
+                                                    currentPose
+                                                            .getTranslation()
+                                                            .getDistance(
+                                                                    targetPose.getTranslation());
+                                            double rotationError =
+                                                    Math.abs(
+                                                            currentPose.getRotation().getDegrees()
+                                                                    - targetPose
+                                                                            .getRotation()
+                                                                            .getDegrees());
+
+                                            // Stop when BOTH distance and orientation are
+                                            // within the thresholds
+                                            return distance < 0.05
+                                                    && rotationError < 2.0; // <5 cm and < 5 degrees
+                                        }));
+
+        driverController
+                .leftBumper()
+                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
+        driverController
+                .rightBumper()
+                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
     }
 
     /**
@@ -232,16 +303,16 @@ public class RobotContainer {
         return autoChooser.get();
     }
 
+    /** Sets the robot to a default position and reset's the simulation field. */
     public void resetSimulationField() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-
-        driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 
     public void displaySimFieldToAdvantageScope() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
-
+        Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
+        Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
         Logger.recordOutput(
                 "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
@@ -250,5 +321,76 @@ public class RobotContainer {
         Logger.recordOutput(
                 "FieldSimulation/Algae",
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    }
+
+    public SwerveDriveSimulation getDriveSimulation() {
+        return driveSimulation;
+    }
+
+    public void sendDataToSmartDashboard() {
+        drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
+        SmartDashboard.putData(
+                "Override",
+                builder -> {
+                    builder.setSmartDashboardType("Boolean");
+                    builder.addBooleanProperty(
+                            "Override Reef AA",
+                            // Getter to read the current value
+                            () -> drive.overrideReefAutoAlign,
+                            // Setter to update the value
+                            val -> drive.overrideReefAutoAlign = val);
+                });
+        SmartDashboard.putData(
+                "INVERT AXES",
+                builder -> {
+                    builder.setSmartDashboardType("boolean");
+                    builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
+                    builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
+                });
+
+        SmartDashboard.putData(
+                "Swerve Drive",
+                builder -> {
+                    builder.setSmartDashboardType("SwerveDrive");
+
+                    builder.addDoubleProperty(
+                            "Front Left Angle",
+                            () -> drive.getModule(0).getAngle().getRadians(),
+                            null);
+                    builder.addDoubleProperty(
+                            "Front Left Velocity",
+                            () -> drive.getModule(0).getVelocityMetersPerSec(),
+                            null);
+
+                    builder.addDoubleProperty(
+                            "Front Right Angle",
+                            () -> drive.getModule(1).getAngle().getRadians(),
+                            null);
+                    builder.addDoubleProperty(
+                            "Front Right Velocity",
+                            () -> drive.getModule(1).getVelocityMetersPerSec(),
+                            null);
+
+                    builder.addDoubleProperty(
+                            "Back Left Angle",
+                            () -> drive.getModule(2).getAngle().getRadians(),
+                            null);
+                    builder.addDoubleProperty(
+                            "Back Left Velocity",
+                            () -> drive.getModule(2).getVelocityMetersPerSec(),
+                            null);
+
+                    builder.addDoubleProperty(
+                            "Back Right Angle",
+                            () -> drive.getModule(3).getAngle().getRadians(),
+                            null);
+                    builder.addDoubleProperty(
+                            "Back Right Velocity",
+                            () -> drive.getModule(3).getVelocityMetersPerSec(),
+                            null);
+
+                    builder.addDoubleProperty(
+                            "Robot Angle", () -> drive.getPose().getRotation().getRadians(), null);
+                });
     }
 }
