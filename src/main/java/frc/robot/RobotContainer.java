@@ -34,6 +34,7 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -78,7 +79,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
-                elevator = new Elevator(new ElevatorIO() {});
+                elevator = new Elevator(new ElevatorIOSparkMax() {});
                 break;
 
             case SIM:
@@ -213,24 +214,6 @@ public class RobotContainer {
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-        // OPERATOR CONTROLLER
-        // Elevator
-        operatorController
-                .start()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO));
-        operatorController
-                .a()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1
-        operatorController
-                .x()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)); // L2
-        operatorController
-                .b()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)); // L3
-        operatorController
-                .y()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
-
         // Align to the closest reef
         driverController
                 .b()
@@ -292,6 +275,24 @@ public class RobotContainer {
         driverController
                 .rightBumper()
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
+
+        // OPERATOR CONTROLLER
+        // Elevator
+        operatorController
+                .start()
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO));
+        operatorController
+                .a()
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+        operatorController
+                .x()
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+        operatorController
+                .b()
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+        operatorController
+                .y()
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
     }
 
     /**

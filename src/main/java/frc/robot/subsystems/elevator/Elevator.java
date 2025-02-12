@@ -27,11 +27,11 @@ public class Elevator extends SubsystemBase {
         }
     }
 
-    SysIdRoutine routine;
+    SysIdRoutine sysIdRoutine;
 
     public Elevator(ElevatorIO io) {
         this.io = io;
-        routine =
+        sysIdRoutine =
                 new SysIdRoutine(
                         new SysIdRoutine.Config(
                                 null,
@@ -49,8 +49,9 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
+        // TODO: wait for limit switch and change DIO port and uncomment this
         //        if (inputs.isLimitSwitchPressed) {
-        //            io.setEncoder(ElevatorConstants.minHeight * ElevatorConstants.countsPerInch);
+        //            io.setEncoder(ElevatorConstants.minHeight);
         //            hasZeroed = true;
         //        }
 
@@ -74,11 +75,11 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return routine.quasistatic(direction);
+        return sysIdRoutine.quasistatic(direction);
     }
 
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return routine.dynamic(direction);
+        return sysIdRoutine.dynamic(direction);
     }
 
     /*

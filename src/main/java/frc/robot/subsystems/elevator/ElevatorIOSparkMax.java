@@ -18,21 +18,27 @@ import org.littletonrobotics.junction.Logger;
 
 public class ElevatorIOSparkMax implements ElevatorIO {
     // some credit to https://chiefdelphi.com/t/elevator-subsystem-example-code/482648
+    // spark max stuff
     private final SparkMax primaryMotor;
     private final SparkMax followerMotor;
     private final SparkClosedLoopController primaryController;
     private final RelativeEncoder primaryEncoder;
     private final RelativeEncoder followerEncoder;
-    private final DigitalInput limitSwitch;
     private final SparkMaxConfig resetConfig = new SparkMaxConfig();
+
+    // limit switch
+    private final DigitalInput limitSwitch;
+
     private double targetHeightInches = 0.0;
 
+    // trapezoid profile stuff
     private final TrapezoidProfile.Constraints constraints;
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
     private final ElevatorFeedforward feedForward;
 
+    /** Real IO Implementation for our elevator */
     public ElevatorIOSparkMax() {
         // Primary motor = left motor
         primaryMotor = new SparkMax(ElevatorConstants.leftElevatorCanId, MotorType.kBrushless);
@@ -64,6 +70,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
         configureMotors();
 
+        // trapezoid movement profile best for elevator (trapezoid looking velocity graph)
         constraints =
                 new TrapezoidProfile.Constraints(
                         ElevatorConstants.elevatorMaxVelocity, // in/s
@@ -72,6 +79,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         goalState = new TrapezoidProfile.State(0, 0);
         profile = new TrapezoidProfile(constraints);
 
+        // ff with values calculated by sysID
         feedForward =
                 new ElevatorFeedforward(
                         ElevatorConstants.elevatorKs,
@@ -80,9 +88,13 @@ public class ElevatorIOSparkMax implements ElevatorIO {
                         ElevatorConstants.elevatorKa);
     }
 
+    /**
+     * Configuring both motors with the same config but have the following motor follow the primary motor
+     */
     private void configureMotors() {
         primaryMotor.configure(resetConfig, ResetMode.kResetSafeParameters, null);
 
+        // adding the follow config for the follower motor
         resetConfig.follow(primaryMotor, true);
 
         followerMotor.configure(resetConfig, ResetMode.kResetSafeParameters, null);
@@ -124,23 +136,29 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     @Override
     public void setTargetHeightInches(double heightInches) {
+        // ensuring that the target height is set between the min and max height
         targetHeightInches =
                 MathUtil.clamp(
                         heightInches, ElevatorConstants.minHeight, ElevatorConstants.maxHeight);
 
+        // setting the goal state of the trapezoid profile to the new target height
         goalState = new TrapezoidProfile.State(targetHeightInches, 0);
     }
 
+    /** Updating trapezoid profiler and reference height using the profiler during the elevator subsystem's periodic function */
     @Override
-    public void updateProfile() {
+    public void periodic() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
         double ffVolts = 0;
+        // not sure if this works yet
+        // double ffVolts = feedForward.calculate(currentState.velocity);;
 
         // Use the profiler's position as the target for the motor controller
         Logger.recordOutput("Elevator/ProfilerVelocity", currentState.velocity);
         Logger.recordOutput("Elevator/ProfilerPosition", currentState.position);
 
+        // setting the motor controllers to the target positions and the controllers will do the PID calculations
         primaryController.setReference(
                 currentState.position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
     }
