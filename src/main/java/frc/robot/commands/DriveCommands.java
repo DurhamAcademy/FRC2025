@@ -365,11 +365,10 @@ public class DriveCommands {
      */
     private static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
         Pose2d locationPose = new Pose2d();
-        if(location == autoAlignLocations.reef){
+        if (location == autoAlignLocations.reef) {
             // gets reef goal pose
             locationPose = drive.getTargetReefPose();
-        }
-        else if(location == autoAlignLocations.processor){
+        } else if (location == autoAlignLocations.processor) {
             // TODO add processor location
         }
 
@@ -396,7 +395,8 @@ public class DriveCommands {
     }
 
     public enum autoAlignLocations {
-        reef, processor
+        reef,
+        processor
     }
 
     /**
@@ -498,6 +498,7 @@ public class DriveCommands {
 
     /**
      * Runs both rough and precise auto align to target code
+     *
      * @param drive
      * @return Commands.repeatingSequence
      */

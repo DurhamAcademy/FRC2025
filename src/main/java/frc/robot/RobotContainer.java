@@ -217,7 +217,9 @@ public class RobotContainer {
         driverController
                 .b()
                 .onTrue(runOnce(drive::setTargetReefToClosest, drive))
-                .whileTrue(DriveCommands.autoAlignToReef(drive, DriveCommands.autoAlignLocations.reef));
+                .whileTrue(
+                        DriveCommands.autoAlignToReef(
+                                drive, DriveCommands.autoAlignLocations.reef));
 
         driverController
                 .leftBumper()
