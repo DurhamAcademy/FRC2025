@@ -1,9 +1,8 @@
 package frc.robot.subsystems.elevator;
 
+import com.ctre.phoenix6.configs.CANcoderConfigurator;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -13,15 +12,11 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.simulation.*;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -29,7 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorIOSim implements ElevatorIO {
-    private final ElevatorSim elevatorSim;
+    private ElevatorSim elevatorSim;
     private final SparkMaxSim motorSim;
     private final SparkRelativeEncoderSim encoderSim;
     private final SparkClosedLoopController controllerSim;
@@ -43,8 +38,6 @@ public class ElevatorIOSim implements ElevatorIO {
 
     private double targetHeightInches = 0.0;
 
-
-
     public ElevatorIOSim() {
         SparkMax sparkMax = new SparkMax(ElevatorConstants.leftElevatorCanId, MotorType.kBrushless);
 
@@ -56,29 +49,34 @@ public class ElevatorIOSim implements ElevatorIO {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
 
         // Set basic motor configuration
-        motorConfig.idleMode(SparkBaseConfig.IdleMode.kBrake)
+        motorConfig
+                .idleMode(SparkBaseConfig.IdleMode.kBrake)
                 .smartCurrentLimit(40)
                 .voltageCompensation(12.0);
 
         // Configure the encoder
-        motorConfig.encoder
+        motorConfig
+                .encoder
                 .positionConversionFactor(ElevatorConstants.elevatorEncoderPositionFactor)
                 .velocityConversionFactor(ElevatorConstants.elevatorEncoderVelocityFactor)
                 .uvwMeasurementPeriod(10)
                 .uvwAverageDepth(2);
 
         // Configure closed loop control
-        motorConfig.closedLoop
+        motorConfig
+                .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
                 .pid(
                         ElevatorConstants.elevatorKp,
                         ElevatorConstants.elevatorKi,
-                        ElevatorConstants.elevatorKd
-                );
+                        ElevatorConstants.elevatorKd);
 
         sparkMax.configure(motorConfig, ResetMode.kResetSafeParameters, null);
 
-        motorSim = new SparkMaxSim(new SparkMax(ElevatorConstants.leftElevatorCanId, MotorType.kBrushless), DCMotor.getNEO(2));
+        motorSim =
+                new SparkMaxSim(
+                        new SparkMax(ElevatorConstants.leftElevatorCanId, MotorType.kBrushless),
+                        DCMotor.getNEO(2));
         encoderSim = motorSim.getRelativeEncoderSim();
 
         constraints =
@@ -103,14 +101,15 @@ public class ElevatorIOSim implements ElevatorIO {
                                 DCMotor.getNEO(2),
                                 ElevatorConstants.elevatorMotorReduction,
                                 ElevatorConstants.carriageWeightKg,
-                                Units.inchesToMeters(ElevatorConstants.elevatorEffectiveDrumRadius)),
+                                Units.inchesToMeters(
+                                        ElevatorConstants.elevatorEffectiveDrumRadius)),
                         DCMotor.getNEO(2),
                         Units.inchesToMeters(ElevatorConstants.ZERO), // min height
                         Units.inchesToMeters(ElevatorConstants.L4), // max height
                         true, // simulate gravity
                         0,
                         0.003, // Position stddev - NEO encoder precision
-                        0.03);   // Velocity stddev
+                        0.03); // Velocity stddev
     }
 
     // mechanism2d stuff
@@ -121,19 +120,24 @@ public class ElevatorIOSim implements ElevatorIO {
             m_mech2d_root.append(
                     new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), 90));
 
+    private MechanismLigament2d m_wristMech2d =
+            m_elevatorMech2d.append(
+                    new MechanismLigament2d("Wrist", elevatorSim.getPositionMeters(), 0));
+
     @Override
     public void setEncoder(double position) {
+        CANcoderConfigurator primaryEncoder = null;
         primaryEncoder.setPosition(position);
     }
 
     @Override
     public void setPower(double power) {
-        primaryMotor.set(power);
+        motorSim.setVelocity(power);
     }
 
     @Override
     public void setVoltage(double voltage) {
-        motorSim.set(voltage);
+        motorSim.setBusVoltage(voltage);
     }
 
     @Override
@@ -174,13 +178,14 @@ public class ElevatorIOSim implements ElevatorIO {
         Logger.recordOutput("Elevator/ProfilerVelocity", currentState.velocity);
         Logger.recordOutput("Elevator/ProfilerPosition", currentState.position);
 
-        .setReference(
-                currentState.position, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
-        elevatorSim.setInput(m_motorSim.getSpeed() * RobotController.getBatteryVoltage());
+        // .setReference(currentState.position, SparkBase.ControlType.kPosition,
+        // ClosedLoopSlot.kSlot0, ffVolts);
+        elevatorSim.setInput(motorSim.getVelocity() * RobotController.getBatteryVoltage());
         elevatorSim.update(0.02);
-        m_encoderSim.setDistance(elevatorSim.getPositionMeters());
+        encoderSim.setPosition(elevatorSim.getPositionMeters());
         RoboRioSim.setVInVoltage(
                 BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps()));
-
+        m_elevatorMech2d.setLength(encoderSim.getPosition()); // add minimum length offset
+        m_wristMech2d.setAngle(m_wristMech2d.getAngle());
     }
 }

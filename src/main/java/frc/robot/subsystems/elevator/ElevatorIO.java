@@ -34,6 +34,5 @@ public interface ElevatorIO {
     /** Resets encoder */
     public default void setEncoder(double position) {}
 
-    /** Called in the main subsystem periodic function */
     public default void periodic() {}
 }

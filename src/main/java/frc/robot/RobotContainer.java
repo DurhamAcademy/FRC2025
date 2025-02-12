@@ -87,7 +87,7 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
                                 new ModuleIOSim(driveSimulation.getModules()[3]));
                 // TODO: Elevator SIM
-                elevator = new Elevator(new ElevatorIOSim() {});
+                elevator = new Elevator(new ElevatorIOSim());
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
