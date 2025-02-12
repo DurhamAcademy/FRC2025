@@ -34,7 +34,6 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
-import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -123,7 +122,7 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
-            
+
                 elevator = new Elevator(new ElevatorIO() {});
                 break;
         }
@@ -196,7 +195,7 @@ public class RobotContainer {
                         () -> (yDirect * driverController.getLeftY()),
                         () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
-      
+
         elevator.setDefaultCommand(null);
 
         // DRIVER CONTROLLER
