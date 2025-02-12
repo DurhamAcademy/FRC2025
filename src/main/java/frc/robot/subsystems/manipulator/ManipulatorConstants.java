@@ -5,6 +5,7 @@ public class ManipulatorConstants {
     // update when robot built
     public static final int MANIPULATOR_ROLLERL_CanId = -1;
     public static final int MANIPULATOR_ROLLERR_CanId = -1;
+    public static final int MANIPULATOR_BEAM_CanID = -1;
 
     // the gear ratio of the gear box
     public static final double manipulatorGearRatio = -1;

@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class ManipulatorIOSim implements ManipulatorIO {
 
-    private FlywheelSim rollerSim =
+    private final FlywheelSim rollerSim =
             new FlywheelSim(
                     LinearSystemId.createFlywheelSystem(
                             DCMotor.getNEO(2), 3, 1.0 / ManipulatorConstants.manipulatorGearRatio),

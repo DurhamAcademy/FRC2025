@@ -14,6 +14,8 @@ public interface ManipulatorIO {
         public double rollerRAppliedVolts = 0.0;
         public double[] rollerRCurrentAmps = new double[] {};
         public double[] rollerRTemperature = new double[] {};
+
+        public boolean beamObstructed;
     }
 
     public default void updateInputs(ManipulatorIOInputs inputs) {}

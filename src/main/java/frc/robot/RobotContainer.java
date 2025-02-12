@@ -14,6 +14,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -23,7 +24,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.manipulator.Manipulator;
+import frc.robot.subsystems.manipulator.ManipulatorIO;
+import frc.robot.subsystems.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.manipulator.ManipulatorIOSparkFlex;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -38,6 +44,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
+    private final Manipulator manipulator;
     private SwerveDriveSimulation driveSimulation = null;
 
     // Controller
@@ -58,6 +65,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
                                 new ModuleIOSpark(3));
+                manipulator = new Manipulator(new ManipulatorIOSparkFlex());
                 break;
 
             case SIM:
@@ -75,7 +83,7 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[1]),
                                 new ModuleIOSim(driveSimulation.getModules()[2]),
                                 new ModuleIOSim(driveSimulation.getModules()[3]));
-
+                manipulator = new Manipulator(new ManipulatorIOSim());
                 // TODO: Vision SIM
                 //        vision = new Vision(
                 //                drive,
@@ -96,8 +104,22 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {});
+                manipulator = new Manipulator(new ManipulatorIO(){});
                 break;
         }
+
+        NamedCommands.registerCommand(
+                "Safe Intake(to beambrake)",
+                ManipulatorCommands.safeIntake(manipulator)
+        );
+        NamedCommands.registerCommand(
+                "Force Intake",
+                ManipulatorCommands.intake(manipulator)
+        );
+        NamedCommands.registerCommand(
+                "Eject",
+                ManipulatorCommands.eject(manipulator)
+        );
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
