@@ -151,7 +151,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
      * subsystem's periodic function
      */
     @Override
-    public void periodic() {
+    public void updateProfile() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
         double ffVolts = 0;
