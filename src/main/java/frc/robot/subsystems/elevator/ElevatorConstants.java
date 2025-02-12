@@ -43,7 +43,8 @@ public class ElevatorConstants {
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
 
-    public static final double elevatorMotorReduction = 10.0; // Motor gear reduction 5:1 (NEO) and 2:1 (22t -> 44t)
+    public static final double elevatorMotorReduction =
+            10.0; // Motor gear reduction 5:1 (NEO) and 2:1 (22t -> 44t)
     public static final double elevatorEffectiveDrumRadius =
             0.955 * 3; // Drum radius in inches multiplied by 3 because 3-stage elevator
     public static final double elevatorEncoderPositionFactor =

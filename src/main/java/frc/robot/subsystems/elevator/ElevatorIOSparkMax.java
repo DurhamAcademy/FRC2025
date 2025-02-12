@@ -89,7 +89,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     }
 
     /**
-     * Configuring both motors with the same config but have the following motor follow the primary motor
+     * Configuring both motors with the same config but have the following motor follow the primary
+     * motor
      */
     private void configureMotors() {
         primaryMotor.configure(resetConfig, ResetMode.kResetSafeParameters, null);
@@ -145,7 +146,10 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         goalState = new TrapezoidProfile.State(targetHeightInches, 0);
     }
 
-    /** Updating trapezoid profiler and reference height using the profiler during the elevator subsystem's periodic function */
+    /**
+     * Updating trapezoid profiler and reference height using the profiler during the elevator
+     * subsystem's periodic function
+     */
     @Override
     public void periodic() {
         // Calculate the next state (position and velocity)
@@ -158,7 +162,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         Logger.recordOutput("Elevator/ProfilerVelocity", currentState.velocity);
         Logger.recordOutput("Elevator/ProfilerPosition", currentState.position);
 
-        // setting the motor controllers to the target positions and the controllers will do the PID calculations
+        // setting the motor controllers to the target positions and the controllers will do the PID
+        // calculations
         primaryController.setReference(
                 currentState.position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
     }
