@@ -7,8 +7,9 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 
-public class ManipulatorIOSparkFlex {
+public class ManipulatorIOSparkFlex implements ManipulatorIO {
     private final SparkFlex primaryRollerR =
             new SparkFlex(
                     ManipulatorConstants.MANIPULATOR_ROLLERL_CanId,
@@ -24,17 +25,19 @@ public class ManipulatorIOSparkFlex {
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
+    private SparkMaxConfig followerConfig;
     private final ElevatorFeedforward feedForward;
+    private final DigitalInput beam;
 
     public ManipulatorIOSparkFlex() {
         primaryRollerR.setCANTimeout(250);
         followRollerL.setCANTimeout(250);
 
-        SparkMaxConfig followerConfig = new SparkMaxConfig();
-        followerConfig.follow(primaryRollerR, true);
-        followRollerL.configure(followerConfig, null, null);
+        followerConfig = new SparkMaxConfig();
 
         primaryController = primaryRollerR.getClosedLoopController();
+
+        beam = new DigitalInput(ManipulatorConstants.MANIPULATOR_BEAM_CanID);
 
         resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
         resetConfig.smartCurrentLimit(40);
@@ -67,6 +70,9 @@ public class ManipulatorIOSparkFlex {
     private void configureMotors() {
         primaryRollerR.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
         followRollerL.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
+
+        followerConfig.follow(primaryRollerR, true);
+        followRollerL.configure(followerConfig, null, null);
     }
 
     public void updateInputs(ManipulatorIO.ManipulatorIOInputs inputs) {
@@ -85,6 +91,7 @@ public class ManipulatorIOSparkFlex {
         inputs.rollerRVelocityRadPerSec =
                 Units.rotationsPerMinuteToRadiansPerSecond(
                         primaryRollerR.getExternalEncoder().getVelocity());
+        inputs.beamObstructed = beam.get();
     }
 
     /** Set intake wheel percent -1 to 1 */
@@ -101,7 +108,10 @@ public class ManipulatorIOSparkFlex {
         primaryRollerR.set(0);
     }
 
-    public void updateProfile() {
+    // only to be used if we at some point want to have speed such as something ike barge or
+    // something similar, thus it is commented out, but should be easy to set up since pid and
+    // FF are already initialized
+    /**public void updateProfile() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
         double ffVolts = feedForward.calculate(currentState.velocity);
@@ -112,5 +122,6 @@ public class ManipulatorIOSparkFlex {
                 SparkBase.ControlType.kPosition,
                 ClosedLoopSlot.kSlot0,
                 ffVolts);
-    }
+<<<<<<< HEAD
+    }*/
 }
