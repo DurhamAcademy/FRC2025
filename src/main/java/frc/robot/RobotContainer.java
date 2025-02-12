@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -218,56 +217,7 @@ public class RobotContainer {
         driverController
                 .b()
                 .onTrue(runOnce(drive::setTargetReefToClosest, drive))
-                .whileTrue(
-                        Commands.repeatingSequence(
-                                        new ConditionalCommand(
-                                                // goalPose > 1m away
-                                                DriveCommands.roughAlignToTarget(drive),
-                                                // goalPose <= 1m away
-                                                DriveCommands.preciseAlignToTarget(drive),
-                                                () -> {
-                                                    // Calculate the distance between the robot and
-                                                    // the target.
-                                                    Pose2d currentPose =
-                                                            drive.getPose(); // Get current robot
-                                                    // pose
-                                                    Pose2d targetPose =
-                                                            drive.getTargetReefPose(); // Target
-                                                    // pose
-                                                    double distance =
-                                                            currentPose
-                                                                    .getTranslation()
-                                                                    .getDistance(
-                                                                            targetPose
-                                                                                    .getTranslation());
-
-                                                    // true if distance > threshold distance (m)
-                                                    return distance > 1;
-                                                }))
-                                .until(
-                                        () -> {
-                                            // Overall condition to stop this command (robot
-                                            // must be at goal pose)
-                                            Pose2d currentPose = drive.getPose();
-                                            Pose2d targetPose = drive.getTargetReefPose();
-                                            // Calculate distance and rotation
-                                            double distance =
-                                                    currentPose
-                                                            .getTranslation()
-                                                            .getDistance(
-                                                                    targetPose.getTranslation());
-                                            double rotationError =
-                                                    Math.abs(
-                                                            currentPose.getRotation().getDegrees()
-                                                                    - targetPose
-                                                                            .getRotation()
-                                                                            .getDegrees());
-
-                                            // Stop when BOTH distance and orientation are
-                                            // within the thresholds
-                                            return distance < 0.05
-                                                    && rotationError < 2.0; // <5 cm and < 5 degrees
-                                        }));
+                .whileTrue(DriveCommands.autoAlignToReef(drive, DriveCommands.autoAlignLocations.reef));
 
         driverController
                 .leftBumper()
