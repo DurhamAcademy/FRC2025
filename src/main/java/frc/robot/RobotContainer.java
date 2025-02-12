@@ -208,19 +208,19 @@ public class RobotContainer {
         // Elevator
         operatorController
                 .start()
-                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO));
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO));
         operatorController
                 .a()
-                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1
         operatorController
                 .x()
-                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)); // L2
         operatorController
                 .b()
-                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)); // L3
         operatorController
                 .y()
-                .whileTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
     }
 
     /**

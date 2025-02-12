@@ -111,8 +111,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
         inputs.isLimitSwitchPressed = limitSwitch.get();
-        // todo I dont think this should be math.toradians around the .getPosition but it is what
-        // worked on the robot
         inputs.leftHeightInches = primaryEncoder.getPosition();
         inputs.rightHeightInches = followerEncoder.getPosition();
         inputs.targetHeightInches = targetHeightInches;
