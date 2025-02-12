@@ -78,6 +78,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
+                elevator = new Elevator(new ElevatorIO() {});
                 break;
 
             case SIM:
