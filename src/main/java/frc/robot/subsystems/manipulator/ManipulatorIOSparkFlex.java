@@ -111,17 +111,13 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
     // only to be used if we at some point want to have speed such as something ike barge or
     // something similar, thus it is commented out, but should be easy to set up since pid and
     // FF are already initialized
-    /**public void updateProfile() {
-        // Calculate the next state (position and velocity)
-        currentState = profile.calculate(0.02, currentState, goalState);
-        double ffVolts = feedForward.calculate(currentState.velocity);
-
-        // Use the profiler's position as the target for the motor controller
-        primaryController.setReference(
-                currentState.position,
-                SparkBase.ControlType.kPosition,
-                ClosedLoopSlot.kSlot0,
-                ffVolts);
-<<<<<<< HEAD
-    }*/
+    /**
+     * public void updateProfile() { // Calculate the next state (position and velocity)
+     * currentState = profile.calculate(0.02, currentState, goalState); double ffVolts =
+     * feedForward.calculate(currentState.velocity);
+     *
+     * <p>// Use the profiler's position as the target for the motor controller
+     * primaryController.setReference( currentState.position, SparkBase.ControlType.kPosition,
+     * ClosedLoopSlot.kSlot0, ffVolts); <<<<<<< HEAD }
+     */
 }

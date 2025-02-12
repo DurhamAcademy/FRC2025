@@ -104,22 +104,14 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {});
-                manipulator = new Manipulator(new ManipulatorIO(){});
+                manipulator = new Manipulator(new ManipulatorIO() {});
                 break;
         }
 
         NamedCommands.registerCommand(
-                "Safe Intake(to beambrake)",
-                ManipulatorCommands.safeIntake(manipulator)
-        );
-        NamedCommands.registerCommand(
-                "Force Intake",
-                ManipulatorCommands.intake(manipulator)
-        );
-        NamedCommands.registerCommand(
-                "Eject",
-                ManipulatorCommands.eject(manipulator)
-        );
+                "Safe Intake(to beambrake)", ManipulatorCommands.safeIntake(manipulator));
+        NamedCommands.registerCommand("Force Intake", ManipulatorCommands.intake(manipulator));
+        NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
