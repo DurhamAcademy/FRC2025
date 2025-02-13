@@ -3,10 +3,9 @@ package frc.robot.subsystems.elevator;
 import com.ctre.phoenix6.configs.CANcoderConfigurator;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
+import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -37,6 +36,13 @@ public class ElevatorIOSim implements ElevatorIO {
     private final ElevatorFeedforward feedForward;
 
     private double targetHeightInches = 0.0;
+
+    // maybe discard later
+    private final Mechanism2d m_mech2d; // = new Mechanism2d(20, 50);
+    private final MechanismRoot2d
+            m_mech2d_root; // m_mech2d_root = m_mech2d.getRoot("Elevator Root", 10, 0);
+    private final MechanismLigament2d m_elevatorMech2d;
+    private final MechanismLigament2d m_wristMech2d;
 
     public ElevatorIOSim() {
         SparkMax sparkMax = new SparkMax(ElevatorConstants.leftElevatorCanId, MotorType.kBrushless);
@@ -73,10 +79,7 @@ public class ElevatorIOSim implements ElevatorIO {
 
         sparkMax.configure(motorConfig, ResetMode.kResetSafeParameters, null);
 
-        motorSim =
-                new SparkMaxSim(
-                        new SparkMax(ElevatorConstants.leftElevatorCanId, MotorType.kBrushless),
-                        DCMotor.getNEO(2));
+        motorSim = new SparkMaxSim(sparkMax, DCMotor.getNEO(2));
         encoderSim = motorSim.getRelativeEncoderSim();
 
         constraints =
@@ -110,19 +113,20 @@ public class ElevatorIOSim implements ElevatorIO {
                         0,
                         0.003, // Position stddev - NEO encoder precision
                         0.03); // Velocity stddev
+
+        m_mech2d = new Mechanism2d(20, 50);
+        m_mech2d_root = m_mech2d.getRoot("Elevator Root", 10, 0);
+        m_elevatorMech2d =
+                m_mech2d_root.append(
+                        new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), 90));
+
+        m_wristMech2d =
+                m_elevatorMech2d.append(
+                        new MechanismLigament2d("Wrist", elevatorSim.getPositionMeters(), 0));
     }
 
     // mechanism2d stuff
     // discard later
-    private final Mechanism2d m_mech2d = new Mechanism2d(20, 50);
-    private final MechanismRoot2d m_mech2d_root = m_mech2d.getRoot("Elevator Root", 10, 0);
-    private final MechanismLigament2d m_elevatorMech2d =
-            m_mech2d_root.append(
-                    new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), 90));
-
-    private MechanismLigament2d m_wristMech2d =
-            m_elevatorMech2d.append(
-                    new MechanismLigament2d("Wrist", elevatorSim.getPositionMeters(), 0));
 
     @Override
     public void setEncoder(double position) {
