@@ -14,12 +14,12 @@ public class Elevator extends SubsystemBase {
     private final WristIOInputsAutoLogged wristInputs = new WristIOInputsAutoLogged();
 
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ELEVATOR_ZERO, WristConstants.WRIST_ANGLE_ZERO),
-        INTAKE(ElevatorConstants.ELEVATOR_ZERO, WristConstants.WRIST_ANGLE_INTAKE),
-        L1(ElevatorConstants.ELEVATOR_L1, WristConstants.WRIST_ANGLE_L1),
-        L2(ElevatorConstants.ELEVATOR_L2, WristConstants.WRIST_ANGLE_L2),
-        L3(ElevatorConstants.ELEVATOR_L3, WristConstants.WRIST_ANGLE_L3),
-        L4(ElevatorConstants.ELEVATOR_L4, WristConstants.WRIST_ANGLE_L4);
+        ZERO(ElevatorConstants.ZERO, WristConstants.ZERO),
+        INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
+        L1(ElevatorConstants.L1, WristConstants.L1),
+        L2(ElevatorConstants.L2, WristConstants.L2),
+        L3(ElevatorConstants.L3, WristConstants.L3),
+        L4(ElevatorConstants.L4, WristConstants.L4);
 
         public final double heightInches;
         public final double angleRadians;
@@ -32,7 +32,7 @@ public class Elevator extends SubsystemBase {
 
     SysIdRoutine sysIdRoutine;
 
-    public Elevator(ElevatorIO elevtorIO, WristIO, wristIO) {
+    public Elevator(ElevatorIO elevatorIO, WristIO wristIO) {
         this.elevatorIO = elevatorIO;
         this.wristIO = wristIO;
         sysIdRoutine =
@@ -45,7 +45,7 @@ public class Elevator extends SubsystemBase {
                                         Logger.recordOutput(
                                                 "Elevator/SysIdTestState", state.toString()))),
                         new SysIdRoutine.Mechanism(
-                                (voltage) -> io.setVoltage(voltage.in(Volts)), null, this));
+                                (voltage) -> elevatorIO.setVoltage(voltage.in(Volts)), null, this));
     }
 
     @Override
@@ -54,8 +54,8 @@ public class Elevator extends SubsystemBase {
         wristIO.updateInputs(wristInputs);
         Logger.processInputs("Elevator", elevatorInputs);
 
-        if (inputs.isLimitSwitchPressed) {
-            io.setEncoder(ElevatorConstants.minHeight);
+        if (elevatorInputs.isLimitSwitchPressed) {
+            elevatorIO.setEncoder(ElevatorConstants.minHeight);
         }
 
         elevatorIO.updateProfile();
@@ -99,7 +99,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public void setVoltage(double voltage) {
-        io.setVoltage(voltage);
+        elevatorIO.setVoltage(voltage);
     }
 
     public boolean isZeroed() {

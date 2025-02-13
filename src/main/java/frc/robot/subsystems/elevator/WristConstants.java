@@ -13,15 +13,15 @@ public class WristConstants {
     public static final double wristKa = 0.0;
 
     // Wrist angles in radians
-    public static final double WRIST_ANGLE_ZERO = Math.toRadians(90.0); // max angle
-    public static final double WRIST_ANGLE_INTAKE = Math.toRadians(-40.0);
-    public static final double WRIST_ANGLE_L1 = Math.toRadians(-30.0);
-    public static final double WRIST_ANGLE_L2 = Math.toRadians(-35.0);
-    public static final double WRIST_ANGLE_L3 = Math.toRadians(-35.0);
-    public static final double WRIST_ANGLE_L4 = Math.toRadians(-25.0); // min angle
+    public static final double ZERO = Math.toRadians(90.0); // max angle
+    public static final double INTAKE = Math.toRadians(-40.0); // min angle
+    public static final double L1 = Math.toRadians(-30.0);
+    public static final double L2 = Math.toRadians(-35.0);
+    public static final double L3 = Math.toRadians(-35.0);
+    public static final double L4 = Math.toRadians(-25.0);
 
-    public static final double maxWristPosition = WRIST_ANGLE_ZERO;
-    public static final double minWristPosition = WRIST_ANGLE_INTAKE;
+    public static final double maxWristPosition = ZERO;
+    public static final double minWristPosition = INTAKE;
     public static final double wristMaxVelocity = 10.0;
     public static final double wristMaxAcceleration = 10.0;
 

@@ -8,7 +8,7 @@ import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 public class ElevatorCommands {
     // command to set the target height of the elevator subsystem
     public static Command setElevatorLevel(Elevator elevator, ElevatorLevel level) {
-        return Commands.run(() -> elevator.setTargetHeight(level.heightInches), elevator);
+        return Commands.run(() -> elevator.setElevatorTargetHeight(level.heightInches), elevator);
     }
 
     public static Command setElevatorVoltage(Elevator elevator, double voltage) {
