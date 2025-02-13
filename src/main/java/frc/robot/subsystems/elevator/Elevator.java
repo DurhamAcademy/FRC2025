@@ -12,13 +12,12 @@ public class Elevator extends SubsystemBase {
     private boolean hasZeroed = true;
 
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ELEVATOR_ZERO, ElevatorConstants.WRIST_ANGLE_ZERO),
-        INTAKE(ElevatorConstants.ELEVATOR_ZERO, ElevatorConstants.WRIST_ANGLE_INTAKE),
-        L1(ElevatorConstants.ELEVATOR_L1, ElevatorConstants.WRIST_ANGLE_L1),
-        L2(ElevatorConstants.ELEVATOR_L2, ElevatorConstants.WRIST_ANGLE_L2),
-        L3(ElevatorConstants.ELEVATOR_L3, ElevatorConstants.WRIST_ANGLE_L3),
-        L4(ElevatorConstants.ELEVATOR_L4, ElevatorConstants.WRIST_ANGLE_L4),
-        ;
+        ZERO(ElevatorConstants.ELEVATOR_ZERO, WristConstants.WRIST_ANGLE_ZERO),
+        INTAKE(ElevatorConstants.ELEVATOR_ZERO, WristConstants.WRIST_ANGLE_INTAKE),
+        L1(ElevatorConstants.ELEVATOR_L1, WristConstants.WRIST_ANGLE_L1),
+        L2(ElevatorConstants.ELEVATOR_L2, WristConstants.WRIST_ANGLE_L2),
+        L3(ElevatorConstants.ELEVATOR_L3, WristConstants.WRIST_ANGLE_L3),
+        L4(ElevatorConstants.ELEVATOR_L4, WristConstants.WRIST_ANGLE_L4);
 
         public final double heightInches;
         public final double angleRadians;

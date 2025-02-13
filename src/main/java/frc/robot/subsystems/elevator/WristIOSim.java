@@ -31,16 +31,16 @@ public class WristIOSim implements WristIO {
         // Initialize feedforward controller and constraints
         constraints =
                 new TrapezoidProfile.Constraints(
-                        ElevatorConstants.wristMaxVelocity, ElevatorConstants.wristMaxAcceleration);
+                        WristConstants.wristMaxVelocity, WristConstants.wristMaxAcceleration);
         currentState = new TrapezoidProfile.State(0, 0);
         goalState = new TrapezoidProfile.State(0, 0);
 
         feedForward =
                 new ArmFeedforward(
-                        ElevatorConstants.wristKs,
-                        ElevatorConstants.wristKg,
-                        ElevatorConstants.wristKv,
-                        ElevatorConstants.wristKa);
+                        WristConstants.wristKs,
+                        WristConstants.wristKg,
+                        WristConstants.wristKv,
+                        WristConstants.wristKa);
 
         root = wristMechanism2d.getRoot("wrist", 1.5, 1);
         wristLigament =

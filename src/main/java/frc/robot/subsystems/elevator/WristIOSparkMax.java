@@ -26,7 +26,7 @@ public class WristIOSparkMax implements WristIO {
     private Rotation2d targetAngle = Rotation2d.fromRadians(0);
 
     public WristIOSparkMax() {
-        wristMotor = new SparkMax(ElevatorConstants.wristCanId, SparkLowLevel.MotorType.kBrushless);
+        wristMotor = new SparkMax(WristConstants.wristCanId, SparkLowLevel.MotorType.kBrushless);
         wristRelativeEncoder = wristMotor.getEncoder();
         wristAbsoluteEncoder = new DutyCycleEncoder(0);
         wristController = wristMotor.getClosedLoopController();
@@ -38,30 +38,27 @@ public class WristIOSparkMax implements WristIO {
         resetConfig
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                        ElevatorConstants.wristKp,
-                        ElevatorConstants.wristKi,
-                        ElevatorConstants.wristKd);
+                .pid(WristConstants.wristKp, WristConstants.wristKi, WristConstants.wristKd);
         resetConfig
                 .encoder
-                .positionConversionFactor(ElevatorConstants.wristEncoderPositionFactor)
-                .velocityConversionFactor(ElevatorConstants.wristEncoderVelocityFactor);
+                .positionConversionFactor(WristConstants.wristEncoderPositionFactor)
+                .velocityConversionFactor(WristConstants.wristEncoderVelocityFactor);
 
         wristMotor.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
 
         constraints =
                 new TrapezoidProfile.Constraints(
-                        ElevatorConstants.wristMaxVelocity, ElevatorConstants.wristMaxAcceleration);
+                        WristConstants.wristMaxVelocity, WristConstants.wristMaxAcceleration);
         currentState = new TrapezoidProfile.State(0, 0);
         goalState = new TrapezoidProfile.State(0, 0);
         profile = new TrapezoidProfile(constraints);
 
         feedForward =
                 new ArmFeedforward(
-                        ElevatorConstants.wristKs,
-                        ElevatorConstants.wristKg,
-                        ElevatorConstants.wristKv,
-                        ElevatorConstants.wristKa);
+                        WristConstants.wristKs,
+                        WristConstants.wristKg,
+                        WristConstants.wristKv,
+                        WristConstants.wristKa);
     }
 
     @Override
