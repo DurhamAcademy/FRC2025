@@ -404,6 +404,15 @@ public class Drive extends SubsystemBase {
         return targetReef;
     }
 
+    /**
+     * Function that returns whether the gyro pitch or roll is greater than the specified tipping
+     * threshold
+     */
+    public boolean isTipping() {
+        return Math.abs(gyroInputs.pitchPosition.getDegrees()) > tippingThresholdDegrees
+                || Math.abs(gyroInputs.rollPosition.getDegrees()) > tippingThresholdDegrees;
+    }
+
     public void setTargetReef(Constants.ReefConstants reef) {
         targetReef = reef;
     }

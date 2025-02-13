@@ -197,7 +197,9 @@ public class RobotContainer {
                         () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
-        elevator.setDefaultCommand(null);
+        elevator.setDefaultCommand(
+                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO)
+                        .onlyIf(drive::isTipping));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
