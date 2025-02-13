@@ -15,7 +15,7 @@ public class WristIOSim implements WristIO {
     private double currentPositionRadians = 0.0; // Simulated position of the wrist (in radians)
     private double currentVelocityRadiansPerSec = 0.0; // Simulated velocity of the wrist
     private double appliedVoltage = 0.0; // Simulated applied voltage
-    private Rotation2d targetAngle = Rotation2d.fromRadians(0); // Target angle
+    private double targetAngle = 0.0; // Target angle
 
     private final TrapezoidProfile.Constraints constraints;
     private TrapezoidProfile.State currentState;
@@ -73,12 +73,12 @@ public class WristIOSim implements WristIO {
     @Override
     public void updateInputs(WristIOInputs inputs) {
         // Update simulated inputs for AdvantageScope
-        inputs.angle = Rotation2d.fromRadians(currentPositionRadians); // Simulated angle
+        inputs.angle = currentPositionRadians; // Simulated angle
         inputs.targetAngle = targetAngle;
         inputs.velocity = currentVelocityRadiansPerSec; // Simulated velocity
 
         inputs.isAtTargetAngle =
-                Math.abs(inputs.angle.getRadians() - inputs.targetAngle.getRadians()) < 0.05
+                Math.abs(inputs.angle - inputs.targetAngle) < 0.05
                         && Math.abs(inputs.velocity) < 0.1;
 
         inputs.voltage = appliedVoltage;
@@ -86,7 +86,7 @@ public class WristIOSim implements WristIO {
         // Log the inputs for visualization in AdvantageScope
         Logger.recordOutput("WristSim/Angle", currentPositionRadians);
         Logger.recordOutput("WristSim/Velocity", currentVelocityRadiansPerSec);
-        Logger.recordOutput("WristSim/TargetAngle", targetAngle.getRadians());
+        Logger.recordOutput("WristSim/TargetAngle", targetAngle);
         Logger.recordOutput("WristSim/Mechanism2d", wristMechanism2d);
         wristLigament.setAngle(Units.radiansToDegrees(currentPositionRadians));
     }
@@ -94,7 +94,7 @@ public class WristIOSim implements WristIO {
     @Override
     public void setTargetAngle(double targetAngleRadians) {
         // Set a new target angle for the wrist
-        this.targetAngle = Rotation2d.fromRadians(targetAngleRadians);
+        this.targetAngle = targetAngleRadians;
         goalState = new TrapezoidProfile.State(targetAngleRadians, 0);
     }
 

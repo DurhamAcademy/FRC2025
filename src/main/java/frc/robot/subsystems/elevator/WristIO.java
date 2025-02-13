@@ -12,8 +12,8 @@ public interface WristIO {
     @AutoLog
     public static class WristIOInputs {
 
-        public Rotation2d angle;
-        public Rotation2d targetAngle;
+        public double angle;
+        public double targetAngle;
         public double velocity;
         public double voltage;
         public boolean isAtTargetAngle;
