@@ -201,9 +201,7 @@ public class RobotContainer {
                 either(
                         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO),
                         ElevatorCommands.zeroElevator(elevator),
-                        elevator::isZeroed
-                )
-        );
+                        elevator::isZeroed));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
