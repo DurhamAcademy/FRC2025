@@ -1,6 +1,5 @@
 package frc.robot.subsystems.elevator;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface WristIO {
@@ -23,7 +22,7 @@ public interface WristIO {
     public default void updateInputs(WristIOInputs inputs) {}
 
     /** Sets the motors' power */
-    public default void setPower(double power) {}
+    public default void setSpeed(double speed) {}
 
     /** Sets the motors' power */
     public default void setVoltage(double voltage) {}

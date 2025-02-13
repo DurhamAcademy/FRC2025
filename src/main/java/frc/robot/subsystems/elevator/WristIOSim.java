@@ -1,7 +1,6 @@
 package frc.robot.subsystems.elevator;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
@@ -55,9 +54,9 @@ public class WristIOSim implements WristIO {
     }
 
     @Override
-    public void setPower(double power) {
+    public void setSpeed(double speed) {
         // Simulate power control by scaling to a voltage range
-        appliedVoltage = power * 12.0;
+        appliedVoltage = speed * 12.0;
     }
 
     @Override
