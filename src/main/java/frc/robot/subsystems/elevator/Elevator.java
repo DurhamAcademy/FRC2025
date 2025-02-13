@@ -63,7 +63,9 @@ public class Elevator extends SubsystemBase {
 
     /**
      * Sets the speed of the wrist
-     * @param speed The desired speed level for the motor: -1.0 => full reverse, 1.0 => full forward, 0.0 => no speed.
+     *
+     * @param speed The desired speed level for the motor: -1.0 => full reverse, 1.0 => full
+     *     forward, 0.0 => no speed.
      */
     public void setWristSpeed(double speed) {
         wristIO.setSpeed(speed);
@@ -71,6 +73,7 @@ public class Elevator extends SubsystemBase {
 
     /**
      * Sets the voltage of the wrist
+     *
      * @param voltage in volts
      */
     public void setWristVoltage(double voltage) {
