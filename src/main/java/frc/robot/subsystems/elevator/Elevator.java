@@ -51,7 +51,7 @@ public class Elevator extends SubsystemBase {
 
         if (isZeroed()) {
             io.setEncoder(ElevatorConstants.minHeight);
-            if(!hasZeroed) hasZeroed = true;
+            if (!hasZeroed) hasZeroed = true;
         }
 
         io.updateProfile();
@@ -71,14 +71,16 @@ public class Elevator extends SubsystemBase {
 
     /**
      * Whether the elevator has found its zero at least once
+     *
      * @return boolean
      */
-    public boolean hasZeroed(){
+    public boolean hasZeroed() {
         return hasZeroed;
     }
 
     /**
      * Whether the elevator is currently zeroed
+     *
      * @return boolean
      */
     public boolean isZeroed() {
