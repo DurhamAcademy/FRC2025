@@ -137,7 +137,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     }
 
     @Override
-    public void updateProfile() {
+    public void updateState() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
         double ffVolts = feedForward.calculate(currentState.velocity);

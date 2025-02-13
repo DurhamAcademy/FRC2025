@@ -34,5 +34,5 @@ public interface ElevatorIO {
     /** Resets encoder */
     public default void setEncoder(double position) {}
 
-    public default void updateProfile() {}
+    public default void updateState() {}
 }
