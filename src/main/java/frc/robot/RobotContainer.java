@@ -252,7 +252,7 @@ public class RobotContainer {
 
         driverController
                 .x()
-                .onTrue(IntakeCommands.runIntake(intake))
+                .onTrue(IntakeCommands.safeRunIntake(intake))
                 .onFalse(IntakeCommands.stopIntake(intake));
 
         driverController
