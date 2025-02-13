@@ -4,7 +4,6 @@ public class ElevatorConstants {
     // Device CAN IDs
     public static final int leftElevatorCanId = 11;
     public static final int rightElevatorCanId = 10;
-    public static final int wristCanId = 12;
 
     // Limit Switch DIO #
     // TODO: update when robot built
