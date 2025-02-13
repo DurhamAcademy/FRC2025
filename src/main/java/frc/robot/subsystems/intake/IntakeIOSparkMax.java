@@ -17,8 +17,10 @@ public class IntakeIOSparkMax implements IntakeIO {
     private final DigitalInput beamBreakSensor;
 
     public IntakeIOSparkMax() {
-        intakeMotor = new SparkMax(IntakeConstants.intakeMotorId, SparkLowLevel.MotorType.kBrushless);
-        rotatorMotor = new SparkMax(IntakeConstants.rotatorMotorId, SparkLowLevel.MotorType.kBrushless);
+        intakeMotor =
+                new SparkMax(IntakeConstants.intakeMotorId, SparkLowLevel.MotorType.kBrushless);
+        rotatorMotor =
+                new SparkMax(IntakeConstants.rotatorMotorId, SparkLowLevel.MotorType.kBrushless);
 
         intakeEncoder = intakeMotor.getEncoder();
         rotatorEncoder = rotatorMotor.getEncoder();
@@ -48,7 +50,8 @@ public class IntakeIOSparkMax implements IntakeIO {
         inputs.intakeTemperature = intakeMotor.getMotorTemperature();
 
         // rotation in radians
-        inputs.rotatorPosRad = rotatorEncoder.getPosition() / IntakeConstants.rotatorGearRatio * 2 * Math.PI;
+        inputs.rotatorPosRad =
+                rotatorEncoder.getPosition() / IntakeConstants.rotatorGearRatio * 2 * Math.PI;
         inputs.rotatorVelocityRadPerSec =
                 rotatorEncoder.getVelocity() * (2 * Math.PI / 60); // Convert RPM to rad/sec
         inputs.rotatorAppliedVolts = rotatorMotor.getBusVoltage() * rotatorMotor.getAppliedOutput();
