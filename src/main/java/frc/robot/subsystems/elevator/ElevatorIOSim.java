@@ -169,7 +169,7 @@ public class ElevatorIOSim implements ElevatorIO {
     }
 
     @Override
-    public void periodic() {
+    public void updateProfile() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
         double ffVolts = feedForward.calculate(currentState.velocity);
