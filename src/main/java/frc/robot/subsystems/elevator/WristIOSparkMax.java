@@ -82,8 +82,8 @@ public class WristIOSparkMax implements WristIO {
     /**
      * Sets the power of the wrist motor.
      *
-     * @param power The desired power level for the motor: -1.0 => full reverse,
-     *              1.0 => full forward, 0.0 => no power.
+     * @param power The desired power level for the motor: -1.0 => full reverse, 1.0 => full
+     *     forward, 0.0 => no power.
      */
     @Override
     public void setPower(double power) {
@@ -100,16 +100,16 @@ public class WristIOSparkMax implements WristIO {
         wristMotor.setVoltage(voltage);
     }
 
-    /**
-     * Stops wrist motor.
-     */
+    /** Stops wrist motor. */
     @Override
     public void stopMotors() {
         wristMotor.set(0);
     }
 
     /**
-     * Updates angle (rad), target angle (rad), velocity (rad/s), voltage (volts), and 'at target angle' boolean
+     * Updates angle (rad), target angle (rad), velocity (rad/s), voltage (volts), and 'at target
+     * angle' boolean
+     *
      * @param inputs WristIOInputs
      */
     @Override
@@ -124,24 +124,30 @@ public class WristIOSparkMax implements WristIO {
         // determines if wrist is at target angle from angle and velocity
         // TODO adjust how precise angle needs to be
         inputs.isAtTargetAngle =
-                Math.abs(Units.radiansToDegrees(inputs.angle) - Units.radiansToDegrees(inputs.targetAngle)) < WristConstants.wristAngularTolerance
+                Math.abs(
+                                        Units.radiansToDegrees(inputs.angle)
+                                                - Units.radiansToDegrees(inputs.targetAngle))
+                                < WristConstants.wristAngularTolerance
                         && Math.abs(inputs.velocity) < WristConstants.wristVelocityTolerance;
     }
 
     /**
      * Sets the target angle of the wrist
+     *
      * @param targetAngle (radians)
      */
     @Override
     public void setTargetAngle(double targetAngle) {
 
-        this.targetAngle = MathUtil.clamp(targetAngle, WristConstants.minWristPosition, WristConstants.maxWristPosition);
+        this.targetAngle =
+                MathUtil.clamp(
+                        targetAngle,
+                        WristConstants.minWristPosition,
+                        WristConstants.maxWristPosition);
         goalState = new TrapezoidProfile.State(targetAngle, 0);
     }
 
-    /**
-     * Updates wrist trapezoid profile with feed forward calculations
-     */
+    /** Updates wrist trapezoid profile with feed forward calculations */
     @Override
     public void updateProfile() {
         currentState = profile.calculate(0.02, currentState, goalState);
