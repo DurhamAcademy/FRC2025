@@ -11,6 +11,8 @@ public class Elevator extends SubsystemBase {
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
+    private boolean hasZeroed = false;
+
     public enum ElevatorLevel {
         ZERO(ElevatorConstants.ZERO),
         L1(ElevatorConstants.L1),
@@ -47,8 +49,9 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
-        if (inputs.isLimitSwitchPressed) {
+        if (isZeroed()) {
             io.setEncoder(ElevatorConstants.minHeight);
+            if(!hasZeroed) hasZeroed = true;
         }
 
         io.updateProfile();
@@ -66,6 +69,18 @@ public class Elevator extends SubsystemBase {
         io.setVoltage(voltage);
     }
 
+    /**
+     * Whether the elevator has found its zero at least once
+     * @return boolean
+     */
+    public boolean hasZeroed(){
+        return hasZeroed;
+    }
+
+    /**
+     * Whether the elevator is currently zeroed
+     * @return boolean
+     */
     public boolean isZeroed() {
         return inputs.isLimitSwitchPressed;
     }

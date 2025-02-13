@@ -197,11 +197,13 @@ public class RobotContainer {
                         () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
+        // if elevator has zeroed, run tipping prevention code
+        // if not, zero the elevator for the first time
         elevator.setDefaultCommand(
                 either(
                         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO),
                         ElevatorCommands.zeroElevator(elevator),
-                        elevator::isZeroed));
+                        elevator::hasZeroed));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
