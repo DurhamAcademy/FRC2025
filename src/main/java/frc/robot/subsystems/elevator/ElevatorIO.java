@@ -34,6 +34,5 @@ public interface ElevatorIO {
     /** Resets encoder */
     public default void setEncoder(double position) {}
 
-    /** Updating trapezoid profiler and reference height using the profiler */
     public default void updateProfile() {}
 }

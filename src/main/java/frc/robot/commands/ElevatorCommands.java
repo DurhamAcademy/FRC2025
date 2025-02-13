@@ -6,26 +6,16 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 
 public class ElevatorCommands {
-
-    public static Command moveElevatorLevel(Elevator elevator, ElevatorLevel level) {
-        return Commands.run(
-                () -> {
-                    elevator.setElevatorTargetHeight(level.heightInches);
-                    elevator.setWristTargetAngle(level.angleRadians);
-                },
-                elevator);
+    // command to set the target height of the elevator subsystem
+    public static Command setElevatorLevel(Elevator elevator, ElevatorLevel level) {
+        return Commands.run(() -> elevator.setTargetHeight(level.heightInches), elevator);
     }
 
-    public static Command moveElevator(Elevator elevator, double power) {
-        return Commands.run(
-                () -> {
-                    elevator.setElevatorPower(power);
-                },
-                elevator);
+    public static Command setElevatorVoltage(Elevator elevator, double voltage) {
+        return Commands.run(() -> elevator.setVoltage(voltage), elevator);
     }
 
     public static Command zeroElevator(Elevator elevator) {
-        // TODO: Change back when testing is complete and update for using wrist
-        return moveElevator(elevator, -0.1); // .onlyWhile(() -> !elevator.isZeroed());
+        return Commands.run(() -> setElevatorVoltage(elevator, -2).until(elevator::isZeroed));
     }
 }
