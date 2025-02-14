@@ -129,16 +129,16 @@ public class RobotContainer {
         }
 
         NamedCommands.registerCommand(
-                "Elevator L1", ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1));
+                "Elevator L1", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
 
         NamedCommands.registerCommand(
-                "Elevator L2", ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2));
+                "Elevator L2", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2));
 
         NamedCommands.registerCommand(
-                "Elevator L3", ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3));
+                "Elevator L3", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3));
 
         NamedCommands.registerCommand(
-                "Elevator L4", ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4));
+                "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -197,9 +197,13 @@ public class RobotContainer {
                         () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
+        // if elevator has zeroed, run tipping prevention code
+        // if not, zero the elevator for the first time
         elevator.setDefaultCommand(
-                ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO)
-                        .onlyIf(drive::isTipping));
+                either(
+                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO).onlyIf(drive::isTipping),
+                        ElevatorCommands.zeroElevator(elevator),
+                        elevator::hasZeroed));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
@@ -234,19 +238,19 @@ public class RobotContainer {
         // Elevator
         operatorController
                 .start()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.ZERO));
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO));
         operatorController
                 .a()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1
         operatorController
                 .x()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2
         operatorController
                 .b()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3
         operatorController
                 .y()
-                .onTrue(ElevatorCommands.moveElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4
     }
 
     /**
