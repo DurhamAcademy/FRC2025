@@ -54,7 +54,7 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         // if wrist was previously restricted, but no longer needs to be
-        if(wristRestricted && !isWristRestricted()){
+        if (wristRestricted && !isWristRestricted()) {
             // set the wrist target angle to the saved value
             wristRestricted = false;
             wristIO.setTargetAngle(wristTargetAngleSavestate);
@@ -83,19 +83,22 @@ public class Elevator extends SubsystemBase {
      */
     public void setWristTargetAngle(double targetAngle) {
         // if wrist could possibly hit the reef
-        if(isWristRestricted()){
+        if (isWristRestricted()) {
             // set vars to hold targetAngle until safe to move the wrist
             wristRestricted = true;
             wristTargetAngleSavestate = targetAngle;
 
             // get the safe angles for the wrist when right next to the reef + extra room
-            double restrictedAngle = Math.acos(WristConstants.REEF_MIN_DISTANCE / WristConstants.WRIST_LENGTH) + .1;
+            double restrictedAngle =
+                    Math.acos(WristConstants.REEF_MIN_DISTANCE / WristConstants.WRIST_LENGTH) + .1;
 
-            // if the target angle is in the restricted area, set it to the closest angle it can get to safely
+            // if the target angle is in the restricted area, set it to the closest angle it can get
+            // to safely
             if (Math.abs(targetAngle) < restrictedAngle) {
                 targetAngle = wristInputs.angle > 0 ? restrictedAngle : -restrictedAngle;
             }
-            // if the target angle is on the opposite side of the restricted area from the wrist's current angle,
+            // if the target angle is on the opposite side of the restricted area from the wrist's
+            // current angle,
             // set it to the closest angle it can get to safely
             else if (targetAngle > 0 && wristInputs.angle < 0) {
                 targetAngle = -restrictedAngle;
@@ -108,13 +111,17 @@ public class Elevator extends SubsystemBase {
 
     /**
      * Determines if wrist should be restricted
+     *
      * @return boolean
      */
     public boolean isWristRestricted() {
         // if elevator height (off the ground) > than the reef height +
         // the height of a triangle formed by the wrist and the robot's minimum distance to the reef
-        return elevatorInputs.leftHeightInches + ElevatorConstants.elevatorBaseHeight <
-                WristConstants.REEF_PANEL_HEIGHT + Math.sqrt(Math.pow(WristConstants.WRIST_LENGTH, 2) + Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
+        return elevatorInputs.leftHeightInches + ElevatorConstants.elevatorBaseHeight
+                < WristConstants.REEF_PANEL_HEIGHT
+                        + Math.sqrt(
+                                Math.pow(WristConstants.WRIST_LENGTH, 2)
+                                        + Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
     }
 
     /**
