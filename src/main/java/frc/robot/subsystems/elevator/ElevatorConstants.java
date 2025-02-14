@@ -37,6 +37,9 @@ public class ElevatorConstants {
     public static final double L3 = 37.5;
     public static final double L4 = 66; // max height
 
+    // the distance between the floor and the bottom of the elevator
+    public static final double elevatorBaseHeight = 4.750;
+
     public static final double elevatorMaxVelocity = 10;
     public static final double elevatorMaxAcceleration = 10.0;
     public static final double minHeight = ZERO;

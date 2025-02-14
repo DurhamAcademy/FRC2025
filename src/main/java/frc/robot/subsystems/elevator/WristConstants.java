@@ -32,7 +32,7 @@ public class WristConstants {
     public static final double REEF_MIN_DISTANCE = 10.625;
 
     // the height of the reef panel april tag is attached on
-    public static final double REEF_PANEL_HEIGHT = 14.25;
+    public static final double REEF_PANEL_HEIGHT = 18.0;
 
     // the distance from the base of the elevator (@ zero) to the center of the wrist axle
     public static final double WRIST_AXLE_HEIGHT = 14.824724;

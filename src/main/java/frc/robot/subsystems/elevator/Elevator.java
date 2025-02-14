@@ -107,7 +107,8 @@ public class Elevator extends SubsystemBase {
     }
 
     public boolean isWristRestricted() {
-        return elevatorInputs.leftHeightInches + WristConstants.WRIST_LENGTH * Math.sin(wristInputs.angle) > WristConstants.REEF_PANEL_HEIGHT;
+        return elevatorInputs.leftHeightInches + ElevatorConstants.elevatorBaseHeight >
+                WristConstants.REEF_PANEL_HEIGHT + Math.sqrt(Math.pow(WristConstants.WRIST_LENGTH, 2) + Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
     }
 
     /**
