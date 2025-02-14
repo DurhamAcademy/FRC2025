@@ -108,7 +108,8 @@ public class RobotContainer {
                 break;
         }
 
-        NamedCommands.registerCommand("Smart Intake", ManipulatorCommands.humanPlayerIntake(manipulator));
+        NamedCommands.registerCommand(
+                "Smart Intake", ManipulatorCommands.humanPlayerIntake(manipulator));
         NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
         NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
         NamedCommands.registerCommand("Algae Intake", ManipulatorCommands.algaeIntake(manipulator));

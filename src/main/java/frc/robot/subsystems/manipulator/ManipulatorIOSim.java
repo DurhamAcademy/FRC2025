@@ -10,7 +10,9 @@ public class ManipulatorIOSim implements ManipulatorIO {
     private final FlywheelSim rollerSim =
             new FlywheelSim(
                     LinearSystemId.createFlywheelSystem(
-                            DCMotor.getNeoVortex(2), 3, 1.0 / ManipulatorConstants.manipulatorGearRatio),
+                            DCMotor.getNeoVortex(2),
+                            3,
+                            1.0 / ManipulatorConstants.manipulatorGearRatio),
                     DCMotor.getNeoVortex(2));
     // TODO: change the jKg meters squared in this once we get cad and everything
     private double rollerVoltage = 0.0;
