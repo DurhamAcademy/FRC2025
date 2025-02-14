@@ -289,11 +289,15 @@ public class RobotContainer {
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
                     builder.addBooleanProperty(
-                            "Override Reef AA",
+                            "Reef AA",
                             // Getter to read the current value
                             () -> drive.overrideReefAutoAlign,
                             // Setter to update the value
                             val -> drive.overrideReefAutoAlign = val);
+                    builder.addBooleanProperty(
+                            "Anti-Tip",
+                            () -> drive.overrideTipProtection,
+                            val -> drive.overrideTipProtection = val);
                 });
         SmartDashboard.putData(
                 "INVERT AXES",

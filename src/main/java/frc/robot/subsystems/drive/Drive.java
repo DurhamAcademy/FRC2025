@@ -83,6 +83,7 @@ public class Drive extends SubsystemBase {
 
     public Constants.ReefConstants targetReef = Constants.ReefConstants.SEVEN;
     public boolean overrideReefAutoAlign = false;
+    public boolean overrideTipProtection = false;
 
     public Drive(
             GyroIO gyroIO,
@@ -409,8 +410,9 @@ public class Drive extends SubsystemBase {
      * threshold
      */
     public boolean isTipping() {
-        return Math.abs(gyroInputs.pitchPosition.getDegrees()) > tippingThresholdDegrees
-                || Math.abs(gyroInputs.rollPosition.getDegrees()) > tippingThresholdDegrees;
+        if (overrideTipProtection) return false;
+        return (Math.abs(gyroInputs.pitchPosition.getDegrees()) > tippingThresholdDegrees
+                || Math.abs(gyroInputs.rollPosition.getDegrees()) > tippingThresholdDegrees);
     }
 
     public void setTargetReef(Constants.ReefConstants reef) {
