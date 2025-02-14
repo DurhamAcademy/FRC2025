@@ -201,7 +201,8 @@ public class RobotContainer {
         // if not, zero the elevator for the first time
         elevator.setDefaultCommand(
                 either(
-                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO).onlyIf(drive::isTipping),
+                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
+                                .onlyIf(drive::isTipping),
                         ElevatorCommands.zeroElevator(elevator),
                         elevator::hasZeroed));
 
