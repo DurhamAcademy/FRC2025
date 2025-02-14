@@ -22,6 +22,7 @@ public class WristIOSparkMax implements WristIO {
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
+
     private final ArmFeedforward feedForward;
 
     // target angle in radians. default angle is horizontal with the ground
@@ -149,7 +150,7 @@ public class WristIOSparkMax implements WristIO {
 
     /** Updates wrist trapezoid profile with feed forward calculations */
     @Override
-    public void updateProfile() {
+    public void updateStates() {
         currentState = profile.calculate(0.02, currentState, goalState);
         double ffVolts = feedForward.calculate(currentState.position, currentState.velocity);
 

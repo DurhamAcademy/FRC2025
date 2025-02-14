@@ -32,10 +32,10 @@ public class ElevatorConstants {
 
     // Elevator Levels in inches from master sketch
     public static final double ZERO = 0.0; // min height
-    public static final double L1 = 9.271975;
-    public static final double L2 = 17.031579;
-    public static final double L3 = 32.041099;
-    public static final double L4 = 58.211229; // max height
+    public static final double L1 = 12;
+    public static final double L2 = 21.75;
+    public static final double L3 = 37.5;
+    public static final double L4 = 66; // max height
 
     public static final double elevatorMaxVelocity = 10;
     public static final double elevatorMaxAcceleration = 10.0;

@@ -2,6 +2,7 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -13,8 +14,11 @@ public class Elevator extends SubsystemBase {
     private final WristIO wristIO;
     private final WristIOInputsAutoLogged wristInputs = new WristIOInputsAutoLogged();
 
+    private boolean wristRestricted = false;
+    private double wristTargetAngleSavestate = 0.0;
+
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ZERO, WristConstants.ZERO),
+        ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
         L1(ElevatorConstants.L1, WristConstants.L1),
         L2(ElevatorConstants.L2, WristConstants.L2),
@@ -50,6 +54,13 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // if wrist was previously restricted, but no longer needs to be
+        if(wristRestricted && !isWristRestricted()){
+            // set the wrist target angle to the saved value
+            wristRestricted = false;
+            wristIO.setTargetAngle(wristTargetAngleSavestate);
+        }
+
         elevatorIO.updateInputs(elevatorInputs);
         wristIO.updateInputs(wristInputs);
         Logger.processInputs("Elevator", elevatorInputs);
@@ -59,7 +70,7 @@ public class Elevator extends SubsystemBase {
         }
 
         elevatorIO.updateProfile();
-        wristIO.updateProfile();
+        wristIO.updateStates();
     }
 
     public void setElevatorTargetHeight(double heightInches) {
@@ -67,12 +78,37 @@ public class Elevator extends SubsystemBase {
     }
 
     /**
-     * Sets the target angle of the wrist
+     * Sets the target angle of the wrist, avoiding the possibility of the wrist hitting the reef
      *
      * @param targetAngle in radians, 0 being horizontal with the ground
      */
     public void setWristTargetAngle(double targetAngle) {
+        // if wrist could possibly hit the reef
+        if(isWristRestricted()){
+            // set vars to hold targetAngle until safe to move the wrist
+            wristRestricted = true;
+            wristTargetAngleSavestate = targetAngle;
+
+            // get the safe angles for the wrist when right next to the reef + extra room
+            double restrictedAngle = Math.acos(WristConstants.REEF_MIN_DISTANCE / WristConstants.WRIST_LENGTH) + .1;
+
+            // if the target angle is in the restricted area, set it to the closest angle it can get safely
+            if (Math.abs(targetAngle) < restrictedAngle) {
+                targetAngle = wristInputs.angle > 0 ? restrictedAngle : -restrictedAngle;
+            }
+            // if the target angle is on the opposite side of the restricted area from the wrist's current angle,
+            // set it to the closest angle it can get to safely
+            else if (targetAngle > 0 && wristInputs.angle < 0) {
+                targetAngle = -restrictedAngle;
+            } else if (targetAngle < 0 && wristInputs.angle > 0) {
+                targetAngle = restrictedAngle;
+            }
+        }
         wristIO.setTargetAngle(targetAngle);
+    }
+
+    public boolean isWristRestricted() {
+        return elevatorInputs.leftHeightInches + WristConstants.WRIST_LENGTH * Math.sin(wristInputs.angle) > WristConstants.REEF_PANEL_HEIGHT;
     }
 
     /**

@@ -98,7 +98,7 @@ public class WristIOSim implements WristIO {
     }
 
     @Override
-    public void updateProfile() {
+    public void updateStates() {
         // Simulate the motion profile for position and velocity updates
         currentState =
                 new TrapezoidProfile(constraints)
