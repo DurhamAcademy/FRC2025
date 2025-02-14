@@ -108,10 +108,10 @@ public class RobotContainer {
                 break;
         }
 
-        NamedCommands.registerCommand(
-                "Safe Intake(to beambrake)", ManipulatorCommands.safeIntake(manipulator));
-        NamedCommands.registerCommand("Force Intake", ManipulatorCommands.intake(manipulator));
+        NamedCommands.registerCommand("Smart Intake", ManipulatorCommands.humanPlayerIntake(manipulator));
+        NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
         NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
+        NamedCommands.registerCommand("Algae Intake", ManipulatorCommands.algaeIntake(manipulator));
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

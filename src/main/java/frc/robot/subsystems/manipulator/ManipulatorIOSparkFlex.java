@@ -3,7 +3,7 @@ package frc.robot.subsystems.manipulator;
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -20,12 +20,12 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
                     SparkLowLevel.MotorType.kBrushless);
 
     private final SparkClosedLoopController primaryController;
-    private final SparkMaxConfig resetConfig = new SparkMaxConfig();
+    private final SparkFlexConfig resetConfig = new SparkFlexConfig();
     private final TrapezoidProfile.Constraints constraints;
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
-    private SparkMaxConfig followerConfig;
+    private SparkFlexConfig followerConfig;
     private final ElevatorFeedforward feedForward;
     private final DigitalInput beam;
 
@@ -33,7 +33,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         primaryRollerR.setCANTimeout(250);
         followRollerL.setCANTimeout(250);
 
-        followerConfig = new SparkMaxConfig();
+        followerConfig = new SparkFlexConfig();
 
         primaryController = primaryRollerR.getClosedLoopController();
 
