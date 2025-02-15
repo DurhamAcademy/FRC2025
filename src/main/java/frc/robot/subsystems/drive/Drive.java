@@ -430,4 +430,24 @@ public class Drive extends SubsystemBase {
                     });
         }
     }
+
+    public boolean getIsAutoAligned() {
+        // Overall condition to stop this command (robot
+        // must be at goal pose)
+        Pose2d currentPose = getPose();
+        Pose2d targetPose = getTargetReefPose();
+        // Calculate distance and rotation
+        double distance =
+                currentPose
+                        .getTranslation()
+                        .getDistance(targetPose.getTranslation());
+        double rotationError =
+                Math.abs(
+                        currentPose.getRotation().getDegrees()
+                                - targetPose.getRotation().getDegrees());
+
+        // Stop when BOTH distance and orientation are
+        // within the thresholds
+        return distance < 0.05 && rotationError < 2.0; // <5 cm and < 5 degrees
+    }
 }

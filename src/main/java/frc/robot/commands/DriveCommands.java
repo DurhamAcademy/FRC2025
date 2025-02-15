@@ -524,25 +524,6 @@ public class DriveCommands {
                                     // true if distance > threshold distance (m)
                                     return distance > 1;
                                 }))
-                .until(
-                        () -> {
-                            // Overall condition to stop this command (robot
-                            // must be at goal pose)
-                            Pose2d currentPose = drive.getPose();
-                            Pose2d targetPose = drive.getTargetReefPose();
-                            // Calculate distance and rotation
-                            double distance =
-                                    currentPose
-                                            .getTranslation()
-                                            .getDistance(targetPose.getTranslation());
-                            double rotationError =
-                                    Math.abs(
-                                            currentPose.getRotation().getDegrees()
-                                                    - targetPose.getRotation().getDegrees());
-
-                            // Stop when BOTH distance and orientation are
-                            // within the thresholds
-                            return distance < 0.05 && rotationError < 2.0; // <5 cm and < 5 degrees
-                        });
+                .until(drive::getIsAutoAligned);
     }
 }
