@@ -237,11 +237,20 @@ public class RobotContainer {
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
 
         // OPERATOR CONTROLLER
-        // rumble operator controller when auto aligned (not driver controller cuz aarav preference ;-;)
+        // rumble operator controller when auto aligned (not driver controller cuz aarav preference
+        // ;-;)
         final Trigger operatorRightRumbleTrigger = new Trigger(drive::getIsAutoAligned);
         operatorRightRumbleTrigger
-                .onTrue(new InstantCommand(() -> operatorController.setRumble(GenericHID.RumbleType.kRightRumble, 0.5)))
-                .onFalse(new InstantCommand(() -> operatorController.setRumble(GenericHID.RumbleType.kRightRumble, 0.0)));
+                .onTrue(
+                        new InstantCommand(
+                                () ->
+                                        operatorController.setRumble(
+                                                GenericHID.RumbleType.kRightRumble, 0.5)))
+                .onFalse(
+                        new InstantCommand(
+                                () ->
+                                        operatorController.setRumble(
+                                                GenericHID.RumbleType.kRightRumble, 0.0)));
 
         // Elevator
         operatorController

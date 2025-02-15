@@ -437,10 +437,7 @@ public class Drive extends SubsystemBase {
         Pose2d currentPose = getPose();
         Pose2d targetPose = getTargetReefPose();
         // Calculate distance and rotation
-        double distance =
-                currentPose
-                        .getTranslation()
-                        .getDistance(targetPose.getTranslation());
+        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
         double rotationError =
                 Math.abs(
                         currentPose.getRotation().getDegrees()
