@@ -22,8 +22,8 @@ public class WristConstants {
     public static final double L4 = Math.toRadians(-25.0);
     public static final double LOWER_ALGAE_REMOVAL = Math.toRadians(0.0);
     public static final double UPPER_ALGAE_REMOVAL = Math.toRadians(0.0);
-    public static final double NET = Math.toRadians(45.0); // fixme guess value
-    public static final double PROCESSOR = Math.toRadians(0); // fixme guess value
+    public static final double NET = Math.toRadians(30.0);
+    public static final double PROCESSOR = Math.toRadians(-15.0);
 
     // inches
     public static final double WRIST_LENGTH = 11.875;
