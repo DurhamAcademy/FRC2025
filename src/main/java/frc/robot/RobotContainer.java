@@ -201,7 +201,8 @@ public class RobotContainer {
         // if not, zero the elevator for the first time
         elevator.setDefaultCommand(
                 either(
-                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO),
+                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
+                                .onlyIf(drive::isTipping),
                         ElevatorCommands.zeroElevator(elevator),
                         elevator::hasZeroed));
 
@@ -293,11 +294,15 @@ public class RobotContainer {
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
                     builder.addBooleanProperty(
-                            "Override Reef AA",
+                            "Reef AA",
                             // Getter to read the current value
                             () -> drive.overrideReefAutoAlign,
                             // Setter to update the value
                             val -> drive.overrideReefAutoAlign = val);
+                    builder.addBooleanProperty(
+                            "Anti-Tip",
+                            () -> drive.overrideTipProtection,
+                            val -> drive.overrideTipProtection = val);
                 });
         SmartDashboard.putData(
                 "INVERT AXES",

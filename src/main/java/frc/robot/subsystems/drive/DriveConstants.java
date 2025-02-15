@@ -112,6 +112,9 @@ public class DriveConstants {
     public static final double turnSimP = 8.0;
     public static final double turnSimD = 0.0;
 
+    // Tipping threshold angle
+    public static final double tippingThresholdDegrees = 8.0;
+
     // PathPlanner configuration
     public static final double robotMassKg = 74.088;
     public static final double robotMOI = 6.883;
