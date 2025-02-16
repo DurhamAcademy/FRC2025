@@ -2,10 +2,16 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 public class Elevator extends SubsystemBase {
     private final ElevatorIO elevatorIO;
@@ -14,7 +20,12 @@ public class Elevator extends SubsystemBase {
     private final WristIOInputsAutoLogged wristInputs = new WristIOInputsAutoLogged();
 
     private boolean wristRestricted = false;
-    private double wristTargetAngleSavestate = 0.0;
+    private double savedWristTargetAngle = 0.0;
+
+    private static final LoggedMechanism2d loggedMechanism = new LoggedMechanism2d(3, 3);
+    public LoggedMechanismRoot2d loggedMechanismRoot;
+    public LoggedMechanismLigament2d wristLigament;
+    public LoggedMechanismLigament2d elevatorLigament;
 
     public enum ElevatorLevel {
         ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
@@ -49,6 +60,24 @@ public class Elevator extends SubsystemBase {
                                                 "Elevator/SysIdTestState", state.toString()))),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> elevatorIO.setVoltage(voltage.in(Volts)), null, this));
+
+        loggedMechanismRoot = loggedMechanism.getRoot("elevator", 1.5, 0);
+        elevatorLigament =
+                loggedMechanismRoot.append(
+                        new LoggedMechanismLigament2d(
+                                "elevator",
+                                Units.inchesToMeters(
+                                        elevatorInputs.leftHeightInches
+                                                + ElevatorConstants.elevatorBaseHeight),
+                                90));
+        wristLigament =
+                elevatorLigament.append(
+                        new LoggedMechanismLigament2d(
+                                "wrist",
+                                Units.inchesToMeters(WristConstants.WRIST_LENGTH),
+                                90,
+                                6,
+                                new Color8Bit(Color.kPurple)));
     }
 
     @Override
@@ -57,7 +86,7 @@ public class Elevator extends SubsystemBase {
         if (wristRestricted && !isWristRestricted()) {
             // set the wrist target angle to the saved value
             wristRestricted = false;
-            wristIO.setTargetAngle(wristTargetAngleSavestate);
+            wristIO.setTargetAngle(savedWristTargetAngle);
         }
 
         elevatorIO.updateInputs(elevatorInputs);
@@ -70,6 +99,13 @@ public class Elevator extends SubsystemBase {
 
         elevatorIO.updateProfile();
         wristIO.updateStates();
+
+        elevatorLigament.setLength(
+                Units.inchesToMeters(
+                        elevatorInputs.leftHeightInches + ElevatorConstants.elevatorBaseHeight));
+        // -90 because the '0' for the wrist is horizontal with the ground
+        wristLigament.setAngle(Units.radiansToDegrees(wristInputs.angle) - 90);
+        Logger.recordOutput("Elevator/loggedMechanism2d", loggedMechanism);
     }
 
     public void setElevatorTargetHeight(double heightInches) {
@@ -86,7 +122,7 @@ public class Elevator extends SubsystemBase {
         if (isWristRestricted()) {
             // set vars to hold targetAngle until safe to move the wrist
             wristRestricted = true;
-            wristTargetAngleSavestate = targetAngle;
+            savedWristTargetAngle = targetAngle;
 
             // get the safe angles for the wrist when right next to the reef + extra room
             double restrictedAngle =
