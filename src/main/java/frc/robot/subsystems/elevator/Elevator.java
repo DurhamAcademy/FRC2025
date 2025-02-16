@@ -61,14 +61,18 @@ public class Elevator extends SubsystemBase {
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> elevatorIO.setVoltage(voltage.in(Volts)), null, this));
 
-        loggedMechanismRoot = loggedMechanism.getRoot("elevator", 1.5, 0);
+        loggedMechanismRoot =
+                loggedMechanism.getRoot(
+                        "elevator",
+                        1.5,
+                        Units.inchesToMeters(ElevatorConstants.elevatorBaseHeight));
         elevatorLigament =
                 loggedMechanismRoot.append(
                         new LoggedMechanismLigament2d(
                                 "elevator",
                                 Units.inchesToMeters(
                                         elevatorInputs.leftHeightInches
-                                                + ElevatorConstants.elevatorBaseHeight),
+                                                + WristConstants.WRIST_AXLE_HEIGHT),
                                 90));
         wristLigament =
                 elevatorLigament.append(
@@ -102,10 +106,10 @@ public class Elevator extends SubsystemBase {
 
         elevatorLigament.setLength(
                 Units.inchesToMeters(
-                        elevatorInputs.leftHeightInches + ElevatorConstants.elevatorBaseHeight));
+                        elevatorInputs.leftHeightInches + WristConstants.WRIST_AXLE_HEIGHT));
         // -90 because the '0' for the wrist is horizontal with the ground
         wristLigament.setAngle(Units.radiansToDegrees(wristInputs.angle) - 90);
-        Logger.recordOutput("Elevator/loggedMechanism2d", loggedMechanism);
+        Logger.recordOutput("LoggedMech2ds/Elevator", loggedMechanism);
     }
 
     public void setElevatorTargetHeight(double heightInches) {
