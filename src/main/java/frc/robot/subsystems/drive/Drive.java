@@ -375,6 +375,8 @@ public class Drive extends SubsystemBase {
         if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
             int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
 
+            Constants.ReefConstants oldTargetReef = targetReef;
+
             // Find closest reef position to current pose
             Pose2d estimatedReefPose =
                     poseEstimator
@@ -388,7 +390,10 @@ public class Drive extends SubsystemBase {
                             .map(Map.Entry::getKey)
                             .findFirst()
                             .orElse(Constants.ReefConstants.SIX);
-            updateDashboardReefVisualization(targetReef.ordinal());
+
+            if (oldTargetReef != targetReef) {
+                updateDashboardReefVisualization(targetReef.ordinal());
+            }
         }
     }
 

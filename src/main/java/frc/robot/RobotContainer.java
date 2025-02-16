@@ -79,7 +79,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
-                elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax());
+                elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
                 break;
 
             case SIM:
@@ -100,7 +100,7 @@ public class RobotContainer {
                                 driveSimulation::setSimulationWorldPose,
                                 this);
                 // TODO: Elevator SIM
-                elevator = new Elevator(new ElevatorIOSim(), new WristIOSim());
+                elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -124,7 +124,7 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
-                elevator = new Elevator(new ElevatorIO() {}, new WristIO() {});
+                elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
                 break;
         }
 

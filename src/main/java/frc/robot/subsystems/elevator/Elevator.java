@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.subsystems.drive.Drive;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
@@ -18,6 +19,7 @@ public class Elevator extends SubsystemBase {
     private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
     private final WristIO wristIO;
     private final WristIOInputsAutoLogged wristInputs = new WristIOInputsAutoLogged();
+    private final Drive drive;
 
     private boolean wristRestricted = false;
     private double savedWristTargetAngle = 0.0;
@@ -46,9 +48,11 @@ public class Elevator extends SubsystemBase {
 
     SysIdRoutine sysIdRoutine;
 
-    public Elevator(ElevatorIO elevatorIO, WristIO wristIO) {
+    public Elevator(ElevatorIO elevatorIO, WristIO wristIO, Drive drive) {
         this.elevatorIO = elevatorIO;
         this.wristIO = wristIO;
+        this.drive = drive;
+
         sysIdRoutine =
                 new SysIdRoutine(
                         new SysIdRoutine.Config(
@@ -155,13 +159,22 @@ public class Elevator extends SubsystemBase {
      * @return boolean
      */
     public boolean isWristRestricted() {
+        // if the robot isn't near the closest reef, allow normal wrist movement
+        drive.setTargetReefToClosest();
+        if (drive.getPose().getTranslation().getDistance(drive.getTargetReefPose().getTranslation())
+                > 1) {
+            return false;
+        }
+
         // if elevator height (off the ground) > than the reef height +
         // the height of a triangle formed by the wrist and the robot's minimum distance to the reef
-        return elevatorInputs.leftHeightInches + ElevatorConstants.elevatorBaseHeight
+        return elevatorInputs.leftHeightInches
+                        + ElevatorConstants.elevatorBaseHeight
+                        + WristConstants.WRIST_AXLE_HEIGHT
                 < WristConstants.REEF_PANEL_HEIGHT
                         + Math.sqrt(
                                 Math.pow(WristConstants.WRIST_LENGTH, 2)
-                                        + Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
+                                        - Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
     }
 
     /**
