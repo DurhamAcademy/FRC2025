@@ -47,7 +47,7 @@ public class WristConstants {
     public static final double wristAngularTolerance = 2;
     public static final double wristVelocityTolerance = 0.1;
 
-    public static final double wristMotorReduction = 28.0 / 18.0;
+    public static final double wristMotorReduction = 4 * 3 * (28.0 / 18.0);
     public static final double wristEncoderPositionFactor =
             2 * Math.PI / wristMotorReduction; // Rotations => Radians
     public static final double wristEncoderVelocityFactor =
