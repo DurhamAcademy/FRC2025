@@ -418,6 +418,15 @@ public class Drive extends SubsystemBase {
         updateDashboardReefVisualization(reef);
     }
 
+    public Rotation2d getHumanPlayerStation() {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        if(alliance == 0) return Constants.LocationConstants.humanPlayerStationBlue;
+        else return Constants.LocationConstants.humanPlayerStationRed;
+    }
+
     public void updateDashboardReefVisualization(int reefIndex) {
         for (int i = 1; i <= 12; i++) {
             final int index = i;

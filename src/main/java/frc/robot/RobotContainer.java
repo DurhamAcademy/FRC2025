@@ -234,6 +234,16 @@ public class RobotContainer {
                 .rightBumper()
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
 
+        driverController
+                .y()
+                .onTrue(
+                    DriveCommands.autoAlignToHumanPlayerStation(
+                            drive,
+                            () -> (yDirect * driverController.getLeftY()),
+                            () -> (xDirect * driverController.getLeftX())
+                    )
+                );
+
         // OPERATOR CONTROLLER
         // Elevator
         operatorController
