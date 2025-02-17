@@ -160,8 +160,10 @@ public class Elevator extends SubsystemBase {
      */
     public boolean isWristRestricted() {
         // if the robot isn't near the closest reef, allow normal wrist movement
-        drive.setTargetReefToClosest();
-        if (drive.getPose().getTranslation().getDistance(drive.getTargetReefPose().getTranslation())
+        if (drive.getPose()
+                        .getTranslation()
+                        .getDistance(
+                                drive.getReefPose(drive.getClosestTargetReef()).getTranslation())
                 > 1) {
             return false;
         }

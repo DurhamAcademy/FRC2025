@@ -371,11 +371,10 @@ public class Drive extends SubsystemBase {
         return modules[index];
     }
 
-    public void setTargetReefToClosest() {
+    public Constants.ReefConstants getClosestTargetReef() {
+        Constants.ReefConstants closestReef = Constants.ReefConstants.SIX;
         if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
             int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
-
-            Constants.ReefConstants oldTargetReef = targetReef;
 
             // Find closest reef position to current pose
             Pose2d estimatedReefPose =
@@ -384,25 +383,34 @@ public class Drive extends SubsystemBase {
                             .nearest(Constants.LocationConstants.PosesOfAllReefLocations(alliance));
 
             // Find corresponding reef constant value
-            targetReef =
+            closestReef =
                     Constants.LocationConstants.ReefLocations.entrySet().stream()
                             .filter(entry -> entry.getValue()[alliance].equals(estimatedReefPose))
                             .map(Map.Entry::getKey)
                             .findFirst()
                             .orElse(Constants.ReefConstants.SIX);
+        }
+        return closestReef;
+    }
 
-            if (oldTargetReef != targetReef) {
-                updateDashboardReefVisualization(targetReef.ordinal());
-            }
+    public void setTargetReefToClosest() {
+        Constants.ReefConstants oldTargetReef = targetReef;
+        targetReef = getClosestTargetReef();
+        if (oldTargetReef != targetReef) {
+            updateDashboardReefVisualization(targetReef.ordinal());
         }
     }
 
-    public Pose2d getTargetReefPose() {
+    public Pose2d getReefPose(Constants.ReefConstants reef) {
         int alliance =
                 DriverStation.getAlliance().isPresent()
                         ? Constants.getAllianceColor(DriverStation.getAlliance().get())
                         : 0;
-        return Constants.LocationConstants.ReefLocations.get(targetReef)[alliance];
+        return Constants.LocationConstants.ReefLocations.get(reef)[alliance];
+    }
+
+    public Pose2d getTargetReefPose() {
+        return getReefPose(targetReef);
     }
 
     public Constants.ReefConstants getTargetReef() {

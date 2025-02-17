@@ -453,7 +453,7 @@ public class DriveCommands {
                                 0,
                                 0,
                                 // max velocity and max acceleration TODO check these values
-                                new TrapezoidProfile.Constraints(1, 3.14)));
+                                new TrapezoidProfile.Constraints(5.63, 8.44)));
         holonomicDriveController.getThetaController().enableContinuousInput(-Math.PI, Math.PI);
         // sets 5cm and 5 degree precision
         holonomicDriveController.setTolerance(new Pose2d(0.05, 0.05, Rotation2d.fromDegrees(5)));
