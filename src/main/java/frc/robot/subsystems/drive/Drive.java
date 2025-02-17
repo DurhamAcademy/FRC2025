@@ -436,7 +436,7 @@ public class Drive extends SubsystemBase {
         return maxUsableSpeedMetersPerSec / maxSpeedMetersPerSec;
     }
 
-    public void updateDashboardInGeneralForDriveExceptNotReefVisualization() {
+    public void updateDashboardMaxSpeed() {
         SmartDashboard.putData(
                 "Max Speed",
                 builder -> {

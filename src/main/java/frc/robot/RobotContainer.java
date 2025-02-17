@@ -170,14 +170,8 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () ->
-                                (drive.makeMaxUsableSpeedRatio()
-                                        * yDirect
-                                        * driverController.getLeftY()),
-                        () ->
-                                (drive.makeMaxUsableSpeedRatio()
-                                        * xDirect
-                                        * driverController.getLeftX()),
+                        () -> (yDirect * driverController.getLeftY()),
+                        () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
         // DRIVER CONTROLLER
@@ -187,14 +181,8 @@ public class RobotContainer {
                 .whileTrue(
                         DriveCommands.joystickDriveAtAngle(
                                 drive,
-                                () ->
-                                        (drive.makeMaxUsableSpeedRatio()
-                                                * yDirect
-                                                * driverController.getLeftY()),
-                                () ->
-                                        (drive.makeMaxUsableSpeedRatio()
-                                                * xDirect
-                                                * driverController.getLeftX()),
+                                () -> (yDirect * driverController.getLeftY()),
+                                () -> (xDirect * driverController.getLeftX()),
                                 Rotation2d::new));
 
         // Switch to X pattern when X button is pressed
@@ -299,7 +287,7 @@ public class RobotContainer {
 
     public void sendDataToSmartDashboard() {
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
-        drive.updateDashboardInGeneralForDriveExceptNotReefVisualization();
+        drive.updateDashboardMaxSpeed();
         drive.makeMaxUsableSpeedUsable();
         drive.makeMaxUsableSpeedRatio();
         SmartDashboard.putData(
