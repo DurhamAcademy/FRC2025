@@ -1,27 +1,22 @@
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.math.MathUtil;
+import static edu.wpi.first.math.filter.Debouncer.DebounceType.kBoth;
+
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-
-import static edu.wpi.first.math.filter.Debouncer.DebounceType.kBoth;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Second;
 
 public class Intake extends SubsystemBase {
     private double intakeVoltageSetpoint = 0.0;
     private Rotation2d targetRotation = new Rotation2d();
 
     IntakeIO io;
-    IntakeIOInputsAutoLogged inputs;
+    IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
     Debouncer debouncer = new Debouncer(.05, kBoth);
     ArmFeedforward rotatorFF;
     ProfiledPIDController rotatorFB;
@@ -32,28 +27,33 @@ public class Intake extends SubsystemBase {
 
     public Intake(IntakeIO io) {
         this.io = io;
-        rotatorFF = new ArmFeedforward(0.0, 0.0, 0.0, 0.0);
-        rotatorFB = new ProfiledPIDController(
-                IntakeConstants.rotatorKp,
-                IntakeConstants.rotatorKi,
-                IntakeConstants.rotatorKd,
-                new TrapezoidProfile.Constraints(
-                        IntakeConstants.rotatorMaxVelocity,
-                        IntakeConstants.rotatorMaxAcceleration
-                )
-        );
+        rotatorFF =
+                new ArmFeedforward(
+                        IntakeConstants.rotatorKs,
+                        IntakeConstants.rotatorKg,
+                        IntakeConstants.rotatorKv,
+                        IntakeConstants.rotatarKa);
+        rotatorFB =
+                new ProfiledPIDController(
+                        IntakeConstants.rotatorKp,
+                        IntakeConstants.rotatorKi,
+                        IntakeConstants.rotatorKd,
+                        new TrapezoidProfile.Constraints(
+                                IntakeConstants.rotatorMaxVelocity,
+                                IntakeConstants.rotatorMaxAcceleration));
 
         constraints =
                 new TrapezoidProfile.Constraints(
                         IntakeConstants.rotatorMaxVelocity, // in/s
                         IntakeConstants.rotatorMaxAcceleration); // in/s
-        currentState = new TrapezoidProfile.State(0, 0);
+        currentState = new TrapezoidProfile.State(inputs.rotatorPosRad, 0);
         goalState = new TrapezoidProfile.State(0, 0);
         profile = new TrapezoidProfile(constraints);
     }
 
     public boolean getBeamBroken() {
-        return !debouncer.calculate(inputs.isBeamBroken); // TODO: might need to invert this? not invert it?
+        return !debouncer.calculate(
+                inputs.isBeamBroken); // TODO: might need to invert this? not invert it?
     }
 
     public void setVoltage(double voltage) {
@@ -64,11 +64,16 @@ public class Intake extends SubsystemBase {
         io.simAddCoral(robotPose);
     }
 
-    public void setTargetRotation(Rotation2d targetRotation) { this.targetRotation = targetRotation; }
+    public void setTargetRotation(Rotation2d targetRotation) {
+        this.targetRotation = targetRotation;
+        goalState = new TrapezoidProfile.State(targetRotation.getRadians(), 0);
+    }
 
     public void rotateIntake() {
         currentState = profile.calculate(0.02, currentState, goalState);
-        double ffVolts = rotatorFF.calculate(targetRotation.getRadians(), 0); // Feedforward (for holding position)
+        double ffVolts =
+                rotatorFF.calculate(
+                        targetRotation.getRadians(), 0); // Feedforward (for holding position)
         io.setRotatorReference(currentState.position, ffVolts);
     }
 

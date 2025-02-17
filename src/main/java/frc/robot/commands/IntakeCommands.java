@@ -15,7 +15,8 @@ public class IntakeCommands {
     }
 
     public static Command safeRunIntake(Intake intake) {
-        return runIntake(intake).onlyWhile(() -> !intake.getBeamBroken()); // stop when beam is broken
+        return runIntake(intake)
+                .onlyWhile(() -> !intake.getBeamBroken()); // stop when beam is broken
     }
 
     public static Command rotateIntakeUp(Intake intake) {
@@ -23,7 +24,8 @@ public class IntakeCommands {
     }
 
     public static Command rotateIntakeDown(Intake intake) {
-        return new RunCommand(() -> intake.setTargetRotation(IntakeConstants.INTAKE_RESTING_ROTATION));
+        return new RunCommand(
+                () -> intake.setTargetRotation(IntakeConstants.INTAKE_RESTING_ROTATION));
     }
 
     public static Command stopIntake(Intake intake) {
