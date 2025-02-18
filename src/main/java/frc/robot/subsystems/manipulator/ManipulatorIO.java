@@ -20,9 +20,6 @@ public interface ManipulatorIO {
 
     public default void updateInputs(ManipulatorIOInputs inputs) {}
 
-    /** Run open loop at the specified voltage. */
-    public default void setArmVoltage(double volts) {}
-
     /** Set intake wheel voltage. */
     public default void setRollerPercent(double percent) {}
 

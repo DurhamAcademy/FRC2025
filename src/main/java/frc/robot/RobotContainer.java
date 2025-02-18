@@ -49,6 +49,7 @@ public class RobotContainer {
 
     // Controller
     private final CommandXboxController controller = new CommandXboxController(0);
+    private final CommandXboxController manipulatorSIMController = new CommandXboxController(1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
@@ -182,6 +183,15 @@ public class RobotContainer {
                                         drive)
                                 .ignoringDisable(true));
 
+        // this will be cahnged later and is only in here
+        manipulator.setDefaultCommand(ManipulatorCommands.runManipulator(manipulator, 0));
+
+        manipulatorSIMController
+                .a()
+                .onTrue(ManipulatorCommands.humanPlayerIntake(manipulator).withTimeout(3));
+        manipulatorSIMController.b().whileTrue(ManipulatorCommands.algaeIntake(manipulator));
+        manipulatorSIMController.x().whileTrue(ManipulatorCommands.eject(manipulator));
+        manipulatorSIMController.y().whileTrue(ManipulatorCommands.runManipulator(manipulator, 0));
         //    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
         //            ? () -> drive.setPose(
         //            driveSimulation

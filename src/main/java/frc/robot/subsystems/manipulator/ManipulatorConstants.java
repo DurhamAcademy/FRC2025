@@ -8,7 +8,7 @@ public class ManipulatorConstants {
     public static final int MANIPULATOR_BEAM_CanID = -1;
 
     // the gear ratio of the gear box
-    public static final double manipulatorGearRatio = -1;
+    public static final double manipulatorGearRatio = 1;
 
     // Manipulator PID Configuration
     // TODO: FIGURE OUT

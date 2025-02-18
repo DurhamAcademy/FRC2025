@@ -19,7 +19,6 @@ public class ManipulatorIOSim implements ManipulatorIO {
     private Double timestamp = null;
 
     public ManipulatorIOSim() {
-        setArmVoltage(0.0);
         setRollerPercent(0.0);
     }
 
@@ -45,6 +44,7 @@ public class ManipulatorIOSim implements ManipulatorIO {
     }
 
     public void setRollerVoltage(double volts) {
+        rollerVoltage = volts;
         rollerSim.setInputVoltage(volts);
     }
 }

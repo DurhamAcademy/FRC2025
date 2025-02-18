@@ -111,7 +111,7 @@ public class Vision extends SubsystemBase {
             LimelightHelpers.PoseEstimate poseEstimate = getEstimatedPoseFromCamera(camera.name);
 
             // Reject update if no tags are detected
-            if (poseEstimate.tagCount == 0) {
+            if (poseEstimate == null || poseEstimate.tagCount == 0) {
                 continue; // skip to next camera if conditions are not met
             }
 

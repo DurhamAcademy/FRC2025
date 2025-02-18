@@ -64,7 +64,7 @@ public class Manipulator extends SubsystemBase {
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-        Logger.processInputs("Elevator", inputs);
+        Logger.processInputs("Manipulator", inputs);
     }
 
     public void setVoltage(double voltage) {
