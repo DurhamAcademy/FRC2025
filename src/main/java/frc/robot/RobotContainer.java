@@ -128,17 +128,7 @@ public class RobotContainer {
                 break;
         }
 
-        NamedCommands.registerCommand(
-                "Elevator L1", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
-
-        NamedCommands.registerCommand(
-                "Elevator L2", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2));
-
-        NamedCommands.registerCommand(
-                "Elevator L3", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3));
-
-        NamedCommands.registerCommand(
-                "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
+        registerNamedCommands();
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -180,6 +170,23 @@ public class RobotContainer {
         } else {
             yDirect = 1;
         }
+    }
+
+    /**
+     * Method that registers all the named commands to be used by pathplanner for autos and whatnot.
+     */
+    private void registerNamedCommands() {
+        NamedCommands.registerCommand(
+                "Elevator L1", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
+
+        NamedCommands.registerCommand(
+                "Elevator L2", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2));
+
+        NamedCommands.registerCommand(
+                "Elevator L3", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3));
+
+        NamedCommands.registerCommand(
+                "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
     }
 
     /**
