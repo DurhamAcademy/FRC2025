@@ -220,7 +220,6 @@ public class RobotContainer {
         // Align to the closest reef
         driverController
                 .b()
-                .onTrue(runOnce(drive::setTargetReefToClosest, drive))
                 .whileTrue(
                         DriveCommands.autoAlignToReef(
                                 drive, DriveCommands.autoAlignLocations.reef));
@@ -231,7 +230,6 @@ public class RobotContainer {
         driverController
                 .rightBumper()
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
-
         // OPERATOR CONTROLLER
         // Elevator
         operatorController
