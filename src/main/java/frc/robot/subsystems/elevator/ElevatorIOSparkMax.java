@@ -125,6 +125,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     public void updateInputs(ElevatorIOInputs inputs) {
         inputs.isLimitSwitchPressed = limitSwitch.get();
         inputs.leftHeightInches = primaryEncoder.getPosition();
+        Logger.recordOutput("Elevator/primaryEncoder", primaryEncoder.getPosition());
         inputs.rightHeightInches = followerEncoder.getPosition();
         inputs.targetHeightInches = targetHeightInches;
         inputs.velocityInches = primaryEncoder.getVelocity();
