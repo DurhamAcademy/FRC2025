@@ -123,6 +123,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
+        Logger.recordOutput("Elevator/current", primaryMotor.getOutputCurrent());
+        Logger.recordOutput("Elevator/rightcurrent", followerMotor.getOutputCurrent());
         inputs.isLimitSwitchPressed = limitSwitch.get();
         inputs.leftHeightInches = primaryEncoder.getPosition();
         Logger.recordOutput("Elevator/primaryEncoder", primaryEncoder.getPosition());

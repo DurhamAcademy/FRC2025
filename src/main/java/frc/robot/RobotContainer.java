@@ -197,11 +197,11 @@ public class RobotContainer {
                         () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
-        elevator.setDefaultCommand(
-                either(
-                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO),
-                        ElevatorCommands.zeroElevator(elevator),
-                        elevator::isZeroed));
+        elevator.setDefaultCommand(null);
+        //                either(
+        //                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO),
+        //                        ElevatorCommands.zeroElevator(elevator),
+        //                        elevator::isZeroed));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
@@ -232,9 +232,7 @@ public class RobotContainer {
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
         // OPERATOR CONTROLLER
         // Elevator
-        operatorController
-                .start()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO));
+        operatorController.start().onTrue(ElevatorCommands.setElevatorVoltage(elevator, 5));
         operatorController
                 .a()
                 .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1
