@@ -6,8 +6,7 @@ public class ElevatorConstants {
     public static final int rightElevatorCanId = 10;
 
     // Limit Switch DIO #
-    // TODO: update when robot built
-    public static final int limitSwitchPort = 20;
+    public static final int limitSwitchPort = 0;
 
     // Elevator PID Configuration
     // Manually tune PID?
