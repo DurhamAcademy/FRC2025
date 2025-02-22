@@ -30,8 +30,8 @@ public class IntakeConstants {
     // todo: update this
     public static final Rotation2d INTAKE_UP_ROTATION = new Rotation2d(0);
 
-    public static final int intakeMotorId = 0; // TODO: update
-    public static final int rotatorMotorId = 0; // TODO: update
+    public static final int intakeMotorId = 21;
+    public static final int rotatorMotorId = 20;
     public static final int beamBreakId = 0; // TODO: update
 
     // sim stuff
