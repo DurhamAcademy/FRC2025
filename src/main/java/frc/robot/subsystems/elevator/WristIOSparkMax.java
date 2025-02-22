@@ -32,7 +32,7 @@ public class WristIOSparkMax implements WristIO {
         // using a neo and an absolute encoder
         wristMotor = new SparkMax(WristConstants.wristCanId, SparkLowLevel.MotorType.kBrushless);
         wristRelativeEncoder = wristMotor.getEncoder();
-        wristAbsoluteEncoder = new DutyCycleEncoder(0);
+        wristAbsoluteEncoder = new DutyCycleEncoder(1);
         wristController = wristMotor.getClosedLoopController();
 
         SparkMaxConfig resetConfig = new SparkMaxConfig();

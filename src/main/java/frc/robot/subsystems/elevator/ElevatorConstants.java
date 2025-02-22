@@ -20,15 +20,6 @@ public class ElevatorConstants {
     public static final double elevatorKv = 0.14;
     public static final double elevatorKa = 0.0;
 
-    public static final double wristKp = 1.0;
-    public static final double wristKi = 0.0;
-    public static final double wristKd = 0.0;
-
-    public static final double maxWristPosition = 100.0;
-    public static final double minWristPosition = 0.0;
-    public static final double wristMaxVelocity = 1;
-    public static final double wristMaxAcceleration = 1;
-
     // Elevator Levels in inches from master sketch
     public static final double ZERO = 0.0; // min height
     public static final double L1 = 12;
