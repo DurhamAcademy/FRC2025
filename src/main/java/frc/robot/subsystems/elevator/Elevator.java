@@ -35,7 +35,13 @@ public class Elevator extends SubsystemBase {
         L1(ElevatorConstants.L1, WristConstants.L1),
         L2(ElevatorConstants.L2, WristConstants.L2),
         L3(ElevatorConstants.L3, WristConstants.L3),
-        L4(ElevatorConstants.L4, WristConstants.L4);
+        L4(ElevatorConstants.L4, WristConstants.L4),
+        NET(ElevatorConstants.L4, WristConstants.NET),
+        PROCESSOR(ElevatorConstants.L1, WristConstants.PROCESSOR),
+        LOWER_ALGAE_REMOVAL(
+                ElevatorConstants.LOWER_ALGAE_REMOVAL, WristConstants.LOWER_ALGAE_REMOVAL),
+        UPPER_ALGAE_REMOVAL(
+                ElevatorConstants.UPPER_ALGAE_REMOVAL, WristConstants.UPPER_ALGAE_REMOVAL);
 
         public final double heightInches;
         public final double angleRadians;
@@ -113,7 +119,7 @@ public class Elevator extends SubsystemBase {
                         elevatorInputs.leftHeightInches + WristConstants.WRIST_AXLE_HEIGHT));
         // -90 because the '0' for the wrist is horizontal with the ground
         wristLigament.setAngle(Units.radiansToDegrees(wristInputs.angle) - 90);
-        Logger.recordOutput("LoggedMech2ds/Elevator", loggedMechanism);
+        Logger.recordOutput("FieldSimulation/ElevatorMech2d", loggedMechanism);
     }
 
     public void setElevatorTargetHeight(double heightInches) {

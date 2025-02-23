@@ -28,7 +28,7 @@ import java.util.Map;
  * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and "replay"
  * (log replay from a file).
  */
-public final class Constants {
+public final class FieldConstants {
     public static final Mode simMode = Mode.SIM;
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
@@ -52,6 +52,9 @@ public final class Constants {
     public static int getAllianceColor(DriverStation.Alliance alliance) {
         return alliance == DriverStation.Alliance.Red ? 1 : 0;
     }
+
+    public static final double coralInnerWidth = Units.inchesToMeters(4);
+    public static final double reefPipeDiameter = Units.inchesToMeters(1.25);
 
     public static class LocationConstants {
         public static enum AprilTagLocations {

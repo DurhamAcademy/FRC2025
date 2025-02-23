@@ -56,7 +56,7 @@ public class Robot extends LoggedRobot {
         }
 
         // Set up data receivers & replay source
-        switch (Constants.currentMode) {
+        switch (FieldConstants.currentMode) {
             case REAL:
                 // Running on a real robot, log to a USB stick ("/U/logs")
                 Logger.addDataReceiver(new WPILOGWriter());
@@ -162,7 +162,21 @@ public class Robot extends LoggedRobot {
 
     /** This function is called once when the robot is first started up. */
     @Override
-    public void simulationInit() {}
+    public void simulationInit() {
+        //        Map<FieldConstants.ReefConstants, Pose2d[]> reefLocations =
+        //                FieldConstants.LocationConstants.ReefLocations;
+        //
+        //        // Iterate through each reef constant
+        //        for (Map.Entry<FieldConstants.ReefConstants, Pose2d[]> entry :
+        // reefLocations.entrySet()) {
+        //            FieldConstants.ReefConstants reef = entry.getKey();
+        //            Pose2d[] poses = entry.getValue(); // [0] = blue, [1] = red
+        //
+        //            // Log each reef for both Blue and Red alliance poses
+        //            Logger.recordOutput("Reefs/" + reef.name() + "/Blue", poses[0]);
+        //            Logger.recordOutput("Reefs/" + reef.name() + "/Red", poses[1]);
+        //        }
+    }
 
     /** This function is called periodically whilst in simulation. */
     @Override
