@@ -423,7 +423,7 @@ public class Drive extends SubsystemBase {
                 DriverStation.getAlliance().isPresent()
                         ? Constants.getAllianceColor(DriverStation.getAlliance().get())
                         : 0;
-        if(alliance == 0) return Constants.LocationConstants.humanPlayerStationBlue;
+        if (alliance == 0) return Constants.LocationConstants.humanPlayerStationBlue;
         else return Constants.LocationConstants.humanPlayerStationRed;
     }
 

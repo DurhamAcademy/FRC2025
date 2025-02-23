@@ -236,13 +236,11 @@ public class RobotContainer {
 
         driverController
                 .y()
-                .onTrue(
-                    DriveCommands.autoAlignToHumanPlayerStation(
-                            drive,
-                            () -> (yDirect * driverController.getLeftY()),
-                            () -> (xDirect * driverController.getLeftX())
-                    )
-                );
+                .whileTrue(
+                        DriveCommands.autoAlignToHumanPlayerStation(
+                                drive,
+                                () -> (yDirect * driverController.getLeftY()),
+                                () -> (xDirect * driverController.getLeftX())));
 
         // OPERATOR CONTROLLER
         // Elevator

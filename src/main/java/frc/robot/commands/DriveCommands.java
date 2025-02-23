@@ -548,16 +548,14 @@ public class DriveCommands {
 
     /**
      * Align to human player station
+     *
      * @param drive subsystem
      * @param xSupplier left joystick x value
      * @param ySupplier left joystick y value
      * @return command
      */
     public static Command autoAlignToHumanPlayerStation(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier
-    ) {
+            Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
                         ANGLE_KP,
@@ -573,15 +571,13 @@ public class DriveCommands {
                         () -> {
                             Translation2d linearVelocity =
                                     getLinearVelocityFromJoysticks(
-                                            xSupplier.getAsDouble(),
-                                            ySupplier.getAsDouble());
+                                            xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
                             Rotation2d angle = drive.getHumanPlayerStation();
 
                             double omega =
                                     angleController.calculate(
-                                            drive.getRotation().getRadians(),
-                                            angle.getRadians());
+                                            drive.getRotation().getRadians(), angle.getRadians());
 
                             ChassisSpeeds speeds =
                                     new ChassisSpeeds(
@@ -595,8 +591,7 @@ public class DriveCommands {
                             // normal
                             boolean isFlipped =
                                     DriverStation.getAlliance().isPresent()
-                                            && DriverStation.getAlliance().get()
-                                            == Alliance.Red;
+                                            && DriverStation.getAlliance().get() == Alliance.Red;
 
                             // Run the velocity on the drive
                             drive.runVelocity(
@@ -604,11 +599,9 @@ public class DriveCommands {
                                             speeds,
                                             isFlipped
                                                     ? drive.getRotation()
-                                                    .plus(new Rotation2d(Math.PI))
+                                                            .plus(new Rotation2d(Math.PI))
                                                     : drive.getRotation()));
-                        }
-                )
-                .beforeStarting(
-                () -> angleController.reset(drive.getRotation().getRadians()));
+                        })
+                .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
     }
 }
