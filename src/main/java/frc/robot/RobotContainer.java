@@ -281,6 +281,12 @@ public class RobotContainer {
     }
 
     public void sendDataToSmartDashboard() {
+        SmartDashboard.putData(
+                "Vision",
+                builder -> {
+                    builder.setSmartDashboardType("Boolean");
+                    builder.addBooleanProperty("alignedToReef", drive::isAlignedToReef, null);
+                });
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
         SmartDashboard.putData(
                 "Override",

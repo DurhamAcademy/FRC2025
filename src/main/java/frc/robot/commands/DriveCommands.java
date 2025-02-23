@@ -363,7 +363,7 @@ public class DriveCommands {
      * @param drive, the drive subsystem
      * @return Pose2d, the target pose for the robot
      */
-    private static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
+    public static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
         Pose2d locationPose = new Pose2d();
         if (location == autoAlignLocations.reef) {
             // gets reef goal pose
@@ -505,16 +505,17 @@ public class DriveCommands {
     public static Command autoAlignToReef(Drive drive, autoAlignLocations location) {
         return Commands.repeatingSequence(
                         new ConditionalCommand(
-                                // goalPose > 1m away
+                                // goalPose > .5 m away
                                 DriveCommands.roughAlignToTarget(drive, location),
-                                // goalPose <= 1m away
+                                // goalPose <= .5 m away
                                 DriveCommands.preciseAlignToTarget(drive, location),
                                 () -> {
                                     // Calculate the distance between the robot and
                                     // the target.
                                     Pose2d currentPose = drive.getPose(); // Get current robot
                                     // pose
-                                    Pose2d targetPose = drive.getTargetReefPose(); // Target
+                                    Pose2d targetPose =
+                                            calculateRobotTargetPose(drive, location); // Target
                                     // pose
                                     double distance =
                                             currentPose
@@ -522,7 +523,7 @@ public class DriveCommands {
                                                     .getDistance(targetPose.getTranslation());
 
                                     // true if distance > threshold distance (m)
-                                    return distance > 1;
+                                    return distance > .5;
                                 }))
                 .until(drive::isAlignedToReef);
     }

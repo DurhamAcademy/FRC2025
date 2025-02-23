@@ -45,6 +45,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.Mode;
 import frc.robot.RobotContainer;
+import frc.robot.commands.DriveCommands;
 import frc.robot.util.LocalADStarAK;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -446,13 +447,12 @@ public class Drive extends SubsystemBase {
         // Overall condition to stop this command (robot
         // must be at goal pose)
         Pose2d currentPose = getPose();
-        Pose2d targetPose = getTargetReefPose();
+        Pose2d targetPose =
+                DriveCommands.calculateRobotTargetPose(this, DriveCommands.autoAlignLocations.reef);
         // Calculate distance and rotation
         double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
         double rotationError =
-                Math.abs(
-                        currentPose.getRotation().getDegrees()
-                                - targetPose.getRotation().getDegrees());
+                Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
 
         // Stop when BOTH distance and orientation are
         // within the thresholds
