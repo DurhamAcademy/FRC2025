@@ -377,10 +377,6 @@ public final class Constants {
             }
             return allPoses;
         }
-
-        public static Rotation2d humanPlayerStationBlue = Rotation2d.fromDegrees(54);
-
-        public static Rotation2d humanPlayerStationRed = Rotation2d.fromDegrees(234);
     }
 
     public enum ReefConstants {
