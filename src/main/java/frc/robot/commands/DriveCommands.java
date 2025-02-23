@@ -451,9 +451,11 @@ public class DriveCommands {
                                 // max velocity of 1 rotation/s
                                 1,
                                 0,
-                                0,
+                                .2,
                                 // max velocity and max acceleration TODO check these values
-                                new TrapezoidProfile.Constraints(1, 3.14)));
+                                new TrapezoidProfile.Constraints(
+                                        drive.getMaxAngularSpeedRadPerSec(),
+                                        ANGLE_MAX_ACCELERATION)));
         holonomicDriveController.getThetaController().enableContinuousInput(-Math.PI, Math.PI);
         // sets 5cm and 5 degree precision
         holonomicDriveController.setTolerance(new Pose2d(0.05, 0.05, Rotation2d.fromDegrees(5)));
@@ -573,11 +575,12 @@ public class DriveCommands {
                                     getLinearVelocityFromJoysticks(
                                             xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-                            Rotation2d angle = drive.getHumanPlayerStation();
+                            Pose2d hps = drive.getNearestHumanPlayerStation();
 
                             double omega =
                                     angleController.calculate(
-                                            drive.getRotation().getRadians(), angle.getRadians());
+                                            drive.getRotation().getRadians(),
+                                            hps.getRotation().getRadians());
 
                             ChassisSpeeds speeds =
                                     new ChassisSpeeds(
@@ -585,7 +588,7 @@ public class DriveCommands {
                                                     * drive.getMaxLinearSpeedMetersPerSec(),
                                             linearVelocity.getY()
                                                     * drive.getMaxLinearSpeedMetersPerSec(),
-                                            omega);
+                                            omega * drive.getMaxAngularSpeedRadPerSec());
 
                             // See if rotation should be flipped, red = flipped, blue =
                             // normal
