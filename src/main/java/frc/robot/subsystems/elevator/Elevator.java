@@ -195,6 +195,10 @@ public class Elevator extends SubsystemBase {
         wristIO.setSpeed(speed);
     }
 
+    public double getElevatorHeight() {
+        return elevatorInputs.leftHeightInches;
+    }
+
     /**
      * Sets the voltage of the wrist
      *
