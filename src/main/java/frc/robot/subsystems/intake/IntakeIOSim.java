@@ -1,12 +1,8 @@
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.*;
 import org.ironmaple.simulation.IntakeSimulation;
-import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
-import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnField;
-import org.littletonrobotics.junction.Logger;
 
 public class IntakeIOSim implements IntakeIO {
     private final IntakeSimulation intakeSimulation;
@@ -29,7 +25,7 @@ public class IntakeIOSim implements IntakeIO {
                         1);
     }
 
-    @Override
+    /*@Override
     public void simAddCoral(Pose2d robotPose) {
         Logger.recordOutput("Intake/numPieces", intakeSimulation.getGamePiecesAmount());
         if (intakeSimulation.getGamePiecesAmount() > 0) return; // quit if already have one
@@ -41,7 +37,7 @@ public class IntakeIOSim implements IntakeIO {
                                 new Pose2d(
                                         robotPose.getX(), robotPose.getY(), new Rotation2d(90))));
         intakeSimulation.stopIntake(); // close intake
-    }
+    }*/
 
     /*@Override
     public void setIntakePercent(double percent) {
