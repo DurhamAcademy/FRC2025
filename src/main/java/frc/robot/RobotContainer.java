@@ -274,6 +274,8 @@ public class RobotContainer {
         Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
         Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
         Logger.recordOutput(
+                "XY invert", SmartDashboard.getBoolean("INVERT AXES/X/Y INVERT", false));
+        Logger.recordOutput(
                 "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
                 "FieldSimulation/Coral",
@@ -310,6 +312,13 @@ public class RobotContainer {
                     builder.setSmartDashboardType("boolean");
                     builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
                     builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
+                    builder.addBooleanProperty(
+                            "XY INVERT",
+                            () -> invertX && invertY,
+                            val -> {
+                                invertX = val;
+                                invertY = val;
+                            });
                 });
 
         SmartDashboard.putData(
