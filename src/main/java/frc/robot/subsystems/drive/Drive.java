@@ -26,6 +26,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -53,6 +54,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
+    public static double maxUsableSpeedMetersPerSec = maxSpeedMetersPerSec;
     private final GyroIO gyroIO;
     private final Alert gyroDisconnectedAlert =
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
@@ -418,36 +420,20 @@ public class Drive extends SubsystemBase {
         updateDashboardReefVisualization(reef);
     }
 
-    public void getMaxVelocity() {
-        SmartDashboard.getData("Max Speed");
+    public double getMaxVelocity() {
+        clampMaxUsableSpeed();
+        return maxUsableSpeedMetersPerSec;
     }
 
-    public void makeMaxUsableSpeedUsable() {
-        if (maxUsableSpeedMetersPerSec > maxSpeedMetersPerSec) {
+    public void clampMaxUsableSpeed() {
+        maxUsableSpeedMetersPerSec =
+                MathUtil.clamp(maxUsableSpeedMetersPerSec, 0.0, maxSpeedMetersPerSec);
+        /*if (maxUsableSpeedMetersPerSec > maxSpeedMetersPerSec) {
             maxUsableSpeedMetersPerSec = maxSpeedMetersPerSec;
         }
         if (maxUsableSpeedMetersPerSec < 0) {
             maxUsableSpeedMetersPerSec = 0;
-        }
-    }
-
-    public double makeMaxUsableSpeedRatio() {
-        makeMaxUsableSpeedUsable();
-        return maxUsableSpeedMetersPerSec / maxSpeedMetersPerSec;
-    }
-
-    public void updateDashboardMaxSpeed() {
-        SmartDashboard.putData(
-                "Max Speed",
-                builder -> {
-                    builder.setSmartDashboardType("Double");
-                    builder.addDoubleProperty(
-                            "Max Speed",
-                            () -> maxUsableSpeedMetersPerSec,
-                            val -> maxUsableSpeedMetersPerSec = val);
-                });
-        makeMaxUsableSpeedUsable();
-        makeMaxUsableSpeedRatio();
+        }*/
     }
 
     public void updateDashboardReefVisualization(int reefIndex) {

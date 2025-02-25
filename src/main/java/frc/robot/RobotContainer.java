@@ -139,8 +139,6 @@ public class RobotContainer {
                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
-        drive.makeMaxUsableSpeedUsable();
-        drive.makeMaxUsableSpeedRatio();
         sendDataToSmartDashboard();
         configureButtonBindings();
     }
@@ -287,9 +285,6 @@ public class RobotContainer {
 
     public void sendDataToSmartDashboard() {
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
-        drive.updateDashboardMaxSpeed();
-        drive.makeMaxUsableSpeedUsable();
-        drive.makeMaxUsableSpeedRatio();
         SmartDashboard.putData(
                 "Override",
                 builder -> {
@@ -308,7 +303,15 @@ public class RobotContainer {
                     builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
                     builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
                 });
-
+        SmartDashboard.putData(
+                "MAX SPEED",
+                builder -> {
+                    builder.setSmartDashboardType("double");
+                    builder.addDoubleProperty(
+                            "Max",
+                            () -> drive.getMaxVelocity(),
+                            val -> Drive.maxUsableSpeedMetersPerSec = val);
+                });
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
