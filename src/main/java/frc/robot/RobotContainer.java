@@ -64,6 +64,8 @@ public class RobotContainer {
     private double xDirect = 1;
     private double yDirect = 1;
 
+    public boolean algaeMode = true;
+
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
@@ -237,21 +239,30 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
         // Elevator
+        operatorController.leftBumper().onTrue(runOnce(() -> algaeMode = true));
+        operatorController.rightBumper().onTrue(runOnce(() -> algaeMode = false));
         operatorController
                 .start()
                 .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO));
-        operatorController
-                .a()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1
-        operatorController
-                .x()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2
-        operatorController
-                .b()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3
-        operatorController
-                .y()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+
+        if (algaeMode) {
+            operatorController
+                    .povLeft()
+                    .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+            operatorController
+                    .povDown()
+                    .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+            operatorController
+                    .povRight()
+                    .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+            operatorController
+                    .povUp()
+                    .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+        }
+
+        if(!algaeMode) {
+            //TODO: put dpad controls for coral mode here
+        }
     }
 
     /**
