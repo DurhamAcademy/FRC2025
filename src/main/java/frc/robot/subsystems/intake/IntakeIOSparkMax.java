@@ -11,9 +11,11 @@ public class IntakeIOSparkMax implements IntakeIO {
     private final SparkMax intakeMotor;
     private final SparkMax rotatorMotor;
     private final SparkClosedLoopController rotatorController;
-    private final SparkMaxConfig resetConfig = new SparkMaxConfig();
+    private final SparkMaxConfig intakeResetConfig = new SparkMaxConfig();
+    private final SparkMaxConfig rotatorResetConfig = new SparkMaxConfig();
     private final RelativeEncoder intakeEncoder;
-    private final RelativeEncoder rotatorEncoder;
+    private final RelativeEncoder rotatorRelativeEncoder;
+    private final SparkAbsoluteEncoder rotatorAbsoluteEncoder;
     private final DigitalInput beamBreakSensor;
 
     public IntakeIOSparkMax() {
@@ -23,18 +25,29 @@ public class IntakeIOSparkMax implements IntakeIO {
                 new SparkMax(IntakeConstants.rotatorMotorId, SparkLowLevel.MotorType.kBrushless);
 
         intakeEncoder = intakeMotor.getEncoder();
-        rotatorEncoder = rotatorMotor.getEncoder();
+        rotatorRelativeEncoder = rotatorMotor.getEncoder();
+        rotatorAbsoluteEncoder = rotatorMotor.getAbsoluteEncoder();
 
-        resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        resetConfig.smartCurrentLimit(40);
-        resetConfig.voltageCompensation(12.0);
-        resetConfig
+        intakeResetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        intakeResetConfig.smartCurrentLimit(40);
+        intakeResetConfig.voltageCompensation(12.0);
+        intakeResetConfig
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
                 .pid(IntakeConstants.intakeKp, IntakeConstants.intakeKi, IntakeConstants.intakeKd);
 
-        intakeMotor.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
-        rotatorMotor.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
+        rotatorResetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        rotatorResetConfig.smartCurrentLimit(40);
+        rotatorResetConfig.voltageCompensation(12.0);
+        rotatorResetConfig
+                .closedLoop
+                .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
+                .pid(IntakeConstants.intakeKp, IntakeConstants.intakeKi, IntakeConstants.intakeKd);
+
+        rotatorResetConfig.encoder.positionConversionFactor(IntakeConstants.rotatorGearRatio); // update gear ratio
+
+        intakeMotor.configure(intakeResetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
+        rotatorMotor.configure(rotatorResetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
 
         rotatorController = rotatorMotor.getClosedLoopController();
 
@@ -50,10 +63,9 @@ public class IntakeIOSparkMax implements IntakeIO {
         inputs.intakeTemperature = intakeMotor.getMotorTemperature();
 
         // rotation in radians
-        inputs.rotatorPosRad =
-                rotatorEncoder.getPosition() / IntakeConstants.rotatorGearRatio * 2 * Math.PI;
+        inputs.rotatorPosRad = rotatorAbsoluteEncoder.getPosition();
         inputs.rotatorVelocityRadPerSec =
-                rotatorEncoder.getVelocity() * (2 * Math.PI / 60); // Convert RPM to rad/sec
+                rotatorRelativeEncoder.getVelocity() * (2 * Math.PI / 60); // Convert RPM to rad/sec
         inputs.rotatorAppliedVolts = rotatorMotor.getBusVoltage() * rotatorMotor.getAppliedOutput();
         inputs.rotatorCurrentAmps = rotatorMotor.getOutputCurrent();
         inputs.rotatorTemperature = rotatorMotor.getMotorTemperature();

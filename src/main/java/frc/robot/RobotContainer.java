@@ -307,7 +307,7 @@ public class RobotContainer {
             double distance = robotPose.getTranslation().getDistance(stationPose.getTranslation());
             Logger.recordOutput("Intake/HumanPlayerDist" + stationPose.toString(), distance);
             if (distance < DISTANCE_THRESHOLD) {
-                intake.simAddCoral(robotPose);
+                // intake.simAddCoral(robotPose);
             }
         }
     }
