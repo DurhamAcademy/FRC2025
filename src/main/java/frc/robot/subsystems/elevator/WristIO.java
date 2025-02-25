@@ -10,7 +10,6 @@ public interface WristIO {
      */
     @AutoLog
     public static class WristIOInputs {
-
         public double angle;
         public double targetAngle;
         public double velocity;
