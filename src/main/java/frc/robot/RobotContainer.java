@@ -260,8 +260,8 @@ public class RobotContainer {
                     .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4
         }
 
-        if(!algaeMode) {
-            //TODO: put dpad controls for coral mode here
+        if (!algaeMode) {
+            // TODO: put dpad controls for coral mode here
         }
     }
 
