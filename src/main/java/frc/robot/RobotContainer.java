@@ -58,7 +58,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
-    // inverse axises
+    // inverse axes
     private boolean invertX = false;
     private boolean invertY = false;
     private double xDirect = 1;
@@ -201,7 +201,8 @@ public class RobotContainer {
         // if not, zero the elevator for the first time
         elevator.setDefaultCommand(
                 either(
-                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO),
+                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
+                                .onlyIf(drive::isTipping),
                         ElevatorCommands.zeroElevator(elevator),
                         elevator::hasZeroed));
 
@@ -278,8 +279,11 @@ public class RobotContainer {
 
     public void displaySimFieldToAdvantageScope() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
+        Logger.recordOutput("MAX SPEED", SmartDashboard.getNumber("Max Speed/Max Speed", 0));
         Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
         Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
+        Logger.recordOutput(
+                "XY invert", SmartDashboard.getBoolean("INVERT AXES/X/Y INVERT", false));
         Logger.recordOutput(
                 "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
@@ -301,11 +305,15 @@ public class RobotContainer {
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
                     builder.addBooleanProperty(
-                            "Override Reef AA",
+                            "Reef AA",
                             // Getter to read the current value
                             () -> drive.overrideReefAutoAlign,
                             // Setter to update the value
                             val -> drive.overrideReefAutoAlign = val);
+                    builder.addBooleanProperty(
+                            "Anti-Tip",
+                            () -> drive.overrideTipProtection,
+                            val -> drive.overrideTipProtection = val);
                 });
         SmartDashboard.putData(
                 "INVERT AXES",
@@ -313,8 +321,23 @@ public class RobotContainer {
                     builder.setSmartDashboardType("boolean");
                     builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
                     builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
+                    builder.addBooleanProperty(
+                            "XY INVERT",
+                            () -> invertX && invertY,
+                            val -> {
+                                invertX = val;
+                                invertY = val;
+                            });
                 });
-
+        SmartDashboard.putData(
+                "MAX SPEED",
+                builder -> {
+                    builder.setSmartDashboardType("double");
+                    builder.addDoubleProperty(
+                            "Max",
+                            () -> drive.getMaxVelocity(),
+                            val -> Drive.maxUsableSpeedMetersPerSec = val);
+                });
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
