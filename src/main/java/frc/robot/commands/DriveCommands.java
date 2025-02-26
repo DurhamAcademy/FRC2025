@@ -369,7 +369,7 @@ public class DriveCommands {
             // gets reef goal pose
             locationPose = drive.getTargetReefPose();
         } else if (location == autoAlignLocations.processor) {
-            // TODO add processor location
+            locationPose = drive.getProcessor();
         }
 
         double shiftDistance = DriveConstants.robotWidth - .25;

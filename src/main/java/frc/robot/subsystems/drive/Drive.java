@@ -437,6 +437,14 @@ public class Drive extends SubsystemBase {
         updateDashboardReefVisualization(reef);
     }
 
+    public Pose2d getProcessor(){
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? FieldConstants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        return FieldConstants.LocationConstants.processorLocation[alliance];
+    }
+
     /**
      * If robot is within 5 cm
      *
