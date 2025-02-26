@@ -27,6 +27,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
     private TrapezoidProfile.State goalState;
     private SparkFlexConfig followerConfig;
     private final ElevatorFeedforward feedForward;
+
     private final DigitalInput beam;
 
     public ManipulatorIOSparkFlex() {
