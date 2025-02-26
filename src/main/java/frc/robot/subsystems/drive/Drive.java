@@ -431,6 +431,21 @@ public class Drive extends SubsystemBase {
         updateDashboardReefVisualization(reef);
     }
 
+    public Pose2d getNearestHumanPlayerStation() {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        Logger.recordOutput(
+                "HumanPlayerStation/target",
+                poseEstimator
+                        .getEstimatedPosition()
+                        .nearest(Constants.PosesOfAllHumanPlayerStations(alliance)));
+
+        return poseEstimator
+                .getEstimatedPosition()
+                .nearest(Constants.PosesOfAllHumanPlayerStations(alliance));
+
     public double getMaxVelocity() {
         clampMaxUsableSpeed();
         return maxUsableSpeedMetersPerSec;
@@ -439,12 +454,6 @@ public class Drive extends SubsystemBase {
     public void clampMaxUsableSpeed() {
         maxUsableSpeedMetersPerSec =
                 MathUtil.clamp(maxUsableSpeedMetersPerSec, 0.0, maxSpeedMetersPerSec);
-        /*if (maxUsableSpeedMetersPerSec > maxSpeedMetersPerSec) {
-            maxUsableSpeedMetersPerSec = maxSpeedMetersPerSec;
-        }
-        if (maxUsableSpeedMetersPerSec < 0) {
-            maxUsableSpeedMetersPerSec = 0;
-        }*/
     }
 
     public void updateDashboardReefVisualization(int reefIndex) {
