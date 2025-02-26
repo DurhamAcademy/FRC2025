@@ -156,7 +156,7 @@ public class WristIOSparkMax implements WristIO {
         Logger.recordOutput("Wrist/ProfilerPosition", currentState.position);
 
         wristController.setReference(
-                currentState.position,
+                currentState.position + horizontalFromZero,
                 SparkBase.ControlType.kPosition,
                 ClosedLoopSlot.kSlot0,
                 ffVolts);
