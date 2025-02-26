@@ -134,7 +134,7 @@ public class Elevator extends SubsystemBase {
      */
     public void setWristTargetAngle(double targetAngle) {
         // if wrist could possibly hit the reef
-        if (isWristRestricted()) {
+        if (false) {
             // set vars to hold targetAngle until safe to move the wrist
             wristRestricted = true;
             savedWristTargetAngle = targetAngle;

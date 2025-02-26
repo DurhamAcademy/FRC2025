@@ -13,6 +13,7 @@ public class WristIOSparkMax implements WristIO {
     private final SparkMax wristMotor;
     private final SparkClosedLoopController wristController;
     private final SparkAbsoluteEncoder wristEncoder;
+    SparkMaxConfig resetConfig = new SparkMaxConfig();
     private final TrapezoidProfile.Constraints constraints;
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
@@ -33,10 +34,7 @@ public class WristIOSparkMax implements WristIO {
         wristEncoder = wristMotor.getAbsoluteEncoder();
         wristController = wristMotor.getClosedLoopController();
 
-        SparkMaxConfig resetConfig = new SparkMaxConfig();
         resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        resetConfig.smartCurrentLimit(30);
-        resetConfig.voltageCompensation(12.0);
         resetConfig.closedLoop.pid(
                 WristConstants.wristKp, WristConstants.wristKi, WristConstants.wristKd);
 
@@ -115,6 +113,8 @@ public class WristIOSparkMax implements WristIO {
         // sets inputs from raw values
         inputs.angle = wristEncoder.getPosition() - horizontalFromZero;
         inputs.velocity = wristEncoder.getVelocity();
+        Logger.recordOutput("Wrist/current", wristMotor.getOutputCurrent());
+        Logger.recordOutput("Wrist/angle", wristMotor.getAppliedOutput());
         inputs.voltage = wristMotor.getAppliedOutput() * wristMotor.getBusVoltage();
 
         inputs.targetAngle = targetAngle;

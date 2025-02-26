@@ -437,7 +437,7 @@ public class Drive extends SubsystemBase {
         updateDashboardReefVisualization(reef);
     }
 
-    public Pose2d getProcessor(){
+    public Pose2d getProcessor() {
         int alliance =
                 DriverStation.getAlliance().isPresent()
                         ? FieldConstants.getAllianceColor(DriverStation.getAlliance().get())

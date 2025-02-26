@@ -235,7 +235,7 @@ public class RobotContainer {
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
         operatorController
                 .a()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
         operatorController
                 .x()
                 .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2
