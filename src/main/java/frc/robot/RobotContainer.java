@@ -16,6 +16,7 @@ package frc.robot;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -28,9 +29,14 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ManipulatorCommands;
+import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.manipulator.Manipulator;
+import frc.robot.subsystems.manipulator.ManipulatorIO;
+import frc.robot.subsystems.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.manipulator.ManipulatorIOSparkFlex;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.subsystems.drive.*;
-import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import org.ironmaple.simulation.SimulatedArena;
@@ -47,6 +53,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
+    private final Manipulator manipulator;
+    private SwerveDriveSimulation driveSimulation = null;
+
     private final Intake intake;
     private SwerveDriveSimulation driveSimulation = null;
 
@@ -74,9 +83,11 @@ public class RobotContainer {
                                 new ModuleIOSpark(0),
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
+                                new ModuleIOSpark(3));
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
+                manipulator = new Manipulator(new ManipulatorIOSparkFlex());
                 intake = new Intake(new IntakeIOSparkMax());
                 break;
 
@@ -97,6 +108,7 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
                                 driveSimulation::setSimulationWorldPose,
                                 this);
+                manipulator = new Manipulator(new ManipulatorIOSim());
                 intake = new Intake(new IntakeIOSim(driveSimulation));
 
                 // TODO: Vision SIM
@@ -122,8 +134,16 @@ public class RobotContainer {
                                 (pose) -> {},
                                 this);
                 intake = new Intake(new IntakeIOSparkMax());
+                manipulator = new Manipulator(new ManipulatorIO() {});
                 break;
         }
+
+        NamedCommands.registerCommand(
+                "Smart Intake", ManipulatorCommands.humanPlayerIntake(manipulator));
+        NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
+        NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
+        NamedCommands.registerCommand("Algae Intake", ManipulatorCommands.algaeIntake(manipulator));
+
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -198,57 +218,15 @@ public class RobotContainer {
         // Align to the closest reef
         driverController
                 .b()
-                .onTrue(runOnce(drive::setTargetReefToClosest, drive))
-                .whileTrue(
-                        Commands.repeatingSequence(
-                                        new ConditionalCommand(
-                                                // goalPose > 1m away
-                                                DriveCommands.roughAlignToTarget(drive),
-                                                // goalPose <= 1m away
-                                                DriveCommands.preciseAlignToTarget(drive),
-                                                () -> {
-                                                    // Calculate the distance between the robot and
-                                                    // the target.
-                                                    Pose2d currentPose =
-                                                            drive.getPose(); // Get current robot
-                                                    // pose
-                                                    Pose2d targetPose =
-                                                            drive.getTargetReefPose(); // Target
-                                                    // pose
-                                                    double distance =
-                                                            currentPose
-                                                                    .getTranslation()
-                                                                    .getDistance(
-                                                                            targetPose
-                                                                                    .getTranslation());
-
-                                                    // true if distance > threshold distance (m)
-                                                    return distance > 1;
-                                                }))
-                                .until(
-                                        () -> {
-                                            // Overall condition to stop this command (robot
-                                            // must be at goal pose)
-                                            Pose2d currentPose = drive.getPose();
-                                            Pose2d targetPose = drive.getTargetReefPose();
-                                            // Calculate distance and rotation
-                                            double distance =
-                                                    currentPose
-                                                            .getTranslation()
-                                                            .getDistance(
-                                                                    targetPose.getTranslation());
-                                            double rotationError =
-                                                    Math.abs(
-                                                            currentPose.getRotation().getDegrees()
-                                                                    - targetPose
-                                                                            .getRotation()
-                                                                            .getDegrees());
-
-                                            // Stop when BOTH distance and orientation are
-                                            // within the thresholds
-                                            return distance < 0.05
-                                                    && rotationError < 2.0; // <5 cm and < 5 degrees
-                                        }));
+                .onTrue(
+                        Commands.runOnce(
+                                        () ->
+                                                drive.setPose(
+                                                        new Pose2d(
+                                                                drive.getPose().getTranslation(),
+                                                                new Rotation2d())),
+                                        drive)
+                                .ignoringDisable(true));
 
         driverController
                 .x()
