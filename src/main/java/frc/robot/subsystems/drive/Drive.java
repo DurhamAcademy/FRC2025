@@ -202,9 +202,10 @@ public class Drive extends SubsystemBase {
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode == Mode.SIM);
     }
 
+
     /**
      * Runs the drive at the desired velocity.
-     *
+     * it should go a certain acceleration and stop at whatever
      * @param speeds Speeds in meters/sec
      */
     public void runVelocity(ChassisSpeeds speeds) {
