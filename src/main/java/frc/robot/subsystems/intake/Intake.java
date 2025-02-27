@@ -54,8 +54,7 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean getBeamBroken() {
-        return !debouncer.calculate(
-                inputs.isBeamBroken); // TODO: might need to invert this? not invert it?
+        return !inputs.isBeamBroken; // TODO: might need to invert this? not invert it?
     }
 
     public void setVoltage(double voltage) {
@@ -106,5 +105,6 @@ public class Intake extends SubsystemBase {
         io.setIntakeVoltage(intakeVoltageSetpoint);
         rotateIntake();
         Logger.recordOutput("Intake/isRunning", intakeVoltageSetpoint != 0);
+        Logger.recordOutput("Intake/beamBreakBroken", getBeamBroken());
     }
 }

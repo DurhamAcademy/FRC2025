@@ -35,6 +35,7 @@ public class IntakeIOSparkMax implements IntakeIO {
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
                 .pid(IntakeConstants.intakeKp, IntakeConstants.intakeKi, IntakeConstants.intakeKd);
+        intakeResetConfig.inverted(true);
 
         rotatorResetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
         rotatorResetConfig.smartCurrentLimit(40);
