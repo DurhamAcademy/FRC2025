@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
@@ -241,42 +240,63 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
         // Elevator
-        operatorController
-                .leftBumper()
-                        .onTrue(
-                                new InstantCommand(() -> algaeMode = !algaeMode)
-                        );
+        operatorController.leftBumper().onTrue(new InstantCommand(() -> algaeMode = !algaeMode));
         operatorController
                 .start()
                 .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO));
 
-        //TODO put in elevator heights for algae mode
+        // TODO put in elevator heights for algae mode
 
         operatorController
                 .povLeft()
                 .onTrue(
                         algaeMode
-                        ? new InstantCommand(() -> ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel))
-                        : new InstantCommand(() -> ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)));
+                                ? new InstantCommand(
+                                        () ->
+                                                ElevatorCommands.setElevatorLevel(
+                                                        elevator, ElevatorLevel))
+                                : new InstantCommand(
+                                        () ->
+                                                ElevatorCommands.setElevatorLevel(
+                                                        elevator, ElevatorLevel.L1)));
         operatorController
                 .povDown()
                 .onTrue(
                         algaeMode
-                                ? new InstantCommand(() -> ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL))
-                                : new InstantCommand(() -> ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)));
+                                ? new InstantCommand(
+                                        () ->
+                                                ElevatorCommands.setElevatorLevel(
+                                                        elevator,
+                                                        ElevatorLevel.LOWER_ALGAE_REMOVAL))
+                                : new InstantCommand(
+                                        () ->
+                                                ElevatorCommands.setElevatorLevel(
+                                                        elevator, ElevatorLevel.L2)));
         operatorController
                 .povRight()
                 .onTrue(
                         algaeMode
-                                ? new InstantCommand(() -> ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel))
-                                : new InstantCommand(() -> ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)));
+                                ? new InstantCommand(
+                                        () ->
+                                                ElevatorCommands.setElevatorLevel(
+                                                        elevator, ElevatorLevel))
+                                : new InstantCommand(
+                                        () ->
+                                                ElevatorCommands.setElevatorLevel(
+                                                        elevator, ElevatorLevel.L3)));
         operatorController
                 .povUp()
                 .onTrue(
                         algaeMode
-                                ? new InstantCommand(() -> ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL))
-                                : new InstantCommand(() -> ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)));
-
+                                ? new InstantCommand(
+                                        () ->
+                                                ElevatorCommands.setElevatorLevel(
+                                                        elevator,
+                                                        ElevatorLevel.UPPER_ALGAE_REMOVAL))
+                                : new InstantCommand(
+                                        () ->
+                                                ElevatorCommands.setElevatorLevel(
+                                                        elevator, ElevatorLevel.L4)));
     }
 
     /**
