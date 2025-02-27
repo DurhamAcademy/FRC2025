@@ -401,8 +401,6 @@ public final class FieldConstants {
                         double changeXSides = Units.inchesToMeters(16.375);
                         double changeYSides = Units.inchesToMeters(28.3623319739);
 
-                        // TODO:MAKE THESE THE RIGHT NUMBERS FOR SEVEN AND EIGHT
-
                         put(
                                 AlgaeConstants.ONE,
                                 new Pose2d[] {
@@ -509,8 +507,6 @@ public final class FieldConstants {
         ELEVEN,
         TWELVE
     }
-
-    // TODO: UPDATE FOR ALGAE
 
     public enum AlgaeConstants {
         ONE,

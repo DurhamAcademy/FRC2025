@@ -525,34 +525,6 @@ public class DriveCommands {
                                     // true if distance > threshold distance (m)
                                     return distance > .5;
                                 }))
-                // TODO change to new alignToLocation
-                .until(drive::isAlignedToReef);
-    }
-
-    // TODO dont need this if above is changed
-    public static Command autoAlignToAlgae(Drive drive, autoAlignLocations location) {
-        return Commands.repeatingSequence(
-                        new ConditionalCommand(
-                                // goalPose > .5 m away
-                                DriveCommands.roughAlignToTarget(drive, location),
-                                // goalPose <= .5 m away
-                                DriveCommands.preciseAlignToTarget(drive, location),
-                                () -> {
-                                    // Calculate the distance between the robot and
-                                    // the target.
-                                    Pose2d currentPose = drive.getPose(); // Get current robot
-                                    // pose
-                                    Pose2d targetPose =
-                                            calculateRobotTargetPose(drive, location); // Target
-                                    // pose
-                                    double distance =
-                                            currentPose
-                                                    .getTranslation()
-                                                    .getDistance(targetPose.getTranslation());
-
-                                    // true if distance > threshold distance (m)
-                                    return distance > .5;
-                                }))
-                .until(drive::isAlignedToAlgae);
+                .until(drive::isAlignedToLocation);
     }
 }
