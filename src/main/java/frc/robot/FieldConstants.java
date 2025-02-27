@@ -406,67 +406,72 @@ public final class FieldConstants {
                         put(
                                 AlgaeConstants.ONE,
                                 new Pose2d[] {
-                                        new Pose2d(
-                                                blueX - changeXParallel, blueY, Rotation2d.fromDegrees(0)),
-                                        new Pose2d(
-                                                redX + changeXParallel, redY, Rotation2d.fromDegrees(180))
+                                    new Pose2d(
+                                            blueX - changeXParallel,
+                                            blueY,
+                                            Rotation2d.fromDegrees(0)),
+                                    new Pose2d(
+                                            redX + changeXParallel,
+                                            redY,
+                                            Rotation2d.fromDegrees(180))
                                 });
                         put(
                                 AlgaeConstants.FOUR,
                                 new Pose2d[] {
-                                        new Pose2d(
-                                                blueX + changeXParallel,
-                                                blueY,
-                                                Rotation2d.fromDegrees(180)),
-                                        new Pose2d(redX - changeXParallel, redY, Rotation2d.fromDegrees(0))
+                                    new Pose2d(
+                                            blueX + changeXParallel,
+                                            blueY,
+                                            Rotation2d.fromDegrees(180)),
+                                    new Pose2d(
+                                            redX - changeXParallel, redY, Rotation2d.fromDegrees(0))
                                 });
                         put(
                                 AlgaeConstants.TWO,
                                 new Pose2d[] {
-                                        new Pose2d(
-                                                blueX - changeXSides,
-                                                blueY + changeYSides,
-                                                Rotation2d.fromDegrees(60)),
-                                        new Pose2d(
-                                                redX + changeXSides,
-                                                redY - changeYSides,
-                                                Rotation2d.fromDegrees(240))
+                                    new Pose2d(
+                                            blueX - changeXSides,
+                                            blueY + changeYSides,
+                                            Rotation2d.fromDegrees(60)),
+                                    new Pose2d(
+                                            redX + changeXSides,
+                                            redY - changeYSides,
+                                            Rotation2d.fromDegrees(240))
                                 });
                         put(
                                 AlgaeConstants.THREE,
                                 new Pose2d[] {
-                                        new Pose2d(
-                                                blueX + changeXSides,
-                                                blueY + changeYSides,
-                                                Rotation2d.fromDegrees(120)),
-                                        new Pose2d(
-                                                redX - changeXSides,
-                                                redY - changeYSides,
-                                                Rotation2d.fromDegrees(300))
+                                    new Pose2d(
+                                            blueX + changeXSides,
+                                            blueY + changeYSides,
+                                            Rotation2d.fromDegrees(120)),
+                                    new Pose2d(
+                                            redX - changeXSides,
+                                            redY - changeYSides,
+                                            Rotation2d.fromDegrees(300))
                                 });
                         put(
                                 AlgaeConstants.FIVE,
                                 new Pose2d[] {
-                                        new Pose2d(
-                                                blueX + changeXSides,
-                                                blueY - changeYSides,
-                                                Rotation2d.fromDegrees(240)),
-                                        new Pose2d(
-                                                redX - changeXSides,
-                                                redY + changeYSides,
-                                                Rotation2d.fromDegrees(60))
+                                    new Pose2d(
+                                            blueX + changeXSides,
+                                            blueY - changeYSides,
+                                            Rotation2d.fromDegrees(240)),
+                                    new Pose2d(
+                                            redX - changeXSides,
+                                            redY + changeYSides,
+                                            Rotation2d.fromDegrees(60))
                                 });
                         put(
                                 AlgaeConstants.SIX,
                                 new Pose2d[] {
-                                        new Pose2d(
-                                                blueX - changeXSides,
-                                                blueY - changeYSides,
-                                                Rotation2d.fromDegrees(300)),
-                                        new Pose2d(
-                                                redX + changeXSides,
-                                                redY + changeYSides,
-                                                Rotation2d.fromDegrees(120))
+                                    new Pose2d(
+                                            blueX - changeXSides,
+                                            blueY - changeYSides,
+                                            Rotation2d.fromDegrees(300)),
+                                    new Pose2d(
+                                            redX + changeXSides,
+                                            redY + changeYSides,
+                                            Rotation2d.fromDegrees(120))
                                 });
                     }
                 };

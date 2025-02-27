@@ -394,8 +394,6 @@ public class DriveCommands {
         return goalPose;
     }
 
-    //TODO???
-
     public enum autoAlignLocations {
         reef,
         algae,
@@ -504,7 +502,7 @@ public class DriveCommands {
      * @param drive
      * @return Commands.repeatingSequence
      */
-    public static Command autoAlignToReef(Drive drive, autoAlignLocations location) {
+    public static Command autoAlignToLocation(Drive drive, autoAlignLocations location) {
         return Commands.repeatingSequence(
                         new ConditionalCommand(
                                 // goalPose > .5 m away
@@ -527,9 +525,11 @@ public class DriveCommands {
                                     // true if distance > threshold distance (m)
                                     return distance > .5;
                                 }))
+                // TODO change to new alignToLocation
                 .until(drive::isAlignedToReef);
     }
 
+    // TODO dont need this if above is changed
     public static Command autoAlignToAlgae(Drive drive, autoAlignLocations location) {
         return Commands.repeatingSequence(
                         new ConditionalCommand(

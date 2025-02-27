@@ -441,6 +441,9 @@ public class Drive extends SubsystemBase {
         updateDashboardReefVisualization(reef);
     }
 
+
+    // TODO have this take type of location (reef/algae)
+    // rename to isAlignedToLocation
     /**
      * If robot is within 5 cm
      *
@@ -467,6 +470,7 @@ public class Drive extends SubsystemBase {
                                         - FieldConstants.reefPipeDiameter
                                         - Units.inchesToMeters(.25)
                         && rotationError < 2.0; // 2.5 inches and < 2 degrees
+        // TODO also change this name
         Logger.recordOutput("Vision/alignedToReef", alignedToReef);
         return alignedToReef;
     }
@@ -517,7 +521,6 @@ public class Drive extends SubsystemBase {
         }
     }
 
-
     public Pose2d getAlgaePose(FieldConstants.AlgaeConstants algae) {
         int alliance =
                 DriverStation.getAlliance().isPresent()
@@ -530,7 +533,6 @@ public class Drive extends SubsystemBase {
         return getAlgaePose(targetAlgae);
     }
 
-
     public FieldConstants.AlgaeConstants getTargetAlgae() {
         return targetAlgae;
     }
@@ -539,6 +541,7 @@ public class Drive extends SubsystemBase {
         targetAlgae = algae;
     }
 
+    // TODO if we want the option for operator set locations this could be nice
     public void setTargetAlgae(int algae) {
         algae =
                 (algae + 6)
@@ -549,6 +552,7 @@ public class Drive extends SubsystemBase {
         updateDashboardAlgaeVisualization(algae);
     }
 
+    // TODO with changes above we wouldn't need this
     /**
      * If robot is within 5 cm
      *
@@ -560,7 +564,8 @@ public class Drive extends SubsystemBase {
         // must be at goal pose)
         Pose2d currentPose = getPose();
         Pose2d targetPose =
-                DriveCommands.calculateRobotTargetPose(this, DriveCommands.autoAlignLocations.algae);
+                DriveCommands.calculateRobotTargetPose(
+                        this, DriveCommands.autoAlignLocations.algae);
         // Calculate distance and rotation
         double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
         double rotationError =
@@ -571,9 +576,9 @@ public class Drive extends SubsystemBase {
 
         boolean alignedToAlgae =
                 distance
-                        < FieldConstants.coralInnerWidth
-                        - FieldConstants.reefPipeDiameter
-                        - Units.inchesToMeters(.25)
+                                < FieldConstants.coralInnerWidth
+                                        - FieldConstants.reefPipeDiameter
+                                        - Units.inchesToMeters(.25)
                         && rotationError < 2.0; // 2.5 inches and < 2 degrees
         Logger.recordOutput("Vision/alignedToAlgae", alignedToAlgae);
         return alignedToAlgae;
@@ -591,5 +596,4 @@ public class Drive extends SubsystemBase {
                     });
         }
     }
-
 }

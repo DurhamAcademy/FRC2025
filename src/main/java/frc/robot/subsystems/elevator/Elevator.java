@@ -170,7 +170,7 @@ public class Elevator extends SubsystemBase {
                         .getTranslation()
                         .getDistance(
                                 drive.getReefPose(drive.getClosestTargetReef()).getTranslation())
-                >1) {
+                > 1) {
             return false;
         }
 

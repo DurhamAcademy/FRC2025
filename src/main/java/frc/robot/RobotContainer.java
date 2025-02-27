@@ -221,7 +221,7 @@ public class RobotContainer {
         driverController
                 .b()
                 .whileTrue(
-                        DriveCommands.autoAlignToReef(
+                        DriveCommands.autoAlignToLocation(
                                 drive, DriveCommands.autoAlignLocations.reef));
 
         driverController
