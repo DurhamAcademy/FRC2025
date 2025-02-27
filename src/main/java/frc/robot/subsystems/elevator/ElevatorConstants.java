@@ -38,6 +38,10 @@ public class ElevatorConstants {
     public static final double L3 = 32.041099;
     public static final double L4 = 58.211229; // max height
 
+    // fixme these next two heights seem slightly off in sim
+    public static final double LOWER_ALGAE_REMOVAL = 19.5;
+    public static final double UPPER_ALGAE_REMOVAL = 36;
+
     public static final double elevatorMaxVelocity = 10;
     public static final double elevatorMaxAcceleration = 10.0;
     public static final double minHeight = ZERO;
