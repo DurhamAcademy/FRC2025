@@ -16,21 +16,21 @@ public class ManipulatorCommands {
     }
 
     public static Command eject(Manipulator manipulator) {
-        return runManipulator(manipulator, -9);
-    }
-
-    public static Command algaeIntake(Manipulator manipulator) {
         return runManipulator(manipulator, 9);
     }
 
-    public static Command forceIntake(Manipulator manipulator) {
+    public static Command algaeIntake(Manipulator manipulator) {
         return runManipulator(manipulator, -9);
+    }
+
+    public static Command forceIntake(Manipulator manipulator) {
+        return runManipulator(manipulator, 9);
     }
 
     public static Command humanPlayerIntake(Manipulator manipulator) {
         return sequence(
-                runManipulator(manipulator, -9).until(manipulator.beamBroken()),
-                runManipulator(manipulator, -9).withTimeout(.05),
-                runManipulator(manipulator, -9).onlyWhile(manipulator.beamBroken()));
+                runManipulator(manipulator, 9).until(manipulator.beamBroken()),
+                runManipulator(manipulator, 9).withTimeout(.05),
+                runManipulator(manipulator, 9).onlyWhile(manipulator.beamBroken()));
     }
 }

@@ -77,7 +77,6 @@ public class Manipulator extends SubsystemBase {
 
     @AutoLogOutput
     public BooleanSupplier beamBroken() {
-        BooleanSupplier supplier = () -> inputs.beamObstructed;
-        return supplier;
+        return () -> inputs.beamObstructed;
     }
 }
