@@ -326,14 +326,14 @@ public class RobotContainer {
                 });
 
         SmartDashboard.putData(
-                "Wrist",
+                "Elevator",
                 builder -> {
                     builder.setSmartDashboardType("double");
                     builder.addDoubleProperty(
                             "kp",
-                            () -> WristConstants.wristKd,
+                            () -> ElevatorConstants.elevatorKp,
                             val -> {
-                                WristConstants.wristKd = val;
+                                ElevatorConstants.elevatorKp = val;
                                 elevator.resetWristConfig();
                             });
                 });

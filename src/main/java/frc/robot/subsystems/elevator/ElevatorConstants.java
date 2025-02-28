@@ -11,13 +11,13 @@ public class ElevatorConstants {
     // Elevator PID Configuration
     // Manually tune PID?
     // TODO: FIGURE OUT
-    public static final double elevatorKp = 1.0;
+    public static double elevatorKp = 1.0;
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
     // TODO: Elevator FF can be found through SysID
     public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 0.09;
-    public static final double elevatorKv = 0.14;
+    public static final double elevatorKg = 0.0;
+    public static final double elevatorKv = 0.0;
     public static final double elevatorKa = 0.0;
 
     // Elevator Levels in inches from master sketch

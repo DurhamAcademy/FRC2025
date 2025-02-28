@@ -213,6 +213,10 @@ public class Elevator extends SubsystemBase {
         wristIO.resetConfig();
     }
 
+    public void resetElevatorConfig() {
+        elevatorIO.resetConfig();
+    }
+
     public double getElevatorHeight() {
         return elevatorInputs.leftHeightInches;
     }
