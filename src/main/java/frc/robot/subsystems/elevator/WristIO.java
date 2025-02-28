@@ -37,8 +37,4 @@ public interface WristIO {
 
     /** Updating trapezoid profiler and reference height using the profiler */
     public default void updateStates() {}
-
-    public default void recreateFeedforward() {}
-
-    public default void resetConfig() {}
 }

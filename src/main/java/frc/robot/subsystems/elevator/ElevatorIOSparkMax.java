@@ -102,19 +102,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     }
 
     @Override
-    public void resetConfig() {
-        resetConfig
-                .closedLoop
-                .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                        ElevatorConstants.elevatorKp,
-                        ElevatorConstants.elevatorKi,
-                        ElevatorConstants.elevatorKd);
-
-        configureMotors();
-    }
-
-    @Override
     public void setEncoder(double position) {
         primaryEncoder.setPosition(position);
     }

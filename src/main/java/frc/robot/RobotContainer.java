@@ -325,18 +325,6 @@ public class RobotContainer {
                     builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
                 });
 
-        SmartDashboard.putData(
-                "Elevator",
-                builder -> {
-                    builder.setSmartDashboardType("double");
-                    builder.addDoubleProperty(
-                            "kp",
-                            () -> ElevatorConstants.elevatorKp,
-                            val -> {
-                                ElevatorConstants.elevatorKp = val;
-                                elevator.resetWristConfig();
-                            });
-                });
 
         SmartDashboard.putData(
                 "Swerve Drive",

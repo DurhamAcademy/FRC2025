@@ -35,7 +35,7 @@ public class Elevator extends SubsystemBase {
     public enum ElevatorLevel {
         ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
-        L1(ElevatorConstants.ZERO, WristConstants.LOWER_ALGAE_REMOVAL),
+        L1(ElevatorConstants.L1, WristConstants.LOWER_ALGAE_REMOVAL),
         L2(ElevatorConstants.ZERO, WristConstants.L2),
         L3(ElevatorConstants.ZERO, WristConstants.L3),
         L4(ElevatorConstants.ZERO, WristConstants.NET),
@@ -203,18 +203,6 @@ public class Elevator extends SubsystemBase {
      */
     public void setWristSpeed(double speed) {
         wristIO.setSpeed(speed);
-    }
-
-    public void recreateWristFeedforward() {
-        wristIO.recreateFeedforward();
-    }
-
-    public void resetWristConfig() {
-        wristIO.resetConfig();
-    }
-
-    public void resetElevatorConfig() {
-        elevatorIO.resetConfig();
     }
 
     public double getElevatorHeight() {

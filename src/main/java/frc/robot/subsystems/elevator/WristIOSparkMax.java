@@ -79,23 +79,6 @@ public class WristIOSparkMax implements WristIO {
         return wristEncoder.getPosition() - horizontalFromZero;
     }
 
-    @Override
-    public void recreateFeedforward() {
-        feedForward =
-                new ArmFeedforward(
-                        WristConstants.wristKs,
-                        WristConstants.wristKg,
-                        WristConstants.wristKv,
-                        WristConstants.wristKa);
-    }
-
-    @Override
-    public void resetConfig() {
-        resetConfig.closedLoop.pid(
-                WristConstants.wristKp, WristConstants.wristKi, WristConstants.wristKd);
-        wristMotor.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
-    }
-
     /**
      * Resets the position of the wrist's relative encoder to a specified value.
      *
