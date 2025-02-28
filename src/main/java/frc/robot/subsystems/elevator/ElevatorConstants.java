@@ -1,5 +1,7 @@
 package frc.robot.subsystems.elevator;
 
+import edu.wpi.first.math.util.Units;
+
 public class ElevatorConstants {
     // Device CAN IDs
     public static final int leftElevatorCanId = 11;
@@ -11,12 +13,12 @@ public class ElevatorConstants {
     // Elevator PID Configuration
     // Manually tune PID?
     // TODO: FIGURE OUT
-    public static double elevatorKp = 1.0;
+    public static double elevatorKp = 0.0;
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
     // TODO: Elevator FF can be found through SysID
     public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 0.0;
+    public static double elevatorKg = 0.0;
     public static final double elevatorKv = 0.0;
     public static final double elevatorKa = 0.0;
 
@@ -33,8 +35,8 @@ public class ElevatorConstants {
     // the distance between the floor and the bottom of the elevator
     public static final double elevatorBaseHeight = 4.750;
 
-    public static final double elevatorMaxVelocity = 20;
-    public static final double elevatorMaxAcceleration = 20;
+    public static final double elevatorMaxVelocity = Units.metersToInches(.3);
+    public static final double elevatorMaxAcceleration = Units.metersToInches(.3);
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
 
