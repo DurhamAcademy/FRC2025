@@ -1,6 +1,6 @@
 package frc.robot.subsystems.elevator;
 
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
@@ -29,14 +29,17 @@ public class Elevator extends SubsystemBase {
     public LoggedMechanismLigament2d wristLigament;
     public LoggedMechanismLigament2d elevatorLigament;
 
+    SysIdRoutine elevatorSysIDRoutine;
+    SysIdRoutine wristSysIDRoutine;
+
     public enum ElevatorLevel {
         ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
         L1(ElevatorConstants.ZERO, WristConstants.LOWER_ALGAE_REMOVAL),
         L2(ElevatorConstants.ZERO, WristConstants.L2),
         L3(ElevatorConstants.ZERO, WristConstants.L3),
-        L4(ElevatorConstants.ZERO, WristConstants.L4),
-        NET(ElevatorConstants.ZERO, WristConstants.NET),
+        L4(ElevatorConstants.ZERO, WristConstants.NET),
+        NET(ElevatorConstants.L4, WristConstants.NET),
         PROCESSOR(ElevatorConstants.L1, WristConstants.PROCESSOR),
         LOWER_ALGAE_REMOVAL(
                 ElevatorConstants.LOWER_ALGAE_REMOVAL, WristConstants.LOWER_ALGAE_REMOVAL),
@@ -52,24 +55,30 @@ public class Elevator extends SubsystemBase {
         }
     }
 
-    SysIdRoutine sysIdRoutine;
-
     public Elevator(ElevatorIO elevatorIO, WristIO wristIO, Drive drive) {
         this.elevatorIO = elevatorIO;
         this.wristIO = wristIO;
         this.drive = drive;
 
-        sysIdRoutine =
+        elevatorSysIDRoutine =
                 new SysIdRoutine(
                         new SysIdRoutine.Config(
                                 null,
                                 null,
                                 null,
-                                (state ->
-                                        Logger.recordOutput(
-                                                "Elevator/SysIdTestState", state.toString()))),
+                                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> elevatorIO.setVoltage(voltage.in(Volts)), null, this));
+
+        wristSysIDRoutine =
+                new SysIdRoutine(
+                        new SysIdRoutine.Config(
+                                Volts.per(Second).of(.5),
+                                Volts.of(2),
+                                Seconds.of(5),
+                                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
+                        new SysIdRoutine.Mechanism(
+                                (voltage) -> wristIO.setVoltage(voltage.in(Volts)), null, this));
 
         loggedMechanismRoot =
                 loggedMechanism.getRoot(
@@ -196,6 +205,14 @@ public class Elevator extends SubsystemBase {
         wristIO.setSpeed(speed);
     }
 
+    public void recreateWristFeedforward() {
+        wristIO.recreateFeedforward();
+    }
+
+    public void resetWristConfig() {
+        wristIO.resetConfig();
+    }
+
     public double getElevatorHeight() {
         return elevatorInputs.leftHeightInches;
     }
@@ -221,12 +238,20 @@ public class Elevator extends SubsystemBase {
         return elevatorInputs.isLimitSwitchPressed;
     }
 
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return sysIdRoutine.quasistatic(direction);
+    public Command wristSysIDQuasistatic(SysIdRoutine.Direction direction) {
+        return wristSysIDRoutine.quasistatic(direction);
     }
 
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return sysIdRoutine.dynamic(direction);
+    public Command wristSysIDDynamic(SysIdRoutine.Direction direction) {
+        return wristSysIDRoutine.dynamic(direction);
+    }
+
+    public Command elevatorSysIDQuasistatic(SysIdRoutine.Direction direction) {
+        return elevatorSysIDRoutine.quasistatic(direction);
+    }
+
+    public Command elevatorSysIDDynamic(SysIdRoutine.Direction direction) {
+        return elevatorSysIDRoutine.dynamic(direction);
     }
 
     /*

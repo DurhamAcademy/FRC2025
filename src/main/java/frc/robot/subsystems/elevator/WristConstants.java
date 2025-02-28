@@ -3,14 +3,14 @@ package frc.robot.subsystems.elevator;
 public class WristConstants {
     public static final int wristCanId = 12;
 
-    public static final double wristKp = 1.0;
+    public static double wristKp = 0.4;
     public static final double wristKi = 0.0;
-    public static final double wristKd = 0.0;
+    public static double wristKd = 0.3;
 
     public static final double wristKs = 0.0;
-    public static final double wristKg = 3.4;
-    public static final double wristKv = .38;
-    public static final double wristKa = 0.18;
+    public static double wristKg = 0.7;
+    public static final double wristKv = 0.0;
+    public static final double wristKa = 0.0;
 
     // Wrist angles in radians
     public static final double STARTING = Math.toRadians(90.0); // max angle
@@ -40,18 +40,21 @@ public class WristConstants {
 
     public static final double maxWristPosition = STARTING;
     public static final double minWristPosition = INTAKE;
-    public static final double wristMaxVelocity = 15;
-    public static final double wristMaxAcceleration = 15;
+    public static final double wristMaxVelocity = 30;
+    public static final double wristMaxAcceleration = 30;
 
     // Tolerance of the wrist subsystem
     // degrees, rad/s
     public static final double wristAngularTolerance = 2;
     public static final double wristVelocityTolerance = 0.1;
 
-    public static final double wristMotorReduction = 19.4133;
     public static final double wristChainReduction = 28.0 / 18.0;
-    public static final double wristEncoderPositionFactor =
+    public static final double wristAbsoluteEncoderReduction =
             2 * Math.PI / wristChainReduction; // Rotations => Radians
-    public static final double wristEncoderVelocityFactor =
+    public static final double wristAbsoluteEncoderVelocityFactor =
             2 * Math.PI / 60.0 / wristChainReduction; // RPM => Radians per second
+    public static final double wristMotorReduction = 19.4133;
+    public static final double wristRelativeEncoderReduction = 2 * Math.PI / wristMotorReduction;
+    public static final double wristRelativeEncoderVelocityFactor =
+            2 * Math.PI / 60.0 / wristMotorReduction; // RPM => Radians per second
 }

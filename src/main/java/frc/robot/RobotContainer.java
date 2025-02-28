@@ -230,6 +230,19 @@ public class RobotContainer {
         driverController
                 .rightBumper()
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
+
+        operatorController
+                .povUp()
+                .whileTrue(elevator.wristSysIDQuasistatic(SysIdRoutine.Direction.kForward));
+        operatorController
+                .povDown()
+                .whileTrue(elevator.wristSysIDQuasistatic(SysIdRoutine.Direction.kReverse));
+        operatorController
+                .povLeft()
+                .whileTrue(elevator.wristSysIDDynamic(SysIdRoutine.Direction.kForward));
+        operatorController
+                .povRight()
+                .whileTrue(elevator.wristSysIDDynamic(SysIdRoutine.Direction.kReverse));
         // OPERATOR CONTROLLER
         // Elevator
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
@@ -280,6 +293,10 @@ public class RobotContainer {
         return driveSimulation;
     }
 
+    public void resetElevatorSetpoint() {
+        elevator.setElevatorTargetHeight(elevator.getElevatorHeight());
+    }
+
     public void sendDataToSmartDashboard() {
         SmartDashboard.putData(
                 "Vision",
@@ -305,6 +322,19 @@ public class RobotContainer {
                     builder.setSmartDashboardType("boolean");
                     builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
                     builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
+                });
+
+        SmartDashboard.putData(
+                "Wrist",
+                builder -> {
+                    builder.setSmartDashboardType("double");
+                    builder.addDoubleProperty(
+                            "kp",
+                            () -> WristConstants.wristKd,
+                            val -> {
+                                WristConstants.wristKd = val;
+                                elevator.resetWristConfig();
+                            });
                 });
 
         SmartDashboard.putData(
