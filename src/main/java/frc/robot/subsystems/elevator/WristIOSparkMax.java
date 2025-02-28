@@ -1,27 +1,26 @@
 package frc.robot.subsystems.elevator;
 
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.*;
-import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import org.littletonrobotics.junction.Logger;
 
 public class WristIOSparkMax implements WristIO {
     private final SparkMax wristMotor;
     private final SparkClosedLoopController wristController;
-    private final RelativeEncoder wristRelativeEncoder;
-    private final DutyCycleEncoder wristAbsoluteEncoder;
-
+    private final SparkAbsoluteEncoder wristEncoder;
+    SparkMaxConfig resetConfig = new SparkMaxConfig();
     private final TrapezoidProfile.Constraints constraints;
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
+    private final double zeroOffset = .0714 + .3;
+    private final double horizontalFromZero =
+            2.8107917308807373 - 1.3093030452728271; // 2.462753652191162 - 0.9380345331192017;
 
     private final ArmFeedforward feedForward;
 
@@ -31,23 +30,20 @@ public class WristIOSparkMax implements WristIO {
     public WristIOSparkMax() {
         // using a neo and an absolute encoder
         wristMotor = new SparkMax(WristConstants.wristCanId, SparkLowLevel.MotorType.kBrushless);
-        wristRelativeEncoder = wristMotor.getEncoder();
-        wristAbsoluteEncoder = new DutyCycleEncoder(1);
+        // zeroed in REV to be horizontal with floor
+        wristEncoder = wristMotor.getAbsoluteEncoder();
         wristController = wristMotor.getClosedLoopController();
 
-        SparkMaxConfig resetConfig = new SparkMaxConfig();
         resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        resetConfig.smartCurrentLimit(30);
-        resetConfig.voltageCompensation(12.0);
-        resetConfig
-                .closedLoop
-                .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pid(WristConstants.wristKp, WristConstants.wristKi, WristConstants.wristKd);
+        resetConfig.closedLoop.pid(
+                WristConstants.wristKp, WristConstants.wristKi, WristConstants.wristKd);
+
         // sets SparkMax to encode the position of wrist, accounting for gear ratios
         resetConfig
-                .encoder
+                .absoluteEncoder
                 .positionConversionFactor(WristConstants.wristEncoderPositionFactor)
-                .velocityConversionFactor(WristConstants.wristEncoderVelocityFactor);
+                .velocityConversionFactor(WristConstants.wristEncoderVelocityFactor)
+                .zeroOffset(zeroOffset);
 
         wristMotor.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
 
@@ -56,10 +52,11 @@ public class WristIOSparkMax implements WristIO {
                 new TrapezoidProfile.Constraints(
                         WristConstants.wristMaxVelocity, WristConstants.wristMaxAcceleration);
         profile = new TrapezoidProfile(constraints);
-
         // default goal and current state
-        currentState = new TrapezoidProfile.State(0, 0);
-        goalState = new TrapezoidProfile.State(0, 0);
+        currentState =
+                new TrapezoidProfile.State(wristEncoder.getPosition() - horizontalFromZero, 0);
+        goalState = new TrapezoidProfile.State(wristEncoder.getPosition() - horizontalFromZero, 0);
+        targetAngle = wristEncoder.getPosition() - horizontalFromZero;
 
         // feedforward to deal with gravity
         feedForward =
@@ -76,9 +73,7 @@ public class WristIOSparkMax implements WristIO {
      * @param position The position value to set the encoder to (radians).
      */
     @Override
-    public void setEncoder(double position) {
-        wristRelativeEncoder.setPosition(Units.radiansToRotations(position));
-    }
+    public void setEncoder(double position) {}
 
     /**
      * Sets the speed of the wrist motor.
@@ -116,8 +111,10 @@ public class WristIOSparkMax implements WristIO {
     @Override
     public void updateInputs(WristIO.WristIOInputs inputs) {
         // sets inputs from raw values
-        inputs.angle = Units.rotationsToRadians(wristAbsoluteEncoder.get());
-        inputs.velocity = wristRelativeEncoder.getVelocity();
+        inputs.angle = wristEncoder.getPosition() - horizontalFromZero;
+        inputs.velocity = wristEncoder.getVelocity();
+        Logger.recordOutput("Wrist/current", wristMotor.getOutputCurrent());
+        Logger.recordOutput("Wrist/angle", wristMotor.getAppliedOutput());
         inputs.voltage = wristMotor.getAppliedOutput() * wristMotor.getBusVoltage();
 
         inputs.targetAngle = targetAngle;
@@ -139,7 +136,7 @@ public class WristIOSparkMax implements WristIO {
      */
     @Override
     public void setTargetAngle(double targetAngle) {
-
+        Logger.recordOutput("Wrist/targetAngle", targetAngle);
         this.targetAngle =
                 MathUtil.clamp(
                         targetAngle,
@@ -159,7 +156,7 @@ public class WristIOSparkMax implements WristIO {
         Logger.recordOutput("Wrist/ProfilerPosition", currentState.position);
 
         wristController.setReference(
-                currentState.position,
+                currentState.position + horizontalFromZero,
                 SparkBase.ControlType.kPosition,
                 ClosedLoopSlot.kSlot0,
                 ffVolts);

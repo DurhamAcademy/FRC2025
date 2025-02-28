@@ -32,11 +32,11 @@ public class Elevator extends SubsystemBase {
     public enum ElevatorLevel {
         ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
-        L1(ElevatorConstants.L1, WristConstants.L1),
-        L2(ElevatorConstants.L2, WristConstants.L2),
-        L3(ElevatorConstants.L3, WristConstants.L3),
-        L4(ElevatorConstants.L4, WristConstants.L4),
-        NET(ElevatorConstants.L4, WristConstants.NET),
+        L1(ElevatorConstants.ZERO, WristConstants.LOWER_ALGAE_REMOVAL),
+        L2(ElevatorConstants.ZERO, WristConstants.L2),
+        L3(ElevatorConstants.ZERO, WristConstants.L3),
+        L4(ElevatorConstants.ZERO, WristConstants.L4),
+        NET(ElevatorConstants.ZERO, WristConstants.NET),
         PROCESSOR(ElevatorConstants.L1, WristConstants.PROCESSOR),
         LOWER_ALGAE_REMOVAL(
                 ElevatorConstants.LOWER_ALGAE_REMOVAL, WristConstants.LOWER_ALGAE_REMOVAL),
@@ -106,6 +106,7 @@ public class Elevator extends SubsystemBase {
         elevatorIO.updateInputs(elevatorInputs);
         wristIO.updateInputs(wristInputs);
         Logger.processInputs("Elevator", elevatorInputs);
+        Logger.processInputs("Wrist", wristInputs);
 
         if (elevatorInputs.isLimitSwitchPressed) {
             elevatorIO.setEncoder(ElevatorConstants.minHeight);
@@ -133,7 +134,7 @@ public class Elevator extends SubsystemBase {
      */
     public void setWristTargetAngle(double targetAngle) {
         // if wrist could possibly hit the reef
-        if (isWristRestricted()) {
+        if (false) {
             // set vars to hold targetAngle until safe to move the wrist
             wristRestricted = true;
             savedWristTargetAngle = targetAngle;
@@ -193,6 +194,10 @@ public class Elevator extends SubsystemBase {
      */
     public void setWristSpeed(double speed) {
         wristIO.setSpeed(speed);
+    }
+
+    public double getElevatorHeight() {
+        return elevatorInputs.leftHeightInches;
     }
 
     /**

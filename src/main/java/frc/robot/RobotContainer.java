@@ -232,10 +232,10 @@ public class RobotContainer {
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
         // OPERATOR CONTROLLER
         // Elevator
-        operatorController.start().onTrue(ElevatorCommands.setElevatorVoltage(elevator, 5));
+        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
         operatorController
                 .a()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
         operatorController
                 .x()
                 .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2

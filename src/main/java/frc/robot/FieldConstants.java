@@ -491,6 +491,16 @@ public final class FieldConstants {
             }
             return allPoses;
         }
+
+        public static final Pose2d[] processorLocation =
+                new Pose2d[] {
+                    new Pose2d(Units.inchesToMeters(235.725979), 0, new Rotation2d()),
+                    new Pose2d(
+                            Units.inchesToMeters(690.875 - 235.725979),
+                            Units.inchesToMeters(317),
+                            new Rotation2d()),
+                };
+
     }
 
     public enum ReefConstants {
