@@ -374,7 +374,6 @@ public class DriveCommands {
 
         } else if (location == autoAlignLocations.processor) {
             locationPose = drive.getProcessor();
-
         }
 
         double shiftDistance = DriveConstants.robotWidth - .25;

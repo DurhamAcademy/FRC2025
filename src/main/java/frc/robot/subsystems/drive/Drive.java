@@ -441,12 +441,12 @@ public class Drive extends SubsystemBase {
         updateDashboardReefVisualization(reef);
     }
 
-
     public boolean isAlignedToLocation() {
         boolean isAlignedToLocation = (isAlignedToAlgae() || isAlignedToReef());
         Logger.recordOutput("Vision/alignedToLocation", isAlignedToLocation);
         return isAlignedToLocation;
-    };
+    }
+    ;
 
     public Pose2d getProcessor() {
         int alliance =
@@ -455,7 +455,6 @@ public class Drive extends SubsystemBase {
                         : 0;
         return FieldConstants.LocationConstants.processorLocation[alliance];
     }
-
 
     /**
      * If robot is within 5 cm
@@ -499,7 +498,6 @@ public class Drive extends SubsystemBase {
                     });
         }
     }
-
 
     public FieldConstants.AlgaeConstants getClosestTargetAlgae() {
         FieldConstants.AlgaeConstants closestAlgae = FieldConstants.AlgaeConstants.ONE;

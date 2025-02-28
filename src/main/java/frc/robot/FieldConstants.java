@@ -500,7 +500,6 @@ public final class FieldConstants {
                             Units.inchesToMeters(317),
                             new Rotation2d()),
                 };
-
     }
 
     public enum ReefConstants {
