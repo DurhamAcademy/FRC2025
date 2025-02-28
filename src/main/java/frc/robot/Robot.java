@@ -122,7 +122,7 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void autonomousInit() {
-        robotContainer.resetElevatorSetpoint();
+        robotContainer.resetSetpoints();
         autonomousCommand = robotContainer.getAutonomousCommand();
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
@@ -137,7 +137,7 @@ public class Robot extends LoggedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        robotContainer.resetElevatorSetpoint();
+        robotContainer.resetSetpoints();
         // This makes sure that the autonomous stops running when
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
@@ -154,7 +154,6 @@ public class Robot extends LoggedRobot {
     /** This function is called once when test mode is enabled. */
     @Override
     public void testInit() {
-        robotContainer.resetElevatorSetpoint();
         // Cancels all running commands at the start of test mode.
         CommandScheduler.getInstance().cancelAll();
     }
@@ -166,7 +165,6 @@ public class Robot extends LoggedRobot {
     /** This function is called once when the robot is first started up. */
     @Override
     public void simulationInit() {
-        robotContainer.resetElevatorSetpoint();
         //        Map<FieldConstants.ReefConstants, Pose2d[]> reefLocations =
         //                FieldConstants.LocationConstants.ReefLocations;
         //

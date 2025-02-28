@@ -217,6 +217,10 @@ public class Elevator extends SubsystemBase {
         return elevatorInputs.leftHeightInches;
     }
 
+    public double getWristAngle() {
+        return wristInputs.angle;
+    }
+
     /**
      * Sets the voltage of the wrist
      *

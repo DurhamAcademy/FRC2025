@@ -293,7 +293,8 @@ public class RobotContainer {
         return driveSimulation;
     }
 
-    public void resetElevatorSetpoint() {
+    public void resetSetpoints() {
+        elevator.setWristTargetAngle(elevator.getWristAngle());
         elevator.setElevatorTargetHeight(elevator.getElevatorHeight());
     }
 
