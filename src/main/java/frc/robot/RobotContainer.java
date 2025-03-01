@@ -222,7 +222,7 @@ public class RobotContainer {
                 .b()
                 .whileTrue(
                         DriveCommands.autoAlignToLocation(
-                                drive, DriveCommands.autoAlignLocations.reef));
+                                drive, DriveCommands.autoAlignLocations.algae));
 
         driverController
                 .leftBumper()
@@ -285,7 +285,7 @@ public class RobotContainer {
                 "Vision",
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
-                    builder.addBooleanProperty("alignedToReef", drive::isAlignedToReef, null);
+                    builder.addBooleanProperty("alignedToTarget", drive::isAlignedToReef, null);
                 });
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
         SmartDashboard.putData(

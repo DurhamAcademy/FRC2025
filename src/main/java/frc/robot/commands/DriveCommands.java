@@ -401,6 +401,7 @@ public class DriveCommands {
     public enum autoAlignLocations {
         reef,
         algae,
+        processor
     }
 
     /**
