@@ -25,20 +25,19 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.manipulator.Manipulator;
 import frc.robot.subsystems.manipulator.ManipulatorIO;
 import frc.robot.subsystems.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.manipulator.ManipulatorIOSparkFlex;
-import frc.robot.commands.IntakeCommands;
-import frc.robot.subsystems.drive.*;
-import frc.robot.subsystems.intake.IntakeIOSim;
-import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -57,7 +56,6 @@ public class RobotContainer {
     private SwerveDriveSimulation driveSimulation = null;
 
     private final Intake intake;
-    private SwerveDriveSimulation driveSimulation = null;
 
     // Controllers
     private final CommandXboxController driverController = new CommandXboxController(0);
@@ -83,7 +81,6 @@ public class RobotContainer {
                                 new ModuleIOSpark(0),
                                 new ModuleIOSpark(1),
                                 new ModuleIOSpark(2),
-                                new ModuleIOSpark(3));
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
@@ -138,8 +135,9 @@ public class RobotContainer {
                 break;
         }
 
-        NamedCommands.registerCommand(
-                "Smart Intake", ManipulatorCommands.humanPlayerIntake(manipulator));
+        // NamedCommands.registerCommand(
+        //        "Smart Intake", ManipulatorCommands.humanPlayerIntake(manipulator));
+
         NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
         NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
         NamedCommands.registerCommand("Algae Intake", ManipulatorCommands.algaeIntake(manipulator));
@@ -228,11 +226,17 @@ public class RobotContainer {
                                         drive)
                                 .ignoringDisable(true));
 
-        driverController
+        // operatorController.rightTrigger().onTrue(IntakeCommands.intakeCoral(intake,
+        // manipulator));
+        operatorController.rightTrigger().onTrue(IntakeCommands.intakeCoral(intake, manipulator));
+        operatorController
+                .leftTrigger()
+                .whileTrue(ManipulatorCommands.algaeIntake(manipulator))
+                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0.0));
+        operatorController
                 .x()
-                .onTrue(IntakeCommands.safeRunIntake(intake))
-                .onFalse(IntakeCommands.stopIntake(intake));
-
+                .whileTrue(ManipulatorCommands.eject(manipulator))
+                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
         driverController
                 .leftBumper()
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));

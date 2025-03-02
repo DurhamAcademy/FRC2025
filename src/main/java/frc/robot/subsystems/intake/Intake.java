@@ -1,10 +1,7 @@
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.math.filter.Debouncer.DebounceType.kBoth;
-
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,7 +16,6 @@ public class Intake extends SubsystemBase {
 
     IntakeIO io;
     IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
-    Debouncer debouncer = new Debouncer(.05, kBoth);
     ArmFeedforward rotatorFF;
     ProfiledPIDController rotatorFB;
     private final TrapezoidProfile.Constraints constraints;
@@ -54,7 +50,7 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean getBeamBroken() {
-        return !inputs.isBeamBroken; // TODO: might need to invert this? not invert it?
+        return !inputs.isBeamBroken; // if this becomes noisy we can add a debouncer
     }
 
     public void setVoltage(double voltage) {

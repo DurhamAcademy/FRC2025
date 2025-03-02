@@ -5,7 +5,8 @@ public class ManipulatorConstants {
     // update when robot built
     public static final int MANIPULATOR_ROLLERL_CanId = 31;
     public static final int MANIPULATOR_ROLLERR_CanId = 30;
-    public static final int MANIPULATOR_BEAM_CanID = 9;
+    public static final int MANIPULATOR_BEAM_ID = 7;
+    public static final int MANIPULATOR_DISTANCE_SENSOR_ID = 0;
 
     // the gear ratio of the gear box
     public static final double manipulatorGearRatio = 1;
@@ -24,4 +25,6 @@ public class ManipulatorConstants {
     // TODO: MEASURE
     public static final double maxVelocity = 0.0;
     public static final double maxAcceleration = 0.0;
+
+    public static final double maxCoralSensorDistance = 0.0;
 }

@@ -1,15 +1,64 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.manipulator.Manipulator;
 
 public class IntakeCommands {
+    public static Command intakeCoral(Intake intake, Manipulator manipulator) {
+        /*return sequence(
+        IntakeCommands.runIntake(intake).until(intake::getBeamBroken),
+        parallel(
+                        // pass from intake into manipulator
+                        IntakeCommands.runIntake(intake),
+                        ManipulatorCommands.runManipulator(manipulator, 4))
+                .withTimeout(0.2),
+        ManipulatorCommands.runManipulator(manipulator, 0));*/
+        /*return Commands.runEnd(
+        () ->
+                sequence(
+                        IntakeCommands.runIntake(intake).until(intake::getBeamBroken),
+                        parallel(
+                                        // pass from intake into manipulator
+                                        IntakeCommands.runIntake(intake),
+                                        ManipulatorCommands.runManipulator(manipulator, 4))
+                                .withTimeout(0.2),
+                        ManipulatorCommands.runManipulator(
+                                manipulator, 0)), // runs while active
+        () ->
+                sequence(
+                        IntakeCommands.stopIntake(intake),
+                        ManipulatorCommands.runManipulator(manipulator, 0)), // stops on end
+        intake,
+        manipulator);*/
+        return Commands.runEnd(
+                () ->
+                        parallel(
+                                IntakeCommands.runIntake(intake),
+                                ManipulatorCommands.intakeCoral(manipulator)), // runs while active
+                () ->
+                        sequence(
+                                IntakeCommands.stopIntake(intake),
+                                ManipulatorCommands.runManipulator(manipulator, 0)), // stops on end
+                intake,
+                manipulator);
+    }
+
+    public static Command runIntakeForCoral(Intake intake) {
+        return sequence(
+                runIntake(intake).onlyWhile(() -> !intake.getBeamBroken())
+                /*runIntake(intake).withTimeout(1.0)*/ );
+    }
+
     public static Command runIntake(Intake intake) {
         return Commands.runEnd(
-                () -> intake.setVoltage(1.0), // runs while active
+                () -> intake.setVoltage(4.0), // runs while active
                 () -> intake.setVoltage(0.0), // stops on end
                 intake);
     }

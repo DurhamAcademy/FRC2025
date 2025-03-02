@@ -20,17 +20,29 @@ public class ManipulatorCommands {
     }
 
     public static Command algaeIntake(Manipulator manipulator) {
-        return runManipulator(manipulator, -9);
+        return runManipulator(manipulator, -2.0);
     }
 
     public static Command forceIntake(Manipulator manipulator) {
         return runManipulator(manipulator, 9);
     }
 
-    public static Command humanPlayerIntake(Manipulator manipulator) {
+    /*public static Command humanPlayerIntake(Manipulator manipulator) {
         return sequence(
-                runManipulator(manipulator, 9).until(manipulator.beamBroken()),
-                runManipulator(manipulator, 9).withTimeout(.05),
-                runManipulator(manipulator, 9).onlyWhile(manipulator.beamBroken()));
+                        runManipulator(manipulator, 9).until(manipulator.beamBroken()),
+                        runManipulator(manipulator, 9).withTimeout(.05),
+                        runManipulator(manipulator, 9).onlyWhile(manipulator.beamBroken()))
+                .andThen(runManipulator(manipulator, 0));
+    }*/
+
+    public static Command intakeCoral(Manipulator manipulator) {
+        return sequence(
+                runManipulator(manipulator, 5.0)
+                        .until(manipulator::beamBroken), // run until coral starts to enter
+                runManipulator(manipulator, 5.0)
+                        .until(() -> !manipulator.beamBroken()), // continue until too far
+                runManipulator(manipulator, -5.0)
+                        .until(manipulator::beamBroken) // move back until coral breaks beam
+                );
     }
 }

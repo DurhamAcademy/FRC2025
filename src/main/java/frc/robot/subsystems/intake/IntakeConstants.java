@@ -34,7 +34,7 @@ public class IntakeConstants {
 
     public static final int intakeMotorId = 21;
     public static final int rotatorMotorId = 20;
-    public static final int beamBreakId = 9; // TODO: update
+    public static final int beamBreakId = 7;
 
     // sim stuff
     public static final Distance intakeWidth = Meters.of(1);

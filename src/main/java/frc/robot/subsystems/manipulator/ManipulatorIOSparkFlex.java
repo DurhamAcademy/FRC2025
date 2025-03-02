@@ -7,7 +7,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.AnalogInput;
 
 public class ManipulatorIOSparkFlex implements ManipulatorIO {
     private final SparkFlex primaryRollerR =
@@ -19,16 +19,11 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
                     ManipulatorConstants.MANIPULATOR_ROLLERR_CanId,
                     SparkLowLevel.MotorType.kBrushless);
 
-    private final SparkClosedLoopController primaryController;
     private final SparkFlexConfig resetConfig = new SparkFlexConfig();
-    private final TrapezoidProfile.Constraints constraints;
-    private final TrapezoidProfile profile;
-    private TrapezoidProfile.State currentState;
-    private TrapezoidProfile.State goalState;
-    private SparkFlexConfig followerConfig;
-    private final ElevatorFeedforward feedForward;
+    private final SparkFlexConfig followerConfig;
 
-    private final DigitalInput beam;
+    // private final DigitalInput beam;
+    private final AnalogInput distanceSensor;
 
     public ManipulatorIOSparkFlex() {
         primaryRollerR.setCANTimeout(250);
@@ -36,9 +31,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
 
         followerConfig = new SparkFlexConfig();
 
-        primaryController = primaryRollerR.getClosedLoopController();
-
-        beam = new DigitalInput(ManipulatorConstants.MANIPULATOR_BEAM_CanID);
+        // beam = new DigitalInput(ManipulatorConstants.MANIPULATOR_BEAM_ID);
 
         resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
         resetConfig.smartCurrentLimit(40);
@@ -53,19 +46,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
 
         configureMotors();
 
-        constraints =
-                new TrapezoidProfile.Constraints(
-                        ManipulatorConstants.maxVelocity, ManipulatorConstants.maxAcceleration);
-        currentState = new TrapezoidProfile.State(0, 0);
-        goalState = new TrapezoidProfile.State(0, 0);
-        profile = new TrapezoidProfile(constraints);
-
-        feedForward =
-                new ElevatorFeedforward(
-                        ManipulatorConstants.manipulatorKs,
-                        ManipulatorConstants.manipulatorKg,
-                        ManipulatorConstants.manipulatorKv,
-                        ManipulatorConstants.manipulatorKa);
+        distanceSensor = new AnalogInput(ManipulatorConstants.MANIPULATOR_DISTANCE_SENSOR_ID);
     }
 
     private void configureMotors() {
@@ -92,7 +73,11 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         inputs.rollerRVelocityRadPerSec =
                 Units.rotationsPerMinuteToRadiansPerSecond(
                         primaryRollerR.getExternalEncoder().getVelocity());
-        inputs.beamObstructed = beam.get();
+        // inputs.beamObstructed = beam.get();
+        inputs.sensorDistance =
+                27.86
+                        / (distanceSensor.getVoltage()
+                                - 0.42); // todo: distance formula might not work
     }
 
     /** Set intake wheel percent -1 to 1 */
