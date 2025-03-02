@@ -445,14 +445,6 @@ public class Drive extends SubsystemBase {
         }
     }
 
-    //    public void setTargetReefToClosest() {
-    //        Constants.ReefConstants oldTargetReef = targetReef;
-    //        targetReef = getClosestTargetReef();
-    //        if (oldTargetReef != targetReef) {
-    //            updateDashboardReefVisualization(targetReef.ordinal());
-    //        }
-    //    }
-
     public Pose2d getReefPose(Constants.ReefConstants reef) {
         int alliance =
                 DriverStation.getAlliance().isPresent()
@@ -477,20 +469,6 @@ public class Drive extends SubsystemBase {
         if (overrideTipProtection) return false;
         return (Math.abs(gyroInputs.pitchPosition.getDegrees()) > tippingThresholdDegrees
                 || Math.abs(gyroInputs.rollPosition.getDegrees()) > tippingThresholdDegrees);
-    }
-
-    public void setTargetReef(Constants.ReefConstants reef) {
-        targetReef = reef;
-    }
-
-    public void setTargetReef(int reef) {
-        reef =
-                (reef + 12)
-                        % 12; // if reef is less than 0 or greater than 11 it will loop around (ex
-        // 11 -> 12 would turn into 11 -> 0 for target reef
-        targetReef = Constants.ReefConstants.values()[reef];
-
-        updateDashboardReefVisualization(reef);
     }
 
     public Pose2d getNearestHumanPlayerStation() {
