@@ -363,13 +363,13 @@ public class DriveCommands {
      * @param drive, the drive subsystem
      * @return Pose2d, the target pose for the robot
      */
-    private static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
+    public static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
         Pose2d locationPose = new Pose2d();
         if (location == autoAlignLocations.reef) {
             // gets reef goal pose
             locationPose = drive.getTargetReefPose();
         } else if (location == autoAlignLocations.processor) {
-            // TODO add processor location
+            locationPose = drive.getProcessor();
         }
 
         double shiftDistance = DriveConstants.robotWidth - .25;
@@ -453,7 +453,7 @@ public class DriveCommands {
                                 0,
                                 0,
                                 // max velocity and max acceleration TODO check these values
-                                new TrapezoidProfile.Constraints(1, 3.14)));
+                                new TrapezoidProfile.Constraints(5.63, 8.44)));
         holonomicDriveController.getThetaController().enableContinuousInput(-Math.PI, Math.PI);
         // sets 5cm and 5 degree precision
         holonomicDriveController.setTolerance(new Pose2d(0.05, 0.05, Rotation2d.fromDegrees(5)));
@@ -505,16 +505,17 @@ public class DriveCommands {
     public static Command autoAlignToReef(Drive drive, autoAlignLocations location) {
         return Commands.repeatingSequence(
                         new ConditionalCommand(
-                                // goalPose > 1m away
+                                // goalPose > .5 m away
                                 DriveCommands.roughAlignToTarget(drive, location),
-                                // goalPose <= 1m away
+                                // goalPose <= .5 m away
                                 DriveCommands.preciseAlignToTarget(drive, location),
                                 () -> {
                                     // Calculate the distance between the robot and
                                     // the target.
                                     Pose2d currentPose = drive.getPose(); // Get current robot
                                     // pose
-                                    Pose2d targetPose = drive.getTargetReefPose(); // Target
+                                    Pose2d targetPose =
+                                            calculateRobotTargetPose(drive, location); // Target
                                     // pose
                                     double distance =
                                             currentPose
@@ -522,28 +523,9 @@ public class DriveCommands {
                                                     .getDistance(targetPose.getTranslation());
 
                                     // true if distance > threshold distance (m)
-                                    return distance > 1;
+                                    return distance > .5;
                                 }))
-                .until(
-                        () -> {
-                            // Overall condition to stop this command (robot
-                            // must be at goal pose)
-                            Pose2d currentPose = drive.getPose();
-                            Pose2d targetPose = drive.getTargetReefPose();
-                            // Calculate distance and rotation
-                            double distance =
-                                    currentPose
-                                            .getTranslation()
-                                            .getDistance(targetPose.getTranslation());
-                            double rotationError =
-                                    Math.abs(
-                                            currentPose.getRotation().getDegrees()
-                                                    - targetPose.getRotation().getDegrees());
-
-                            // Stop when BOTH distance and orientation are
-                            // within the thresholds
-                            return distance < 0.05 && rotationError < 2.0; // <5 cm and < 5 degrees
-                        });
+                .until(drive::isAlignedToReef);
     }
 
     /**

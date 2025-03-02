@@ -1,45 +1,42 @@
 package frc.robot.subsystems.elevator;
 
+import edu.wpi.first.math.util.Units;
+
 public class ElevatorConstants {
     // Device CAN IDs
     public static final int leftElevatorCanId = 11;
     public static final int rightElevatorCanId = 10;
-    public static final int wristCanId = 12;
 
     // Limit Switch DIO #
-    // TODO: update when robot built
-    public static final int limitSwitchPort = 20;
+    public static final int limitSwitchPort = 0;
 
     // Elevator PID Configuration
     // Manually tune PID?
     // TODO: FIGURE OUT
-    public static final double elevatorKp = 1.0;
+    public static double elevatorKp = 0.0;
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
     // TODO: Elevator FF can be found through SysID
     public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 0.09;
-    public static final double elevatorKv = 0.14;
+    public static double elevatorKg = 0.0;
+    public static final double elevatorKv = 0.0;
     public static final double elevatorKa = 0.0;
-
-    public static final double wristKp = 1.0;
-    public static final double wristKi = 0.0;
-    public static final double wristKd = 0.0;
-
-    public static final double maxWristPosition = 100.0;
-    public static final double minWristPosition = 0.0;
-    public static final double wristMaxVelocity = 1;
-    public static final double wristMaxAcceleration = 1;
 
     // Elevator Levels in inches from master sketch
     public static final double ZERO = 0.0; // min height
-    public static final double L1 = 9.271975;
-    public static final double L2 = 17.031579;
-    public static final double L3 = 32.041099;
-    public static final double L4 = 58.211229; // max height
+    public static final double L1 = 12;
+    public static final double L2 = 21.75;
+    public static final double L3 = 37.5;
+    public static final double L4 = 66; // max height
+    // fixme these next two heights seem slightly off in sim
+    public static final double LOWER_ALGAE_REMOVAL = 19.5;
+    public static final double UPPER_ALGAE_REMOVAL = 36;
 
-    public static final double elevatorMaxVelocity = 10;
-    public static final double elevatorMaxAcceleration = 10.0;
+    // the distance between the floor and the bottom of the elevator
+    public static final double elevatorBaseHeight = 4.750;
+
+    public static final double elevatorMaxVelocity = Units.metersToInches(.3); // 0.3 m/s
+    public static final double elevatorMaxAcceleration = Units.metersToInches(.3); // 0.3 m/s
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
 
