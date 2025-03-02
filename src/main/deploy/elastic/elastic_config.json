@@ -5,7 +5,47 @@
     {
       "name": "Teleoperated",
       "grid_layout": {
-        "layouts": [],
+        "layouts": [
+          {
+            "title": "OVERRIDE",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 192.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "LEFT"
+            },
+            "children": [
+              {
+                "title": "Anti-Tip",
+                "x": 0.0,
+                "y": 384.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Override/Anti-Tip",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "Reef AA",
+                "x": 192.0,
+                "y": 384.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Override/Reef AA",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              }
+            ]
+          }
+        ],
         "containers": [
           {
             "title": "Connected",
@@ -70,7 +110,7 @@
             }
           },
           {
-            "title": "Auto Choices",
+            "title": "Auto Chooser",
             "x": 0.0,
             "y": 128.0,
             "width": 128.0,
@@ -85,7 +125,7 @@
           {
             "title": "2",
             "x": 832.0,
-            "y": 128.0,
+            "y": 192.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -102,7 +142,7 @@
           {
             "title": "3",
             "x": 896.0,
-            "y": 192.0,
+            "y": 256.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -119,7 +159,7 @@
           {
             "title": "4",
             "x": 896.0,
-            "y": 320.0,
+            "y": 384.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -136,7 +176,7 @@
           {
             "title": "5",
             "x": 832.0,
-            "y": 384.0,
+            "y": 448.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -153,7 +193,7 @@
           {
             "title": "6",
             "x": 704.0,
-            "y": 448.0,
+            "y": 512.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -170,7 +210,7 @@
           {
             "title": "7",
             "x": 640.0,
-            "y": 448.0,
+            "y": 512.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -187,7 +227,7 @@
           {
             "title": "8",
             "x": 512.0,
-            "y": 384.0,
+            "y": 448.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -204,7 +244,7 @@
           {
             "title": "9",
             "x": 448.0,
-            "y": 320.0,
+            "y": 384.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -221,7 +261,7 @@
           {
             "title": "10",
             "x": 448.0,
-            "y": 192.0,
+            "y": 256.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -238,7 +278,7 @@
           {
             "title": "11",
             "x": 512.0,
-            "y": 128.0,
+            "y": 192.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -255,7 +295,7 @@
           {
             "title": "12",
             "x": 640.0,
-            "y": 64.0,
+            "y": 128.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
@@ -272,7 +312,7 @@
           {
             "title": "1",
             "x": 704.0,
-            "y": 64.0,
+            "y": 128.0,
             "width": 64.0,
             "height": 64.0,
             "type": "Boolean Box",
