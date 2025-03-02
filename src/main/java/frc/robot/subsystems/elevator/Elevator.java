@@ -32,6 +32,8 @@ public class Elevator extends SubsystemBase {
     SysIdRoutine elevatorSysIDRoutine;
     SysIdRoutine wristSysIDRoutine;
 
+    private boolean hasZeroed = false;
+
     public enum ElevatorLevel {
         ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
@@ -123,6 +125,11 @@ public class Elevator extends SubsystemBase {
 
         elevatorIO.updateProfile();
         wristIO.updateStates();
+
+        if (isZeroed()) {
+            elevatorIO.setEncoder(ElevatorConstants.minHeight);
+            if (!hasZeroed) hasZeroed = true;
+        }
 
         elevatorLigament.setLength(
                 Units.inchesToMeters(
@@ -230,6 +237,20 @@ public class Elevator extends SubsystemBase {
         elevatorIO.setVoltage(voltage);
     }
 
+    /**
+     * Whether the elevator has found its zero at least once
+     *
+     * @return boolean
+     */
+    public boolean hasZeroed() {
+        return hasZeroed;
+    }
+
+    /**
+     * Whether the elevator is currently zeroed
+     *
+     * @return boolean
+     */
     public boolean isZeroed() {
         return elevatorInputs.isLimitSwitchPressed;
     }

@@ -26,6 +26,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -55,6 +56,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
+    public static double maxUsableSpeedMetersPerSec = maxSpeedMetersPerSec;
     private final GyroIO gyroIO;
     private final Alert gyroDisconnectedAlert =
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
@@ -85,6 +87,7 @@ public class Drive extends SubsystemBase {
 
     public Constants.ReefConstants targetReef = Constants.ReefConstants.SEVEN;
     public boolean overrideReefAutoAlign = false;
+    public boolean overrideTipProtection = false;
 
     public Drive(
             GyroIO gyroIO,
@@ -237,7 +240,7 @@ public class Drive extends SubsystemBase {
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxSpeedMetersPerSec);
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxUsableSpeedMetersPerSec);
 
         // Log unoptimized setpoints
         Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
@@ -363,12 +366,12 @@ public class Drive extends SubsystemBase {
 
     /** Returns the maximum linear speed in meters per sec. */
     public double getMaxLinearSpeedMetersPerSec() {
-        return maxSpeedMetersPerSec;
+        return maxUsableSpeedMetersPerSec;
     }
 
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
-        return maxSpeedMetersPerSec / driveBaseRadius;
+        return maxUsableSpeedMetersPerSec / driveBaseRadius;
     }
 
     public Module getModule(int index) {
@@ -423,6 +426,16 @@ public class Drive extends SubsystemBase {
         return targetReef;
     }
 
+    /**
+     * Function that returns whether the gyro pitch or roll is greater than the specified tipping
+     * threshold
+     */
+    public boolean isTipping() {
+        if (overrideTipProtection) return false;
+        return (Math.abs(gyroInputs.pitchPosition.getDegrees()) > tippingThresholdDegrees
+                || Math.abs(gyroInputs.rollPosition.getDegrees()) > tippingThresholdDegrees);
+    }
+
     public void setTargetReef(Constants.ReefConstants reef) {
         targetReef = reef;
     }
@@ -435,6 +448,32 @@ public class Drive extends SubsystemBase {
         targetReef = Constants.ReefConstants.values()[reef];
 
         updateDashboardReefVisualization(reef);
+    }
+
+  public Pose2d getNearestHumanPlayerStation() {
+    int alliance =
+        DriverStation.getAlliance().isPresent()
+            ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+            : 0;
+    Logger.recordOutput(
+        "HumanPlayerStation/target",
+        poseEstimator
+            .getEstimatedPosition()
+            .nearest(Constants.PosesOfAllHumanPlayerStations(alliance)));
+
+    return poseEstimator
+        .getEstimatedPosition()
+        .nearest(Constants.PosesOfAllHumanPlayerStations(alliance));
+        }
+
+    public double getMaxVelocity() {
+        clampMaxUsableSpeed();
+        return maxUsableSpeedMetersPerSec;
+    }
+
+    public void clampMaxUsableSpeed() {
+        maxUsableSpeedMetersPerSec =
+                MathUtil.clamp(maxUsableSpeedMetersPerSec, 0.0, maxSpeedMetersPerSec);
     }
 
     public Pose2d getProcessor() {
