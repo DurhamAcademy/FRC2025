@@ -31,6 +31,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 import frc.robot.subsystems.elevator.ElevatorIO;
@@ -90,9 +91,10 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
+            
                 manipulator = new Manipulator(new ManipulatorIOSparkFlex());
                 intake = new Intake(new IntakeIOSparkMax());
-                elevator = new Elevator(new ElevatorIOSparkMax() {});
+                elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
                 break;
 
             case SIM:
@@ -115,7 +117,7 @@ public class RobotContainer {
                 manipulator = new Manipulator(new ManipulatorIOSim());
                 intake = new Intake(new IntakeIOSim(driveSimulation));
                 // TODO: Elevator SIM
-                elevator = new Elevator(new ElevatorIOSim() {});
+                elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -139,9 +141,10 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
+            
                 intake = new Intake(new IntakeIOSparkMax());
-                elevator = new Elevator(new ElevatorIO() {});
                 manipulator = new Manipulator(new ManipulatorIO() {});
+                elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
                 break;
         }
 
@@ -246,17 +249,21 @@ public class RobotContainer {
 
         // Align to the closest reef
         driverController
-                .b()
-                .onTrue(runOnce(drive::setTargetReefToClosest, drive))
+                .leftBumper()
+                .onTrue(
+                        Commands.runOnce(
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT)))
                 .whileTrue(
                         DriveCommands.autoAlignToReef(
                                 drive, DriveCommands.autoAlignLocations.reef));
         driverController
-                .leftBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
-        driverController
                 .rightBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
+                .onTrue(
+                        Commands.runOnce(
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT)))
+                .whileTrue(
+                        DriveCommands.autoAlignToReef(
+                                drive, DriveCommands.autoAlignLocations.reef));
 
         driverController
                 .y()
@@ -268,21 +275,19 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
         // Elevator
-        operatorController
-                .start()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO));
+        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
         operatorController
                 .a()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1 Coral
         operatorController
                 .x()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2 Coral
         operatorController
                 .b()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3 Coral
         operatorController
                 .y()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4 Coral
     }
 
     /**
@@ -341,7 +346,18 @@ public class RobotContainer {
         return driveSimulation;
     }
 
+    public void resetSetpoints() {
+        elevator.setWristTargetAngle(elevator.getWristAngle());
+        elevator.setElevatorTargetHeight(elevator.getElevatorHeight());
+    }
+
     public void sendDataToSmartDashboard() {
+        SmartDashboard.putData(
+                "Vision",
+                builder -> {
+                    builder.setSmartDashboardType("Boolean");
+                    builder.addBooleanProperty("alignedToReef", drive::isAlignedToReef, null);
+                });
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
         SmartDashboard.putData(
                 "Override",

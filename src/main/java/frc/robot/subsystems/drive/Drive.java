@@ -35,6 +35,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -45,6 +46,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotContainer;
+import frc.robot.commands.DriveCommands;
 import frc.robot.util.LocalADStarAK;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -374,7 +376,8 @@ public class Drive extends SubsystemBase {
         return modules[index];
     }
 
-    public void setTargetReefToClosest() {
+    public Constants.ReefConstants getClosestReef() {
+        Constants.ReefConstants closestReef = Constants.ReefConstants.SIX;
         if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
             int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
 
@@ -385,22 +388,73 @@ public class Drive extends SubsystemBase {
                             .nearest(Constants.LocationConstants.PosesOfAllReefLocations(alliance));
 
             // Find corresponding reef constant value
-            targetReef =
+            closestReef =
                     Constants.LocationConstants.ReefLocations.entrySet().stream()
                             .filter(entry -> entry.getValue()[alliance].equals(estimatedReefPose))
                             .map(Map.Entry::getKey)
                             .findFirst()
                             .orElse(Constants.ReefConstants.SIX);
+        }
+        return closestReef;
+    }
+
+    public enum ReefAlignSide {
+        LEFT,
+        RIGHT
+    }
+
+    /**
+     * Sets reef target to the nearest reef on a certain side
+     *
+     * @param side the side of each flat panel of the reef hexagon to align to
+     */
+    public void setTargetReefToClosest(ReefAlignSide side) {
+        // Define the left-right reef pairs
+        Map<Integer, Integer> reefPairs =
+                Map.of(
+                        10, 11,
+                        2, 3,
+                        9, 8,
+                        7, 6,
+                        5, 4,
+                        12, 1);
+
+        // Retrieve the closest reef
+        Constants.ReefConstants closestReef = getClosestReef();
+        int closestReefId = closestReef.ordinal() + 1; // Enums are 0-indexed
+
+        // Determine the target reef based on the required side
+        int targetReefId =
+                switch (side) {
+                    case RIGHT -> reefPairs.getOrDefault(
+                            closestReefId, closestReefId); // Go to left
+                    case LEFT -> reefPairs.entrySet().stream()
+                            .filter(entry -> entry.getValue() == closestReefId)
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(closestReefId); // Go to right
+                };
+
+        // Update the target reef
+        Constants.ReefConstants oldTargetReef = targetReef;
+        targetReef = Constants.ReefConstants.values()[targetReefId - 1];
+
+        // Update visualization if the reef has changed
+        if (oldTargetReef != targetReef) {
             updateDashboardReefVisualization(targetReef.ordinal());
         }
     }
 
-    public Pose2d getTargetReefPose() {
+    public Pose2d getReefPose(Constants.ReefConstants reef) {
         int alliance =
                 DriverStation.getAlliance().isPresent()
                         ? Constants.getAllianceColor(DriverStation.getAlliance().get())
                         : 0;
-        return Constants.LocationConstants.ReefLocations.get(targetReef)[alliance];
+        return Constants.LocationConstants.ReefLocations.get(reef)[alliance];
+    }
+
+    public Pose2d getTargetReefPose() {
+        return getReefPose(targetReef);
     }
 
     public Constants.ReefConstants getTargetReef() {
@@ -417,18 +471,20 @@ public class Drive extends SubsystemBase {
                 || Math.abs(gyroInputs.rollPosition.getDegrees()) > tippingThresholdDegrees);
     }
 
-    public void setTargetReef(Constants.ReefConstants reef) {
-        targetReef = reef;
-    }
+    public Pose2d getNearestHumanPlayerStation() {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        Logger.recordOutput(
+                "HumanPlayerStation/target",
+                poseEstimator
+                        .getEstimatedPosition()
+                        .nearest(Constants.PosesOfAllHumanPlayerStations(alliance)));
 
-    public void setTargetReef(int reef) {
-        reef =
-                (reef + 12)
-                        % 12; // if reef is less than 0 or greater than 11 it will loop around (ex
-        // 11 -> 12 would turn into 11 -> 0 for target reef
-        targetReef = Constants.ReefConstants.values()[reef];
-
-        updateDashboardReefVisualization(reef);
+        return poseEstimator
+                .getEstimatedPosition()
+                .nearest(Constants.PosesOfAllHumanPlayerStations(alliance));
     }
 
     public Pose2d getNearestHumanPlayerStation() {
@@ -455,6 +511,42 @@ public class Drive extends SubsystemBase {
     public void clampMaxUsableSpeed() {
         maxUsableSpeedMetersPerSec =
                 MathUtil.clamp(maxUsableSpeedMetersPerSec, 0.0, maxSpeedMetersPerSec);
+    }
+
+    public Pose2d getProcessor() {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        return Constants.LocationConstants.processorLocation[alliance];
+    }
+
+    /**
+     * @return boolean, is robot is within tolerance of target location
+     */
+    public boolean isAlignedToReef() {
+
+        // Overall condition to stop this command (robot
+        // must be at goal pose)
+        Pose2d currentPose = getPose();
+        Pose2d targetPose =
+                DriveCommands.calculateRobotTargetPose(this, DriveCommands.autoAlignLocations.reef);
+        // Calculate distance and rotation
+        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+        double rotationError =
+                Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
+
+        // Stop when BOTH distance and orientation are
+        // within the thresholds
+
+        boolean alignedToReef =
+                distance
+                                < Constants.coralInnerWidth
+                                        - Constants.reefPipeDiameter
+                                        - Units.inchesToMeters(.25)
+                        && rotationError < 2.0; // 2.5 inches and < 2 degrees
+        Logger.recordOutput("Vision/alignedToReef", alignedToReef);
+        return alignedToReef;
     }
 
     public void updateDashboardReefVisualization(int reefIndex) {
