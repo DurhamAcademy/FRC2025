@@ -376,7 +376,7 @@ public class Drive extends SubsystemBase {
         return modules[index];
     }
 
-    public Constants.ReefConstants getClosestTargetReef() {
+    public Constants.ReefConstants getClosestReef() {
         Constants.ReefConstants closestReef = Constants.ReefConstants.SIX;
         if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
             int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
@@ -420,7 +420,7 @@ public class Drive extends SubsystemBase {
                         12, 1);
 
         // Retrieve the closest reef
-        Constants.ReefConstants closestReef = getClosestTargetReef();
+        Constants.ReefConstants closestReef = getClosestReef();
         int closestReefId = closestReef.ordinal() + 1; // Enums are 0-indexed
 
         // Determine the target reef based on the required side

@@ -198,10 +198,6 @@ public class RobotContainer {
                         () -> -driverController.getRightX()));
 
         elevator.setDefaultCommand(null);
-        //                either(
-        //                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO),
-        //                        ElevatorCommands.zeroElevator(elevator),
-        //                        elevator::isZeroed));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
@@ -248,16 +244,16 @@ public class RobotContainer {
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
         operatorController
                 .a()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1 Coral
         operatorController
                 .x()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2 Coral
         operatorController
                 .b()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3 Coral
         operatorController
                 .y()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4 Coral
     }
 
     /**
@@ -338,7 +334,6 @@ public class RobotContainer {
                                 invertY = val;
                             });
                 });
-
         SmartDashboard.putData(
                 "MAX SPEED",
                 builder -> {

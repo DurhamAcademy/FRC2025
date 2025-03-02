@@ -176,13 +176,14 @@ public class WristIOSparkMax implements WristIO {
     /** Updates wrist trapezoid profile with feed forward calculations */
     @Override
     public void updateStates() {
+        double wristOffsetAngle = getWristOffsetAngle();
         // sets the relative encoder to horizontally zeroed value from absolute encoder
         // this is used in wristController.setReference() below
-        relativeEncoder.setPosition(getWristOffsetAngle());
+        relativeEncoder.setPosition(wristOffsetAngle);
 
         // moves the profile forward. calculates feedforward volts using horizontally-zeroed value
         currentState = profile.calculate(0.02, currentState, goalState);
-        double ffVolts = feedForward.calculate(getWristOffsetAngle(), wristEncoder.getVelocity());
+        double ffVolts = feedForward.calculate(wristOffsetAngle, wristEncoder.getVelocity());
 
         // actually moves the motor to the setpoint
         wristController.setReference(

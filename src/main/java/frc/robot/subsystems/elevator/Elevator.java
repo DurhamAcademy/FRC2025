@@ -107,6 +107,12 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
+        elevatorIO.updateInputs(elevatorInputs);
+        wristIO.updateInputs(wristInputs);
+
+        Logger.processInputs("Elevator", elevatorInputs);
+        Logger.processInputs("Wrist", wristInputs);
+
         // if wrist was previously restricted, but no longer needs to be
         if (wristRestricted && !isWristRestricted()) {
             // set the wrist target angle to the saved value
@@ -114,17 +120,9 @@ public class Elevator extends SubsystemBase {
             wristIO.setTargetAngle(savedWristTargetAngle);
         }
 
-        elevatorIO.updateInputs(elevatorInputs);
-        wristIO.updateInputs(wristInputs);
-        Logger.processInputs("Elevator", elevatorInputs);
-        Logger.processInputs("Wrist", wristInputs);
-
         if (elevatorInputs.isLimitSwitchPressed) {
             elevatorIO.setEncoder(ElevatorConstants.minHeight);
         }
-
-        elevatorIO.updateProfile();
-        wristIO.updateStates();
 
         if (isZeroed()) {
             elevatorIO.setEncoder(ElevatorConstants.minHeight);
@@ -137,6 +135,9 @@ public class Elevator extends SubsystemBase {
         // -90 because the '0' for the wrist is horizontal with the ground
         wristLigament.setAngle(Units.radiansToDegrees(wristInputs.angle) - 90);
         Logger.recordOutput("FieldSimulation/ElevatorMech2d", loggedMechanism);
+
+        elevatorIO.updateStates();
+        wristIO.updateStates();
     }
 
     public void setElevatorTargetHeight(double heightInches) {
@@ -186,7 +187,7 @@ public class Elevator extends SubsystemBase {
         if (drive.getPose()
                         .getTranslation()
                         .getDistance(
-                                drive.getReefPose(drive.getClosestTargetReef()).getTranslation())
+                                drive.getReefPose(drive.getClosestReef()).getTranslation())
                 > 1) {
             return false;
         }
