@@ -91,7 +91,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
-            
+
                 manipulator = new Manipulator(new ManipulatorIOSparkFlex());
                 intake = new Intake(new IntakeIOSparkMax());
                 elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
@@ -141,7 +141,7 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
-            
+
                 intake = new Intake(new IntakeIOSparkMax());
                 manipulator = new Manipulator(new ManipulatorIO() {});
                 elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
