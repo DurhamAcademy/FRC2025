@@ -230,19 +230,6 @@ public class RobotContainer {
         driverController
                 .rightBumper()
                 .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
-
-        operatorController
-                .povUp()
-                .whileTrue(elevator.wristSysIDQuasistatic(SysIdRoutine.Direction.kForward));
-        operatorController
-                .povDown()
-                .whileTrue(elevator.wristSysIDQuasistatic(SysIdRoutine.Direction.kReverse));
-        operatorController
-                .povLeft()
-                .whileTrue(elevator.wristSysIDDynamic(SysIdRoutine.Direction.kForward));
-        operatorController
-                .povRight()
-                .whileTrue(elevator.wristSysIDDynamic(SysIdRoutine.Direction.kReverse));
         // OPERATOR CONTROLLER
         // Elevator
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));

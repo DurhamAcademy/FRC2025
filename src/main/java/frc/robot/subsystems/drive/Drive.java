@@ -446,9 +446,9 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * If robot is within 5 cm
      *
-     * @return boolean
+     *
+     * @return boolean, is robot is within tolerance of target location
      */
     public boolean isAlignedToReef() {
 
