@@ -487,22 +487,6 @@ public class Drive extends SubsystemBase {
                 .nearest(Constants.PosesOfAllHumanPlayerStations(alliance));
     }
 
-    public Pose2d getNearestHumanPlayerStation() {
-        int alliance =
-                DriverStation.getAlliance().isPresent()
-                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
-                        : 0;
-        Logger.recordOutput(
-                "HumanPlayerStation/target",
-                poseEstimator
-                        .getEstimatedPosition()
-                        .nearest(Constants.PosesOfAllHumanPlayerStations(alliance)));
-
-        return poseEstimator
-                .getEstimatedPosition()
-                .nearest(Constants.PosesOfAllHumanPlayerStations(alliance));
-    }
-
     public double getMaxVelocity() {
         clampMaxUsableSpeed();
         return maxUsableSpeedMetersPerSec;
