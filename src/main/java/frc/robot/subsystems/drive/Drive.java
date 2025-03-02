@@ -405,6 +405,7 @@ public class Drive extends SubsystemBase {
 
     /**
      * Sets reef target to the nearest reef on a certain side
+     *
      * @param side the side of each flat panel of the reef hexagon to align to
      */
     public void setTargetReefToClosest(ReefAlignSide side) {
@@ -444,13 +445,13 @@ public class Drive extends SubsystemBase {
         }
     }
 
-//    public void setTargetReefToClosest() {
-//        Constants.ReefConstants oldTargetReef = targetReef;
-//        targetReef = getClosestTargetReef();
-//        if (oldTargetReef != targetReef) {
-//            updateDashboardReefVisualization(targetReef.ordinal());
-//        }
-//    }
+    //    public void setTargetReefToClosest() {
+    //        Constants.ReefConstants oldTargetReef = targetReef;
+    //        targetReef = getClosestTargetReef();
+    //        if (oldTargetReef != targetReef) {
+    //            updateDashboardReefVisualization(targetReef.ordinal());
+    //        }
+    //    }
 
     public Pose2d getReefPose(Constants.ReefConstants reef) {
         int alliance =
