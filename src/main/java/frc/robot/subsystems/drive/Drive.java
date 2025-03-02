@@ -204,8 +204,6 @@ public class Drive extends SubsystemBase {
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode == Mode.SIM);
-
-        setTargetReefToClosest();
     }
 
     /**
@@ -400,13 +398,60 @@ public class Drive extends SubsystemBase {
         return closestReef;
     }
 
-    public void setTargetReefToClosest() {
+    public enum ReefAlignSide {
+        LEFT,
+        RIGHT
+    }
+
+    /**
+     * Sets reef target to the nearest reef on a certain side
+     *
+     * @param side the side of each flat panel of the reef hexagon to align to
+     */
+    public void setTargetReefToClosest(ReefAlignSide side) {
+        // Define the left-right reef pairs
+        Map<Integer, Integer> reefPairs =
+                Map.of(
+                        10, 11,
+                        2, 3,
+                        9, 8,
+                        7, 6,
+                        5, 4,
+                        12, 1);
+
+        // Retrieve the closest reef
+        Constants.ReefConstants closestReef = getClosestTargetReef();
+        int closestReefId = closestReef.ordinal() + 1; // Enums are 0-indexed
+
+        // Determine the target reef based on the required side
+        int targetReefId =
+                switch (side) {
+                    case RIGHT -> reefPairs.getOrDefault(
+                            closestReefId, closestReefId); // Go to left
+                    case LEFT -> reefPairs.entrySet().stream()
+                            .filter(entry -> entry.getValue() == closestReefId)
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(closestReefId); // Go to right
+                };
+
+        // Update the target reef
         Constants.ReefConstants oldTargetReef = targetReef;
-        targetReef = getClosestTargetReef();
+        targetReef = Constants.ReefConstants.values()[targetReefId - 1];
+
+        // Update visualization if the reef has changed
         if (oldTargetReef != targetReef) {
             updateDashboardReefVisualization(targetReef.ordinal());
         }
     }
+
+    //    public void setTargetReefToClosest() {
+    //        Constants.ReefConstants oldTargetReef = targetReef;
+    //        targetReef = getClosestTargetReef();
+    //        if (oldTargetReef != targetReef) {
+    //            updateDashboardReefVisualization(targetReef.ordinal());
+    //        }
+    //    }
 
     public Pose2d getReefPose(Constants.ReefConstants reef) {
         int alliance =
