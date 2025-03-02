@@ -56,7 +56,7 @@ public class Robot extends LoggedRobot {
         }
 
         // Set up data receivers & replay source
-        switch (FieldConstants.currentMode) {
+        switch (Constants.currentMode) {
             case REAL:
                 // Running on a real robot, log to a USB stick ("/U/logs")
                 Logger.addDataReceiver(new WPILOGWriter());

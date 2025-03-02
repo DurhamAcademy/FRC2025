@@ -3,7 +3,7 @@ package frc.robot.subsystems.drive;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.FieldConstants;
+import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
@@ -28,7 +28,7 @@ public class Vision extends SubsystemBase {
 
         // create two new cameras with different positions and offsets and store them to be used for
         // position later
-        if (FieldConstants.currentMode != FieldConstants.Mode.SIM) {
+        if (Constants.currentMode != Constants.Mode.SIM) {
             cameraConfigs.add(
                     new CameraConfig(
                             "limelight", // camera name
