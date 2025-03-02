@@ -21,13 +21,18 @@ public class WristIOSparkMax implements WristIO {
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
 
-    // Zero offset is the distance from the absolute encoder's default offset to where we want it to set as zero
-    // This value is intentionally a point where the wrist can never reach, avoiding issues with chain reduction
+    // Zero offset is the distance from the absolute encoder's default offset to where we want it to
+    // set as zero
+    // This value is intentionally a point where the wrist can never reach, avoiding issues with
+    // chain reduction
     // and angle wraparound
     private final double zeroOffset = .0714 + .3;
-    // Horizontal from zero is the distance from the newly set zero point to a point horizontal with the ground
-    // This is calculated by setting the wrist level, then getting the value of the absolute encoder in advantage scope
-    // Note: you can only accurately get this value from the WristIO on advantage scope if the deployed code has this
+    // Horizontal from zero is the distance from the newly set zero point to a point horizontal with
+    // the ground
+    // This is calculated by setting the wrist level, then getting the value of the absolute encoder
+    // in advantage scope
+    // Note: you can only accurately get this value from the WristIO on advantage scope if the
+    // deployed code has this
     // temporarily set to 0
     private final double horizontalFromZero = 1.4490557670593262;
 
@@ -49,7 +54,8 @@ public class WristIOSparkMax implements WristIO {
         resetConfig.closedLoop.pid(
                 WristConstants.wristKp, WristConstants.wristKi, WristConstants.wristKd);
 
-        // sets SparkMax to encode the position of wrist, accounting for gear ratios and the zero offset
+        // sets SparkMax to encode the position of wrist, accounting for gear ratios and the zero
+        // offset
         resetConfig
                 .absoluteEncoder
                 .positionConversionFactor(WristConstants.wristAbsoluteEncoderReduction)
@@ -87,6 +93,7 @@ public class WristIOSparkMax implements WristIO {
 
     /**
      * Gets the angle of the wrist with the zero set as horizontal with the ground
+     *
      * @return double in radians
      */
     private double getWristOffsetAngle() {
@@ -159,7 +166,8 @@ public class WristIOSparkMax implements WristIO {
                         WristConstants.minWristPosition,
                         WristConstants.maxWristPosition);
 
-        // resets current state to encoder values in case anything has changed since target angle set
+        // resets current state to encoder values in case anything has changed since target angle
+        // set
         currentState =
                 new TrapezoidProfile.State(getWristOffsetAngle(), wristEncoder.getVelocity());
         goalState = new TrapezoidProfile.State(targetAngle, 0);

@@ -387,9 +387,7 @@ public class Drive extends SubsystemBase {
             Pose2d estimatedReefPose =
                     poseEstimator
                             .getEstimatedPosition()
-                            .nearest(
-                                    Constants.LocationConstants.PosesOfAllReefLocations(
-                                            alliance));
+                            .nearest(Constants.LocationConstants.PosesOfAllReefLocations(alliance));
 
             // Find corresponding reef constant value
             closestReef =
@@ -450,21 +448,21 @@ public class Drive extends SubsystemBase {
         updateDashboardReefVisualization(reef);
     }
 
-  public Pose2d getNearestHumanPlayerStation() {
-    int alliance =
-        DriverStation.getAlliance().isPresent()
-            ? Constants.getAllianceColor(DriverStation.getAlliance().get())
-            : 0;
-    Logger.recordOutput(
-        "HumanPlayerStation/target",
-        poseEstimator
-            .getEstimatedPosition()
-            .nearest(Constants.PosesOfAllHumanPlayerStations(alliance)));
+    public Pose2d getNearestHumanPlayerStation() {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        Logger.recordOutput(
+                "HumanPlayerStation/target",
+                poseEstimator
+                        .getEstimatedPosition()
+                        .nearest(Constants.PosesOfAllHumanPlayerStations(alliance)));
 
-    return poseEstimator
-        .getEstimatedPosition()
-        .nearest(Constants.PosesOfAllHumanPlayerStations(alliance));
-        }
+        return poseEstimator
+                .getEstimatedPosition()
+                .nearest(Constants.PosesOfAllHumanPlayerStations(alliance));
+    }
 
     public double getMaxVelocity() {
         clampMaxUsableSpeed();
@@ -485,8 +483,6 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     *
-     *
      * @return boolean, is robot is within tolerance of target location
      */
     public boolean isAlignedToReef() {

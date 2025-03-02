@@ -335,7 +335,7 @@ public class RobotContainer {
                             });
                 });
 
-SmartDashboard.putData(
+        SmartDashboard.putData(
                 "MAX SPEED",
                 builder -> {
                     builder.setSmartDashboardType("double");
