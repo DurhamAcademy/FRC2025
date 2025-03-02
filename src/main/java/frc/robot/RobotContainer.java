@@ -219,17 +219,17 @@ public class RobotContainer {
 
         // Align to the closest reef
         driverController
-                .b()
+                .leftBumper()
+                .onTrue(Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT)))
                 .whileTrue(
                         DriveCommands.autoAlignToReef(
                                 drive, DriveCommands.autoAlignLocations.reef));
-
-        driverController
-                .leftBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
         driverController
                 .rightBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
+                .onTrue(Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT)))
+                .whileTrue(
+                        DriveCommands.autoAlignToReef(
+                                drive, DriveCommands.autoAlignLocations.reef));
 
         driverController
                 .y()
