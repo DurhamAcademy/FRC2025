@@ -54,20 +54,6 @@ public final class Constants {
     public static final double reefPipeDiameter = Units.inchesToMeters(1.25);
 
     public static class LocationConstants {
-        // 0 is Blue, 1 is Red, in each alliance 0 is the "left" and 1 is the "right"
-        // TODO: find human player station locations
-        public static Pose2d[][] humanPlayerStations =
-                new Pose2d[][] {
-                    new Pose2d[] {
-                        new Pose2d(
-                                Units.inchesToMeters(657.37),
-                                Units.inchesToMeters(25.80),
-                                new Rotation2d()),
-                        new Pose2d()
-                    },
-                    new Pose2d[] {new Pose2d(), new Pose2d()}
-                };
-
         public static enum AprilTagLocations {
             // List of locations from
             // https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025FieldDrawings-FieldLayoutAndMarking.pdf

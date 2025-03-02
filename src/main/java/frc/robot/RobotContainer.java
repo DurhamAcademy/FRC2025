@@ -14,6 +14,7 @@
 package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.*;
+import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -91,7 +92,7 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
-            
+
                 manipulator = new Manipulator(new ManipulatorIOSparkFlex());
                 intake = new Intake(new IntakeIOSparkMax());
                 elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
@@ -141,7 +142,7 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
-            
+
                 intake = new Intake(new IntakeIOSparkMax());
                 manipulator = new Manipulator(new ManipulatorIO() {});
                 elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
@@ -326,13 +327,12 @@ public class RobotContainer {
     public void intakeCoralIfAtStation() {
         if (DriverStation.getAlliance().isEmpty()) return;
         final double DISTANCE_THRESHOLD = 1.0;
-        Logger.recordOutput(
-                "Intake/HumanPlayers",
-                Constants.LocationConstants.humanPlayerStations[
-                        Constants.getAllianceColor(DriverStation.getAlliance().get())]);
-        for (Pose2d stationPose :
-                Constants.LocationConstants.humanPlayerStations[
-                        Constants.getAllianceColor(DriverStation.getAlliance().get())]) {
+        Pose2d[] HpStations =
+                PosesOfAllHumanPlayerStations(
+                                Constants.getAllianceColor(DriverStation.getAlliance().get()))
+                        .toArray(new Pose2d[0]);
+        Logger.recordOutput("Intake/HumanPlayers", HpStations);
+        for (Pose2d stationPose : HpStations) {
             Pose2d robotPose = drive.getPose();
             double distance = robotPose.getTranslation().getDistance(stationPose.getTranslation());
             Logger.recordOutput("Intake/HumanPlayerDist" + stationPose.toString(), distance);
