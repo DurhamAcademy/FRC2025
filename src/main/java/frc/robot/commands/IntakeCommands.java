@@ -26,9 +26,7 @@ public class IntakeCommands {
     }
 
     public static Command runIntakeForCoral(Intake intake) {
-        return sequence(
-                runIntake(intake).onlyWhile(() -> !intake.getBeamBroken())
-        );
+        return sequence(runIntake(intake).onlyWhile(() -> !intake.getBeamBroken()));
     }
 
     public static Command runIntake(Intake intake) {

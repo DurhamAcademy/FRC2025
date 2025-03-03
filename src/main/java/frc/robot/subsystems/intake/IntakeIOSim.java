@@ -1,16 +1,13 @@
 package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.geometry.*;
-import org.ironmaple.simulation.IntakeSimulation;
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
-import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
-import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.ironmaple.simulation.IntakeSimulation;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
 
 public class IntakeIOSim implements IntakeIO {
     private final SwerveDriveSimulation driveSimulation;
@@ -38,7 +35,8 @@ public class IntakeIOSim implements IntakeIO {
     private boolean hasNewCoralFromCollector() {
         // find all corals
         List<ReefscapeCoralOnFly> corals = new ArrayList<>();
-        for (GamePieceProjectile gamePieceProjectile : SimulatedArena.getInstance().gamePieceLaunched())
+        for (GamePieceProjectile gamePieceProjectile :
+                SimulatedArena.getInstance().gamePieceLaunched())
             if (gamePieceProjectile instanceof ReefscapeCoralOnFly coral) corals.add(coral);
 
         // choose those close enough to intake
@@ -50,9 +48,12 @@ public class IntakeIOSim implements IntakeIO {
     }
 
     private boolean insideIntakeRange(Pose2d simulatedDriveTrainPose, Pose3d coralPositionInAir) {
-        Translation3d robotPositionOnField = new Translation3d(simulatedDriveTrainPose.getTranslation());
+        Translation3d robotPositionOnField =
+                new Translation3d(simulatedDriveTrainPose.getTranslation());
         Rotation3d robotOrientation = new Rotation3d(simulatedDriveTrainPose.getRotation());
-        Translation3d intakePositionOnField = robotPositionOnField.plus(IntakeConstants.intakePositionOnRobot.rotateBy(robotOrientation));
+        Translation3d intakePositionOnField =
+                robotPositionOnField.plus(
+                        IntakeConstants.intakePositionOnRobot.rotateBy(robotOrientation));
 
         Translation3d difference = coralPositionInAir.getTranslation().minus(intakePositionOnField);
         return Math.abs(difference.getX()) < IntakeConstants.intakeRange.getX()

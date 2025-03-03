@@ -39,7 +39,10 @@ public class IntakeIOSparkMax implements IntakeIO {
         rotatorResetConfig
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pid(IntakeConstants.rotatorKp, IntakeConstants.rotatorKi, IntakeConstants.rotatorKd);
+                .pid(
+                        IntakeConstants.rotatorKp,
+                        IntakeConstants.rotatorKi,
+                        IntakeConstants.rotatorKd);
 
         rotatorResetConfig.encoder.positionConversionFactor(
                 IntakeConstants.rotatorGearRatio); // update gear ratio
