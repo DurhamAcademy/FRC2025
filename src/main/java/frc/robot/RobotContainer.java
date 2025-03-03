@@ -14,6 +14,7 @@
 package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.*;
+import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -28,9 +29,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.elevator.*;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
+import frc.robot.subsystems.elevator.ElevatorIO;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
@@ -53,6 +60,7 @@ public class RobotContainer {
     // Subsystems
     private final Drive drive;
     private final Manipulator manipulator;
+    private final Elevator elevator;
     private SwerveDriveSimulation driveSimulation = null;
 
     private final Intake intake;
@@ -64,7 +72,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
-    // inverse axises
+    // inverse axes
     private boolean invertX = false;
     private boolean invertY = false;
     private double xDirect = 1;
@@ -84,8 +92,10 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
+
                 manipulator = new Manipulator(new ManipulatorIOSparkFlex());
                 intake = new Intake(new IntakeIOSparkMax());
+                elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
                 break;
 
             case SIM:
@@ -107,6 +117,8 @@ public class RobotContainer {
                                 this);
                 manipulator = new Manipulator(new ManipulatorIOSim());
                 intake = new Intake(new IntakeIOSim(driveSimulation));
+                // TODO: Elevator SIM
+                elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -130,8 +142,10 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
+
                 intake = new Intake(new IntakeIOSparkMax());
                 manipulator = new Manipulator(new ManipulatorIO() {});
+                elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
                 break;
         }
 
@@ -141,6 +155,18 @@ public class RobotContainer {
         NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
         NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
         NamedCommands.registerCommand("Algae Intake", ManipulatorCommands.algaeIntake(manipulator));
+
+        NamedCommands.registerCommand(
+                "Elevator L1", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
+
+        NamedCommands.registerCommand(
+                "Elevator L2", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2));
+
+        NamedCommands.registerCommand(
+                "Elevator L3", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3));
+
+        NamedCommands.registerCommand(
+                "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -199,6 +225,15 @@ public class RobotContainer {
                         () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
+        // if elevator has zeroed, run tipping prevention code
+        // if not, zero the elevator for the first time
+        elevator.setDefaultCommand(
+                either(
+                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
+                                .onlyIf(drive::isTipping),
+                        ElevatorCommands.zeroElevator(elevator),
+                        elevator::hasZeroed));
+
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
         driverController
@@ -211,38 +246,49 @@ public class RobotContainer {
                                 Rotation2d::new));
 
         // Switch to X pattern when X button is pressed
-        driverController.x().onTrue(runOnce(drive::stopWithX, drive));
+        driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Align to the closest reef
         driverController
-                .b()
+                .leftBumper()
                 .onTrue(
                         Commands.runOnce(
-                                        () ->
-                                                drive.setPose(
-                                                        new Pose2d(
-                                                                drive.getPose().getTranslation(),
-                                                                new Rotation2d())),
-                                        drive)
-                                .ignoringDisable(true));
-
-        // operatorController.rightTrigger().onTrue(IntakeCommands.intakeCoral(intake,
-        // manipulator));
-        operatorController.rightTrigger().onTrue(IntakeCommands.intakeCoral(intake, manipulator));
-        operatorController
-                .leftTrigger()
-                .whileTrue(ManipulatorCommands.algaeIntake(manipulator))
-                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0.0));
-        operatorController
-                .x()
-                .whileTrue(ManipulatorCommands.eject(manipulator))
-                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
-        driverController
-                .leftBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT)))
+                .whileTrue(
+                        DriveCommands.autoAlignToReef(
+                                drive, DriveCommands.autoAlignLocations.reef));
         driverController
                 .rightBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
+                .onTrue(
+                        Commands.runOnce(
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT)))
+                .whileTrue(
+                        DriveCommands.autoAlignToReef(
+                                drive, DriveCommands.autoAlignLocations.reef));
+
+        driverController
+                .y()
+                .whileTrue(
+                        DriveCommands.autoAlignToHumanPlayerStation(
+                                drive,
+                                () -> (yDirect * driverController.getLeftY()),
+                                () -> (xDirect * driverController.getLeftX())));
+
+        // OPERATOR CONTROLLER
+        // Elevator
+        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
+        operatorController
+                .a()
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1 Coral
+        operatorController
+                .x()
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2 Coral
+        operatorController
+                .b()
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3 Coral
+        operatorController
+                .y()
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4 Coral
     }
 
     /**
@@ -262,8 +308,11 @@ public class RobotContainer {
 
     public void displaySimFieldToAdvantageScope() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
+        Logger.recordOutput("MAX SPEED", SmartDashboard.getNumber("Max Speed/Max Speed", 0));
         Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
         Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
+        Logger.recordOutput(
+                "XY invert", SmartDashboard.getBoolean("INVERT AXES/X/Y INVERT", false));
         Logger.recordOutput(
                 "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
@@ -278,13 +327,12 @@ public class RobotContainer {
     public void intakeCoralIfAtStation() {
         if (DriverStation.getAlliance().isEmpty()) return;
         final double DISTANCE_THRESHOLD = 1.0;
-        Logger.recordOutput(
-                "Intake/HumanPlayers",
-                Constants.LocationConstants.humanPlayerStations[
-                        Constants.getAllianceColor(DriverStation.getAlliance().get())]);
-        for (Pose2d stationPose :
-                Constants.LocationConstants.humanPlayerStations[
-                        Constants.getAllianceColor(DriverStation.getAlliance().get())]) {
+        Pose2d[] HpStations =
+                PosesOfAllHumanPlayerStations(
+                                Constants.getAllianceColor(DriverStation.getAlliance().get()))
+                        .toArray(new Pose2d[0]);
+        Logger.recordOutput("Intake/HumanPlayers", HpStations);
+        for (Pose2d stationPose : HpStations) {
             Pose2d robotPose = drive.getPose();
             double distance = robotPose.getTranslation().getDistance(stationPose.getTranslation());
             Logger.recordOutput("Intake/HumanPlayerDist" + stationPose.toString(), distance);
@@ -298,18 +346,33 @@ public class RobotContainer {
         return driveSimulation;
     }
 
+    public void resetSetpoints() {
+        elevator.setWristTargetAngle(elevator.getWristAngle());
+        elevator.setElevatorTargetHeight(elevator.getElevatorHeight());
+    }
+
     public void sendDataToSmartDashboard() {
+        SmartDashboard.putData(
+                "Vision",
+                builder -> {
+                    builder.setSmartDashboardType("Boolean");
+                    builder.addBooleanProperty("alignedToReef", drive::isAlignedToReef, null);
+                });
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
         SmartDashboard.putData(
                 "Override",
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
                     builder.addBooleanProperty(
-                            "Override Reef AA",
+                            "Reef AA",
                             // Getter to read the current value
                             () -> drive.overrideReefAutoAlign,
                             // Setter to update the value
                             val -> drive.overrideReefAutoAlign = val);
+                    builder.addBooleanProperty(
+                            "Anti-Tip",
+                            () -> drive.overrideTipProtection,
+                            val -> drive.overrideTipProtection = val);
                 });
         SmartDashboard.putData(
                 "INVERT AXES",
@@ -317,8 +380,23 @@ public class RobotContainer {
                     builder.setSmartDashboardType("boolean");
                     builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
                     builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
+                    builder.addBooleanProperty(
+                            "XY INVERT",
+                            () -> invertX && invertY,
+                            val -> {
+                                invertX = val;
+                                invertY = val;
+                            });
                 });
-
+        SmartDashboard.putData(
+                "MAX SPEED",
+                builder -> {
+                    builder.setSmartDashboardType("double");
+                    builder.addDoubleProperty(
+                            "Max",
+                            () -> drive.getMaxVelocity(),
+                            val -> Drive.maxUsableSpeedMetersPerSec = val);
+                });
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
