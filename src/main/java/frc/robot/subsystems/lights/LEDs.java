@@ -27,10 +27,6 @@ public class LEDs extends SubsystemBase {
                 candle.clearAnimation(i);
             }
         }
-
-
-
-
     }
     public void periodic() {
         // help i dont know what to put here
@@ -38,7 +34,5 @@ public class LEDs extends SubsystemBase {
     public CANdle getCandle() { return candle; }
     public void setLEDs(int r, int g, int b) {candle.setLEDs(r, g, b); }
     public void resetLEDs() { candle.setLEDs(0,0,0); }
-
-
 }
 
