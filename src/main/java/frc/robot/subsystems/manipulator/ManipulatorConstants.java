@@ -3,10 +3,10 @@ package frc.robot.subsystems.manipulator;
 public class ManipulatorConstants {
     // Device CAN IDs
     // update when robot built
-    public static final int MANIPULATOR_ROLLERL_CanId = 31;
-    public static final int MANIPULATOR_ROLLERR_CanId = 30;
-    public static final int MANIPULATOR_BEAM_ID = 7;
-    public static final int MANIPULATOR_DISTANCE_SENSOR_ID = 0;
+    public static final int leftManipulatorRollerCanId = 31;
+    public static final int rightManipulatorRollerCanId = 30;
+    public static final int manipulatorBeamBrakePort = 7;
+    public static final int manipulatorDistanceSensorPort = 0;
 
     // the gear ratio of the gear box
     public static final double manipulatorGearRatio = 1;

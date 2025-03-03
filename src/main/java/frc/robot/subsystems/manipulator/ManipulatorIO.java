@@ -7,13 +7,13 @@ public interface ManipulatorIO {
     public static class ManipulatorIOInputs {
         public double rollerLVelocityRadPerSec;
         public double rollerLAppliedVolts = 0.0;
-        public double[] rollerLCurrentAmps = new double[] {};
-        public double[] rollerLTemperature = new double[] {};
+        public double rollerLCurrentAmps = 0.0;
+        public double rollerLTemperature = 0.0;
 
         public double rollerRVelocityRadPerSec;
         public double rollerRAppliedVolts = 0.0;
-        public double[] rollerRCurrentAmps = new double[] {};
-        public double[] rollerRTemperature = new double[] {};
+        public double rollerRCurrentAmps = 0.0;
+        public double rollerRTemperature = 0.0;
 
         public double sensorDistance = 0.0;
     }

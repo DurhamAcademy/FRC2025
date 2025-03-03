@@ -39,6 +39,7 @@ import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.manipulator.Manipulator;
@@ -60,10 +61,9 @@ public class RobotContainer {
     // Subsystems
     private final Drive drive;
     private final Manipulator manipulator;
+    private final Intake intake;
     private final Elevator elevator;
     private SwerveDriveSimulation driveSimulation = null;
-
-    private final Intake intake;
 
     // Controllers
     private final CommandXboxController driverController = new CommandXboxController(0);
@@ -143,14 +143,11 @@ public class RobotContainer {
                                 (pose) -> {},
                                 this);
 
-                intake = new Intake(new IntakeIOSparkMax());
+                intake = new Intake(new IntakeIO() {});
                 manipulator = new Manipulator(new ManipulatorIO() {});
                 elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
                 break;
         }
-
-        // NamedCommands.registerCommand(
-        //        "Smart Intake", ManipulatorCommands.humanPlayerIntake(manipulator));
 
         NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
         NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
@@ -324,6 +321,7 @@ public class RobotContainer {
     }
 
     /** For SIM only, adds a coral to the intake if the robot is at the human player station */
+    // TODO: FIX INTAKE SIM
     public void intakeCoralIfAtStation() {
         if (DriverStation.getAlliance().isEmpty()) return;
         final double DISTANCE_THRESHOLD = 1.0;

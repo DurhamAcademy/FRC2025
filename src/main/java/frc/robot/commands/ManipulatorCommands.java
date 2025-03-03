@@ -27,14 +27,6 @@ public class ManipulatorCommands {
         return runManipulator(manipulator, 9);
     }
 
-    /*public static Command humanPlayerIntake(Manipulator manipulator) {
-        return sequence(
-                        runManipulator(manipulator, 9).until(manipulator.beamBroken()),
-                        runManipulator(manipulator, 9).withTimeout(.05),
-                        runManipulator(manipulator, 9).onlyWhile(manipulator.beamBroken()))
-                .andThen(runManipulator(manipulator, 0));
-    }*/
-
     public static Command intakeCoral(Manipulator manipulator) {
         return sequence(
                 runManipulator(manipulator, 5.0)

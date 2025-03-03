@@ -26,11 +26,11 @@ public class ManipulatorIOSim implements ManipulatorIO {
         var ct = Timer.getFPGATimestamp();
         var dt = (timestamp == null) ? .02 : ct - timestamp;
 
-        inputs.rollerRCurrentAmps = new double[] {rollerSim.getCurrentDrawAmps()};
+        inputs.rollerRCurrentAmps = rollerSim.getCurrentDrawAmps();
         inputs.rollerRAppliedVolts = rollerVoltage;
         inputs.rollerRVelocityRadPerSec = rollerSim.getAngularVelocityRadPerSec();
 
-        inputs.rollerLCurrentAmps = new double[] {rollerSim.getCurrentDrawAmps()};
+        inputs.rollerLCurrentAmps = rollerSim.getCurrentDrawAmps();
         inputs.rollerLAppliedVolts = rollerVoltage;
         inputs.rollerLVelocityRadPerSec = rollerSim.getAngularVelocityRadPerSec();
         rollerSim.update(dt);

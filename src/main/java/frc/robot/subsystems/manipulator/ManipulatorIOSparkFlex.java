@@ -10,11 +10,11 @@ import edu.wpi.first.wpilibj.AnalogInput;
 public class ManipulatorIOSparkFlex implements ManipulatorIO {
     private final SparkFlex primaryRollerR =
             new SparkFlex(
-                    ManipulatorConstants.MANIPULATOR_ROLLERL_CanId,
+                    ManipulatorConstants.leftManipulatorRollerCanId,
                     SparkLowLevel.MotorType.kBrushless);
     private final SparkFlex followRollerL =
             new SparkFlex(
-                    ManipulatorConstants.MANIPULATOR_ROLLERR_CanId,
+                    ManipulatorConstants.rightManipulatorRollerCanId,
                     SparkLowLevel.MotorType.kBrushless);
 
     private final SparkFlexConfig resetConfig = new SparkFlexConfig();
@@ -44,7 +44,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
 
         configureMotors();
 
-        distanceSensor = new AnalogInput(ManipulatorConstants.MANIPULATOR_DISTANCE_SENSOR_ID);
+        distanceSensor = new AnalogInput(ManipulatorConstants.manipulatorDistanceSensorPort);
     }
 
     private void configureMotors() {
@@ -56,18 +56,18 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
     }
 
     public void updateInputs(ManipulatorIO.ManipulatorIOInputs inputs) {
-        inputs.rollerLTemperature = new double[] {followRollerL.getMotorTemperature()};
+        inputs.rollerLTemperature = followRollerL.getMotorTemperature();
         inputs.rollerLAppliedVolts =
                 followRollerL.getAppliedOutput() * followRollerL.getBusVoltage();
-        inputs.rollerLCurrentAmps = new double[] {followRollerL.getOutputCurrent()};
+        inputs.rollerLCurrentAmps = followRollerL.getOutputCurrent();
         inputs.rollerLVelocityRadPerSec =
                 Units.rotationsPerMinuteToRadiansPerSecond(
                         followRollerL.getExternalEncoder().getVelocity());
 
-        inputs.rollerRTemperature = new double[] {primaryRollerR.getMotorTemperature()};
+        inputs.rollerRTemperature = primaryRollerR.getMotorTemperature();
         inputs.rollerRAppliedVolts =
                 primaryRollerR.getAppliedOutput() * primaryRollerR.getBusVoltage();
-        inputs.rollerRCurrentAmps = new double[] {primaryRollerR.getOutputCurrent()};
+        inputs.rollerRCurrentAmps = primaryRollerR.getOutputCurrent();
         inputs.rollerRVelocityRadPerSec =
                 Units.rotationsPerMinuteToRadiansPerSecond(
                         primaryRollerR.getExternalEncoder().getVelocity());

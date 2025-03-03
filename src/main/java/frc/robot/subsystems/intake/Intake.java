@@ -11,13 +11,12 @@ import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
-    private double intakeVoltageSetpoint = 0.0;
-    private Rotation2d targetRotation = new Rotation2d();
-
     IntakeIO io;
     IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
     ArmFeedforward rotatorFF;
-    ProfiledPIDController rotatorFB;
+
+    private Rotation2d targetRotation = new Rotation2d();
+
     private final TrapezoidProfile.Constraints constraints;
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
@@ -31,14 +30,6 @@ public class Intake extends SubsystemBase {
                         IntakeConstants.rotatorKg,
                         IntakeConstants.rotatorKv,
                         IntakeConstants.rotatarKa);
-        rotatorFB =
-                new ProfiledPIDController(
-                        IntakeConstants.rotatorKp,
-                        IntakeConstants.rotatorKi,
-                        IntakeConstants.rotatorKd,
-                        new TrapezoidProfile.Constraints(
-                                IntakeConstants.rotatorMaxVelocity,
-                                IntakeConstants.rotatorMaxAcceleration));
 
         constraints =
                 new TrapezoidProfile.Constraints(
@@ -50,11 +41,11 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean getBeamBroken() {
-        return !inputs.isBeamBroken; // if this becomes noisy we can add a debouncer
+        return inputs.isBeamBroken; // if this becomes noisy we can add a debouncer
     }
 
     public void setVoltage(double voltage) {
-        intakeVoltageSetpoint = voltage;
+        io.setIntakeVoltage(voltage);
     }
 
     private static boolean simInsideIntakeRange(
@@ -98,9 +89,7 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-        io.setIntakeVoltage(intakeVoltageSetpoint);
         rotateIntake();
-        Logger.recordOutput("Intake/isRunning", intakeVoltageSetpoint != 0);
-        Logger.recordOutput("Intake/beamBreakBroken", getBeamBroken());
+         Logger.recordOutput("Intake/beamBreakBroken", getBeamBroken());
     }
 }

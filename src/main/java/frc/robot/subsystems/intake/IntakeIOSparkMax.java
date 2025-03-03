@@ -31,10 +31,6 @@ public class IntakeIOSparkMax implements IntakeIO {
         intakeResetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
         intakeResetConfig.smartCurrentLimit(40);
         intakeResetConfig.voltageCompensation(12.0);
-        intakeResetConfig
-                .closedLoop
-                .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pid(IntakeConstants.intakeKp, IntakeConstants.intakeKi, IntakeConstants.intakeKd);
         intakeResetConfig.inverted(true);
 
         rotatorResetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
@@ -43,7 +39,7 @@ public class IntakeIOSparkMax implements IntakeIO {
         rotatorResetConfig
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pid(IntakeConstants.intakeKp, IntakeConstants.intakeKi, IntakeConstants.intakeKd);
+                .pid(IntakeConstants.rotatorKp, IntakeConstants.rotatorKi, IntakeConstants.rotatorKd);
 
         rotatorResetConfig.encoder.positionConversionFactor(
                 IntakeConstants.rotatorGearRatio); // update gear ratio
@@ -65,14 +61,14 @@ public class IntakeIOSparkMax implements IntakeIO {
         inputs.intakeTemperature = intakeMotor.getMotorTemperature();
 
         // rotation in radians
-        inputs.rotatorPosRad = rotatorAbsoluteEncoder.getPosition();
+        inputs.rotatorPosRad = rotatorAbsoluteEncoder.getPosition() * (2 * Math.PI);
         inputs.rotatorVelocityRadPerSec =
                 rotatorRelativeEncoder.getVelocity() * (2 * Math.PI / 60); // Convert RPM to rad/sec
         inputs.rotatorAppliedVolts = rotatorMotor.getBusVoltage() * rotatorMotor.getAppliedOutput();
         inputs.rotatorCurrentAmps = rotatorMotor.getOutputCurrent();
         inputs.rotatorTemperature = rotatorMotor.getMotorTemperature();
 
-        inputs.isBeamBroken = beamBreakSensor.get(); // TODO: invert?
+        inputs.isBeamBroken = !beamBreakSensor.get(); // needs to be inverted
     }
 
     @Override

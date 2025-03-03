@@ -12,31 +12,6 @@ import frc.robot.subsystems.manipulator.Manipulator;
 
 public class IntakeCommands {
     public static Command intakeCoral(Intake intake, Manipulator manipulator) {
-        /*return sequence(
-        IntakeCommands.runIntake(intake).until(intake::getBeamBroken),
-        parallel(
-                        // pass from intake into manipulator
-                        IntakeCommands.runIntake(intake),
-                        ManipulatorCommands.runManipulator(manipulator, 4))
-                .withTimeout(0.2),
-        ManipulatorCommands.runManipulator(manipulator, 0));*/
-        /*return Commands.runEnd(
-        () ->
-                sequence(
-                        IntakeCommands.runIntake(intake).until(intake::getBeamBroken),
-                        parallel(
-                                        // pass from intake into manipulator
-                                        IntakeCommands.runIntake(intake),
-                                        ManipulatorCommands.runManipulator(manipulator, 4))
-                                .withTimeout(0.2),
-                        ManipulatorCommands.runManipulator(
-                                manipulator, 0)), // runs while active
-        () ->
-                sequence(
-                        IntakeCommands.stopIntake(intake),
-                        ManipulatorCommands.runManipulator(manipulator, 0)), // stops on end
-        intake,
-        manipulator);*/
         return Commands.runEnd(
                 () ->
                         parallel(
@@ -53,7 +28,7 @@ public class IntakeCommands {
     public static Command runIntakeForCoral(Intake intake) {
         return sequence(
                 runIntake(intake).onlyWhile(() -> !intake.getBeamBroken())
-                /*runIntake(intake).withTimeout(1.0)*/ );
+        );
     }
 
     public static Command runIntake(Intake intake) {
