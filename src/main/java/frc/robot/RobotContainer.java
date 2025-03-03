@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -143,6 +144,7 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
 
+
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -250,7 +252,17 @@ public class RobotContainer {
         operatorController
                 .povLeft()
                 .onTrue(
-                        algaeMode
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.NET),
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.L1),
+                                () -> {
+                                    return algaeMode;
+                                }
+                                )
+                        );
+                       /* algaeMode
                                 ? new InstantCommand(
                                         () ->
                                                 ElevatorCommands.setElevatorLevel(
@@ -258,45 +270,48 @@ public class RobotContainer {
                                 : new InstantCommand(
                                         () ->
                                                 ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel.L1)));
+                                                        elevator, ElevatorLevel.L1)));*/
         operatorController
                 .povDown()
                 .onTrue(
-                        algaeMode
-                                ? new InstantCommand(
-                                        () ->
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator,
-                                                        ElevatorLevel.LOWER_ALGAE_REMOVAL))
-                                : new InstantCommand(
-                                        () ->
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel.L2)));
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.L2),
+                                () -> {
+                                    return algaeMode;
+                                }
+                        )
+                );
+
         operatorController
                 .povRight()
                 .onTrue(
-                        algaeMode
-                                ? new InstantCommand(
-                                        () ->
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel))
-                                : new InstantCommand(
-                                        () ->
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel.L3)));
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.PROCESSOR),
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.L3),
+                                () -> {
+                                    return algaeMode;
+                                }
+                        )
+                );
+
         operatorController
                 .povUp()
                 .onTrue(
-                        algaeMode
-                                ? new InstantCommand(
-                                        () ->
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator,
-                                                        ElevatorLevel.UPPER_ALGAE_REMOVAL))
-                                : new InstantCommand(
-                                        () ->
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel.L4)));
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.L1),
+                                () -> {
+                                    return algaeMode;
+                                }
+                        )
+                );
     }
 
     /**

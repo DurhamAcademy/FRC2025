@@ -18,7 +18,9 @@ public class Elevator extends SubsystemBase {
         L1(ElevatorConstants.L1),
         L2(ElevatorConstants.L2),
         L3(ElevatorConstants.L3),
-        L4(ElevatorConstants.L4);
+        L4(ElevatorConstants.L4),
+        UPPER_ALGAE_REMOVAL(ElevatorConstants.UPPER_ALGAE_REMOVAL),
+        LOWER_ALGAE_REMOVAL(ElevatorConstants.LOWER_ALGAE_REMOVAL);
 
         public final double heightInches;
 
