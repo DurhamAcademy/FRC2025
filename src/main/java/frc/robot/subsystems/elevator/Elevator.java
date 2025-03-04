@@ -1,8 +1,8 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.drive.DriveConstants.levelFourSpeedLimit;
 import static frc.robot.subsystems.drive.DriveConstants.maxSpeedLimitMetersPerSec;
-import static frc.robot.subsystems.drive.DriveConstants.minSpeedLimitMetersPerSec;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
@@ -150,7 +150,7 @@ public class Elevator extends SubsystemBase {
 
     public void updateDriveMaxVelocity() {
         double slope =
-                (minSpeedLimitMetersPerSec - maxSpeedLimitMetersPerSec) / ElevatorConstants.maxHeight;
+                (levelFourSpeedLimit - maxSpeedLimitMetersPerSec) / ElevatorConstants.maxHeight;
         drive.setMaxVelocity(slope * elevatorInputs.leftHeightInches + maxSpeedLimitMetersPerSec);
     }
 

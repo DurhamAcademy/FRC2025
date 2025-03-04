@@ -416,7 +416,7 @@ public class DriveCommands {
         angleController.enableContinuousInput(-Math.PI, Math.PI);
         PathConstraints constraints =
                 new PathConstraints(
-                        Drive.maxUsableSpeedMetersPerSec,
+                        Drive.currentSpeedLimitMetersPerSec,
                         LINEAR_MAX_ACCELERATION,
                         ANGLE_MAX_VELOCITY,
                         ANGLE_MAX_ACCELERATION);

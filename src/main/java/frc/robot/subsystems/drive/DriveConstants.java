@@ -127,7 +127,7 @@ public class DriveConstants {
                     robotMOI,
                     new ModuleConfig(
                             wheelRadiusMeters,
-                            Drive.maxUsableSpeedMetersPerSec,
+                            Drive.currentSpeedLimitMetersPerSec,
                             wheelCOF,
                             driveGearbox.withReduction(driveMotorReduction),
                             driveMotorCurrentLimit,

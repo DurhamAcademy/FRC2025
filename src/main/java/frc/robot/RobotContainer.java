@@ -393,7 +393,7 @@ public class RobotContainer {
                     builder.addDoubleProperty(
                             "Max",
                             drive::getMaxVelocity,
-                            val -> Drive.maxUsableSpeedMetersPerSec = val);
+                            val -> Drive.currentSpeedLimitMetersPerSec = val);
                 });
         SmartDashboard.putData(
                 "Swerve Drive",
