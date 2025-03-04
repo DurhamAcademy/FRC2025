@@ -201,11 +201,11 @@ public class RobotContainer {
         // if not, zero the elevator for the first time
         // todo untested
         elevator.setDefaultCommand(
-                        either(
-                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
-                                        .onlyIf(drive::isTipping),
-                                ElevatorCommands.zeroElevator(elevator),
-                                elevator::hasZeroed));
+                either(
+                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
+                                .onlyIf(drive::isTipping),
+                        ElevatorCommands.zeroElevator(elevator),
+                        elevator::hasZeroed));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
