@@ -14,13 +14,18 @@ public class Elevator extends SubsystemBase {
     private boolean hasZeroed = false;
 
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ZERO),
-        L1(ElevatorConstants.L1),
-        L2(ElevatorConstants.L2),
-        L3(ElevatorConstants.L3),
-        L4(ElevatorConstants.L4),
-        UPPER_ALGAE_REMOVAL(ElevatorConstants.UPPER_ALGAE_REMOVAL),
-        LOWER_ALGAE_REMOVAL(ElevatorConstants.LOWER_ALGAE_REMOVAL);
+        ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
+        INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
+        L1(ElevatorConstants.L1, WristConstants.LOWER_ALGAE_REMOVAL),
+        L2(ElevatorConstants.ZERO, WristConstants.L2),
+        L3(ElevatorConstants.ZERO, WristConstants.L3),
+        L4(ElevatorConstants.ZERO, WristConstants.NET),
+        NET(ElevatorConstants.L4, WristConstants.NET),
+        PROCESSOR(ElevatorConstants.L1, WristConstants.PROCESSOR),
+        LOWER_ALGAE_REMOVAL(
+                ElevatorConstants.LOWER_ALGAE_REMOVAL, WristConstants.LOWER_ALGAE_REMOVAL),
+        UPPER_ALGAE_REMOVAL(
+                ElevatorConstants.UPPER_ALGAE_REMOVAL, WristConstants.UPPER_ALGAE_REMOVAL);
 
         public final double heightInches;
 

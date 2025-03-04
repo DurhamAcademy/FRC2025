@@ -247,7 +247,6 @@ public class RobotContainer {
                 .start()
                 .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO));
 
-        // TODO put in elevator heights for algae mode
 
         operatorController
                 .povLeft()
@@ -257,20 +256,10 @@ public class RobotContainer {
                                         elevator, ElevatorLevel.NET),
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.L1),
-                                () -> {
-                                    return algaeMode;
-                                }
+                                () -> algaeMode
                                 )
                         );
-                       /* algaeMode
-                                ? new InstantCommand(
-                                        () ->
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel))
-                                : new InstantCommand(
-                                        () ->
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel.L1)));*/
+
         operatorController
                 .povDown()
                 .onTrue(
@@ -279,9 +268,7 @@ public class RobotContainer {
                                         elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.L2),
-                                () -> {
-                                    return algaeMode;
-                                }
+                                () -> algaeMode
                         )
                 );
 
@@ -293,9 +280,7 @@ public class RobotContainer {
                                         elevator, ElevatorLevel.PROCESSOR),
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.L3),
-                                () -> {
-                                    return algaeMode;
-                                }
+                                () -> algaeMode
                         )
                 );
 
@@ -307,9 +292,7 @@ public class RobotContainer {
                                         elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.L1),
-                                () -> {
-                                    return algaeMode;
-                                }
+                                () -> algaeMode
                         )
                 );
     }
