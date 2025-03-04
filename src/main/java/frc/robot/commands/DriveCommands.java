@@ -363,13 +363,13 @@ public class DriveCommands {
      * @param drive, the drive subsystem
      * @return Pose2d, the target pose for the robot
      */
-    private static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
+    public static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
         Pose2d locationPose = new Pose2d();
         if (location == autoAlignLocations.reef) {
             // gets reef goal pose
             locationPose = drive.getTargetReefPose();
         } else if (location == autoAlignLocations.processor) {
-            // TODO add processor location
+            locationPose = drive.getProcessor();
         }
 
         double shiftDistance = DriveConstants.robotWidth - .25;
@@ -453,7 +453,7 @@ public class DriveCommands {
                                 0,
                                 0,
                                 // max velocity and max acceleration TODO check these values
-                                new TrapezoidProfile.Constraints(1, 3.14)));
+                                new TrapezoidProfile.Constraints(5.63, 8.44)));
         holonomicDriveController.getThetaController().enableContinuousInput(-Math.PI, Math.PI);
         // sets 5cm and 5 degree precision
         holonomicDriveController.setTolerance(new Pose2d(0.05, 0.05, Rotation2d.fromDegrees(5)));
@@ -499,22 +499,23 @@ public class DriveCommands {
     /**
      * Runs both rough and precise auto align to target code
      *
-     * @param drive
+     * @param drive subsystem
      * @return Commands.repeatingSequence
      */
     public static Command autoAlignToReef(Drive drive, autoAlignLocations location) {
         return Commands.repeatingSequence(
                         new ConditionalCommand(
-                                // goalPose > 1m away
+                                // goalPose > .5 m away
                                 DriveCommands.roughAlignToTarget(drive, location),
-                                // goalPose <= 1m away
+                                // goalPose <= .5 m away
                                 DriveCommands.preciseAlignToTarget(drive, location),
                                 () -> {
                                     // Calculate the distance between the robot and
                                     // the target.
                                     Pose2d currentPose = drive.getPose(); // Get current robot
                                     // pose
-                                    Pose2d targetPose = drive.getTargetReefPose(); // Target
+                                    Pose2d targetPose =
+                                            calculateRobotTargetPose(drive, location); // Target
                                     // pose
                                     double distance =
                                             currentPose
@@ -522,27 +523,68 @@ public class DriveCommands {
                                                     .getDistance(targetPose.getTranslation());
 
                                     // true if distance > threshold distance (m)
-                                    return distance > 1;
+                                    return distance > .5;
                                 }))
-                .until(
-                        () -> {
-                            // Overall condition to stop this command (robot
-                            // must be at goal pose)
-                            Pose2d currentPose = drive.getPose();
-                            Pose2d targetPose = drive.getTargetReefPose();
-                            // Calculate distance and rotation
-                            double distance =
-                                    currentPose
-                                            .getTranslation()
-                                            .getDistance(targetPose.getTranslation());
-                            double rotationError =
-                                    Math.abs(
-                                            currentPose.getRotation().getDegrees()
-                                                    - targetPose.getRotation().getDegrees());
+                .until(drive::isAlignedToReef);
+    }
 
-                            // Stop when BOTH distance and orientation are
-                            // within the thresholds
-                            return distance < 0.05 && rotationError < 2.0; // <5 cm and < 5 degrees
-                        });
+    /**
+     * Align to human player station
+     *
+     * @param drive subsystem
+     * @param xSupplier left joystick x value
+     * @param ySupplier left joystick y value
+     * @return command
+     */
+    public static Command autoAlignToHumanPlayerStation(
+            Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+        ProfiledPIDController angleController =
+                new ProfiledPIDController(
+                        ANGLE_KP,
+                        0.0,
+                        ANGLE_KD,
+                        new TrapezoidProfile.Constraints(
+                                ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+
+        // Enable continuous input
+        angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+        return Commands.run(
+                        () -> {
+                            Translation2d linearVelocity =
+                                    getLinearVelocityFromJoysticks(
+                                            xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+                            Pose2d hps = drive.getNearestHumanPlayerStation();
+
+                            double omega =
+                                    angleController.calculate(
+                                            drive.getRotation().getRadians(),
+                                            hps.getRotation().getRadians());
+
+                            ChassisSpeeds speeds =
+                                    new ChassisSpeeds(
+                                            linearVelocity.getX()
+                                                    * drive.getMaxLinearSpeedMetersPerSec(),
+                                            linearVelocity.getY()
+                                                    * drive.getMaxLinearSpeedMetersPerSec(),
+                                            omega * drive.getMaxAngularSpeedRadPerSec());
+
+                            // See if rotation should be flipped, red = flipped, blue =
+                            // normal
+                            boolean isFlipped =
+                                    DriverStation.getAlliance().isPresent()
+                                            && DriverStation.getAlliance().get() == Alliance.Red;
+
+                            // Run the velocity on the drive
+                            drive.runVelocity(
+                                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                                            speeds,
+                                            isFlipped
+                                                    ? drive.getRotation()
+                                                            .plus(new Rotation2d(Math.PI))
+                                                    : drive.getRotation()));
+                        })
+                .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
     }
 }
