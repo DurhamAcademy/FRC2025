@@ -441,6 +441,7 @@ public class Drive extends SubsystemBase {
         updateDashboardReefVisualization(reef);
     }
 
+    // take a drivecommands location var (from the enum)
     public boolean isAlignedToLocation() {
         boolean isAlignedToLocation = (isAlignedToAlgae() || isAlignedToReef());
         Logger.recordOutput("Vision/alignedToLocation", isAlignedToLocation);
@@ -562,7 +563,7 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * If robot is within 5 cm
+     * If robot is within 5 cm of
      *
      * @return boolean
      */

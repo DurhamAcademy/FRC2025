@@ -293,7 +293,7 @@ public class RobotContainer {
                 "Vision",
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
-                    builder.addBooleanProperty("alignedToTarget", drive::isAlignedToReef, null);
+                    builder.addBooleanProperty("alignedToTarget", drive::isAlignedToLocation, null);
                 });
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
         SmartDashboard.putData(
