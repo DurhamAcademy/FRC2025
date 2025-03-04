@@ -199,12 +199,12 @@ public class RobotContainer {
 
         // if elevator has zeroed, run tipping prevention code
         // if not, zero the elevator for the first time
-        elevator.setDefaultCommand(
-                either(
-                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
-                                .onlyIf(drive::isTipping),
-                        ElevatorCommands.zeroElevator(elevator),
-                        elevator::hasZeroed));
+        elevator.setDefaultCommand(null);
+        //                either(
+        //                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
+        //                                .onlyIf(drive::isTipping),
+        //                        ElevatorCommands.zeroElevator(elevator),
+        //                        elevator::hasZeroed));
 
         // DRIVER CONTROLLER
         // Lock to 0° when A button is held
@@ -300,8 +300,10 @@ public class RobotContainer {
     }
 
     public void resetSetpoints() {
+        elevator.stopElevator();
+        elevator.stopWrist();
         elevator.setWristTargetAngle(elevator.getWristAngle());
-        elevator.setElevatorTargetHeight(elevator.getElevatorHeight());
+        elevator.setElevatorTargetHeight(0);
     }
 
     public void sendDataToSmartDashboard() {
@@ -311,6 +313,7 @@ public class RobotContainer {
                     builder.setSmartDashboardType("Boolean");
                     builder.addBooleanProperty("alignedToReef", drive::isAlignedToReef, null);
                 });
+
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
         SmartDashboard.putData(
                 "Override",
