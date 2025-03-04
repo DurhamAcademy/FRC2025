@@ -89,6 +89,8 @@ public class Drive extends SubsystemBase {
     public FieldConstants.AlgaeConstants targetAlgae = FieldConstants.AlgaeConstants.ONE;
     public boolean overrideAlgaeAutoAlign = false;
 
+    public DriveCommands.autoAlignLocations currentAlignLocation;
+
     public Drive(
             GyroIO gyroIO,
             ModuleIO flModuleIO,
@@ -443,11 +445,46 @@ public class Drive extends SubsystemBase {
 
     // take a drivecommands location var (from the enum)
     public boolean isAlignedToLocation() {
-        boolean isAlignedToLocation = (isAlignedToAlgae() || isAlignedToReef());
-        Logger.recordOutput("Vision/alignedToLocation", isAlignedToLocation);
-        return isAlignedToLocation;
+        boolean isAligned = false;
+        if (currentAlignLocation == DriveCommands.autoAlignLocations.reef) {
+            // gets reef goal pose
+            isAligned = isAlignedToReef();
+
+        } else if (currentAlignLocation == DriveCommands.autoAlignLocations.algae) {
+            isAligned = isAlignedToAlgae();
+
+        } else if (currentAlignLocation == DriveCommands.autoAlignLocations.processor) {
+            isAligned = isAlignedToProcessor();
+        }
+        Logger.recordOutput("Vision/alignedToLocation", isAligned);
+        return isAligned;
     }
-    ;
+
+    public boolean isAlignedToProcessor() {
+
+        // Overall condition to stop this command (robot
+        // must be at goal pose)
+        Pose2d currentPose = getPose();
+        Pose2d targetPose =
+                DriveCommands.calculateRobotTargetPose(
+                        this, DriveCommands.autoAlignLocations.processor);
+        // Calculate distance and rotation
+        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+        double rotationError =
+                Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
+
+        // Stop when BOTH distance and orientation are
+        // within the thresholds
+
+        boolean alignedToProcessor =
+                distance
+                                < FieldConstants.coralInnerWidth
+                                        - FieldConstants.reefPipeDiameter
+                                        - Units.inchesToMeters(.25)
+                        && rotationError < 2.0; // 2.5 inches and < 2 degrees
+        Logger.recordOutput("Vision/alignedToProcessor", alignedToProcessor);
+        return alignedToProcessor;
+    }
 
     public Pose2d getProcessor() {
         int alliance =

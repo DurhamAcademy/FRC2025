@@ -365,6 +365,7 @@ public class DriveCommands {
      */
     public static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
         Pose2d locationPose = new Pose2d();
+        drive.currentAlignLocation = location;
         if (location == autoAlignLocations.reef) {
             // gets reef goal pose
             locationPose = drive.getTargetReefPose();
