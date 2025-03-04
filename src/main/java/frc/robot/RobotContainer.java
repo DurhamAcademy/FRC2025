@@ -14,11 +14,13 @@
 package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.*;
+import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.elevator.Elevator;
@@ -35,6 +38,14 @@ import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.manipulator.Manipulator;
+import frc.robot.subsystems.manipulator.ManipulatorIO;
+import frc.robot.subsystems.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.manipulator.ManipulatorIOSparkFlex;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -49,6 +60,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
+    private final Manipulator manipulator;
+    private final Intake intake;
     private final Elevator elevator;
     private SwerveDriveSimulation driveSimulation = null;
 
@@ -79,6 +92,9 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
+
+                manipulator = new Manipulator(new ManipulatorIOSparkFlex());
+                intake = new Intake(new IntakeIOSparkMax());
                 elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
                 break;
 
@@ -99,6 +115,8 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
                                 driveSimulation::setSimulationWorldPose,
                                 this);
+                manipulator = new Manipulator(new ManipulatorIOSim());
+                intake = new Intake(new IntakeIOSim(driveSimulation));
                 // TODO: Elevator SIM
                 elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
 
@@ -124,9 +142,16 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
+
+                intake = new Intake(new IntakeIO() {});
+                manipulator = new Manipulator(new ManipulatorIO() {});
                 elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
                 break;
         }
+
+        NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
+        NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
+        NamedCommands.registerCommand("Algae Intake", ManipulatorCommands.algaeIntake(manipulator));
 
         NamedCommands.registerCommand(
                 "Elevator L1", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
@@ -293,6 +318,26 @@ public class RobotContainer {
         Logger.recordOutput(
                 "FieldSimulation/Algae",
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    }
+
+    /** For SIM only, adds a coral to the intake if the robot is at the human player station */
+    // TODO: FIX INTAKE SIM
+    public void intakeCoralIfAtStation() {
+        if (DriverStation.getAlliance().isEmpty()) return;
+        final double DISTANCE_THRESHOLD = 1.0;
+        Pose2d[] HpStations =
+                PosesOfAllHumanPlayerStations(
+                                Constants.getAllianceColor(DriverStation.getAlliance().get()))
+                        .toArray(new Pose2d[0]);
+        Logger.recordOutput("Intake/HumanPlayers", HpStations);
+        for (Pose2d stationPose : HpStations) {
+            Pose2d robotPose = drive.getPose();
+            double distance = robotPose.getTranslation().getDistance(stationPose.getTranslation());
+            Logger.recordOutput("Intake/HumanPlayerDist" + stationPose.toString(), distance);
+            if (distance < DISTANCE_THRESHOLD) {
+                // intake.simAddCoral(robotPose);
+            }
+        }
     }
 
     public SwerveDriveSimulation getDriveSimulation() {
