@@ -492,6 +492,10 @@ public class Drive extends SubsystemBase {
         return maxUsableSpeedMetersPerSec;
     }
 
+    public void setMaxVelocity(double maxVelocity) {
+        maxUsableSpeedMetersPerSec = maxVelocity;
+    }
+
     public void clampMaxUsableSpeed() {
         maxUsableSpeedMetersPerSec =
                 MathUtil.clamp(maxUsableSpeedMetersPerSec, 0.0, maxSpeedMetersPerSec);

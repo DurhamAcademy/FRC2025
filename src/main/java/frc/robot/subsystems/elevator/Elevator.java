@@ -1,6 +1,8 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.drive.DriveConstants.maxSpeedMetersPerSec;
+import static frc.robot.subsystems.drive.DriveConstants.preciseSpeedMetersPerSec;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
@@ -113,6 +115,8 @@ public class Elevator extends SubsystemBase {
         Logger.processInputs("Elevator", elevatorInputs);
         Logger.processInputs("Wrist", wristInputs);
 
+        updateDriveMaxVelocity();
+
         // if wrist was previously restricted, but no longer needs to be
         if (wristRestricted && !isWristRestricted()) {
             // set the wrist target angle to the saved value
@@ -142,6 +146,12 @@ public class Elevator extends SubsystemBase {
 
     public void setElevatorTargetHeight(double heightInches) {
         elevatorIO.setTargetHeightInches(heightInches);
+    }
+
+    public void updateDriveMaxVelocity() {
+        double slope =
+                (preciseSpeedMetersPerSec - maxSpeedMetersPerSec) / ElevatorConstants.maxHeight;
+        drive.setMaxVelocity(slope * elevatorInputs.leftHeightInches + maxSpeedMetersPerSec);
     }
 
     /**

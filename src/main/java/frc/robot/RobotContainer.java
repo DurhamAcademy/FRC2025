@@ -392,7 +392,7 @@ public class RobotContainer {
                     builder.setSmartDashboardType("double");
                     builder.addDoubleProperty(
                             "Max",
-                            () -> drive.getMaxVelocity(),
+                            drive::getMaxVelocity,
                             val -> Drive.maxUsableSpeedMetersPerSec = val);
                 });
         SmartDashboard.putData(
