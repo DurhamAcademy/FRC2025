@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -77,6 +78,8 @@ public class RobotContainer {
     private boolean invertY = false;
     private double xDirect = 1;
     private double yDirect = 1;
+
+    public boolean algaeMode = true;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -273,19 +276,47 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
         // Elevator
+
+        // TODO ask natalie for confirmation on control scheme
+        operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
+        operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
+
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
+
         operatorController
-                .a()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1 Coral
+                .povLeft()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.NET),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1),
+                                () -> algaeMode));
+
         operatorController
-                .x()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2 Coral
+                .povDown()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
+                                () -> algaeMode));
+
         operatorController
-                .b()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3 Coral
+                .povRight()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.PROCESSOR),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3),
+                                () -> algaeMode));
+
         operatorController
-                .y()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4 Coral
+                .povUp()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4),
+                                () -> algaeMode));
     }
 
     /**
