@@ -33,13 +33,12 @@ public class ElevatorConstants {
     public static final double LOWER_ALGAE_REMOVAL = 19.5;
     public static final double UPPER_ALGAE_REMOVAL = 36;
 
-
     // the distance between the floor and the bottom of the elevator
     public static final double elevatorBaseHeight = 4.750;
 
     public static final double elevatorMaxVelocity = Units.metersToInches(.3); // 0.3 m/s
     public static final double elevatorMaxAcceleration = Units.metersToInches(.3); // 0.3 m/s
-  
+
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
 
