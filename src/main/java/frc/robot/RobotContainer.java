@@ -278,11 +278,12 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
         // Elevator
-        operatorController.leftBumper().onTrue(new InstantCommand(() -> algaeMode = !algaeMode));
-        operatorController
-                .start()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO));
 
+        // TODO ask natalie for confirmation on control scheme
+        operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
+        operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
+
+        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
 
         operatorController
                 .povLeft()
@@ -327,11 +328,10 @@ public class RobotContainer {
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
                                 ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.L1),
+                                        elevator, ElevatorLevel.L4),
                                 () -> algaeMode
                         )
                 );
-        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
     }
 
     /**
