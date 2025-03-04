@@ -169,7 +169,6 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
 
-
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -283,18 +282,13 @@ public class RobotContainer {
                 .start()
                 .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO));
 
-
         operatorController
                 .povLeft()
                 .onTrue(
                         new ConditionalCommand(
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.NET),
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.L1),
-                                () -> algaeMode
-                                )
-                        );
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.NET),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1),
+                                () -> algaeMode));
 
         operatorController
                 .povDown()
@@ -302,11 +296,8 @@ public class RobotContainer {
                         new ConditionalCommand(
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.L2),
-                                () -> algaeMode
-                        )
-                );
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
+                                () -> algaeMode));
 
         operatorController
                 .povRight()
@@ -314,11 +305,8 @@ public class RobotContainer {
                         new ConditionalCommand(
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.PROCESSOR),
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.L3),
-                                () -> algaeMode
-                        )
-                );
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3),
+                                () -> algaeMode));
 
         operatorController
                 .povUp()
@@ -326,11 +314,8 @@ public class RobotContainer {
                         new ConditionalCommand(
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.L1),
-                                () -> algaeMode
-                        )
-                );
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1),
+                                () -> algaeMode));
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
     }
 
