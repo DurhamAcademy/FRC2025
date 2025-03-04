@@ -281,6 +281,14 @@ public class RobotContainer {
     }
 
     public void sendDataToSmartDashboard() {
+        Logger.recordOutput(
+                "Algea reaf",
+                FieldConstants.LocationConstants.PosesOfAllAlgaeLocations(0)
+                        .toArray(new Pose2d[0]));
+        Logger.recordOutput(
+                "red alliance",
+                FieldConstants.LocationConstants.PosesOfAllAlgaeLocations(1)
+                        .toArray(new Pose2d[0]));
         SmartDashboard.putData(
                 "Vision",
                 builder -> {
