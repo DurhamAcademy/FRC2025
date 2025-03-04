@@ -26,9 +26,9 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
 public class DriveConstants {
     // update max speed meters per sec
-    public static final double maxSpeedMetersPerSec = 5.05;
+    public static final double maxSpeedLimitMetersPerSec = 5.05;
     // TODO TUNE MIN SPEED
-    public static final double preciseSpeedMetersPerSec = 2.0;
+    public static final double levelFourSpeedLimit = 2.0;
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = Units.inchesToMeters(22.75);
     public static final double wheelBase = Units.inchesToMeters(22.75);
