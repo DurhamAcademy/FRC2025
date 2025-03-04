@@ -122,6 +122,7 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void autonomousInit() {
+        robotContainer.resetSetpoints();
         autonomousCommand = robotContainer.getAutonomousCommand();
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
@@ -136,6 +137,7 @@ public class Robot extends LoggedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
+        robotContainer.resetSetpoints();
         // This makes sure that the autonomous stops running when
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
@@ -169,5 +171,6 @@ public class Robot extends LoggedRobot {
     public void simulationPeriodic() {
         SimulatedArena.getInstance().simulationPeriodic();
         robotContainer.displaySimFieldToAdvantageScope();
+        robotContainer.intakeCoralIfAtStation();
     }
 }

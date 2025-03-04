@@ -123,7 +123,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
-        inputs.isLimitSwitchPressed = limitSwitch.get();
+        inputs.isLimitSwitchPressed = !limitSwitch.get(); // limit switch is inverted
         inputs.leftHeightInches = primaryEncoder.getPosition();
         inputs.rightHeightInches = followerEncoder.getPosition();
         inputs.targetHeightInches = targetHeightInches;
@@ -151,7 +151,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
      * subsystem's periodic function
      */
     @Override
-    public void updateProfile() {
+    public void updateStates() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
         double ffVolts = 0;

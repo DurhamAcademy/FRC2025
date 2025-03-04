@@ -14,11 +14,13 @@
 package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.*;
+import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,12 +30,22 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.manipulator.Manipulator;
+import frc.robot.subsystems.manipulator.ManipulatorIO;
+import frc.robot.subsystems.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.manipulator.ManipulatorIOSparkFlex;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -48,6 +60,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
+    private final Manipulator manipulator;
+    private final Intake intake;
     private final Elevator elevator;
     private SwerveDriveSimulation driveSimulation = null;
 
@@ -58,7 +72,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
-    // inverse axises
+    // inverse axes
     private boolean invertX = false;
     private boolean invertY = false;
     private double xDirect = 1;
@@ -78,7 +92,10 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
-                elevator = new Elevator(new ElevatorIOSparkMax() {});
+
+                manipulator = new Manipulator(new ManipulatorIOSparkFlex());
+                intake = new Intake(new IntakeIOSparkMax());
+                elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
                 break;
 
             case SIM:
@@ -98,8 +115,10 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
                                 driveSimulation::setSimulationWorldPose,
                                 this);
+                manipulator = new Manipulator(new ManipulatorIOSim());
+                intake = new Intake(new IntakeIOSim(driveSimulation));
                 // TODO: Elevator SIM
-                elevator = new Elevator(new ElevatorIOSim() {});
+                elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -124,7 +143,9 @@ public class RobotContainer {
                                 (pose) -> {},
                                 this);
 
-                elevator = new Elevator(new ElevatorIO() {});
+                intake = new Intake(new IntakeIO() {});
+                manipulator = new Manipulator(new ManipulatorIO() {});
+                elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
                 break;
         }
 
@@ -229,36 +250,45 @@ public class RobotContainer {
 
         // Align to the closest reef
         driverController
-                .b()
-                .onTrue(runOnce(drive::setTargetReefToClosest, drive))
+                .leftBumper()
+                .onTrue(
+                        Commands.runOnce(
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT)))
+                .whileTrue(
+                        DriveCommands.autoAlignToReef(
+                                drive, DriveCommands.autoAlignLocations.reef));
+        driverController
+                .rightBumper()
+                .onTrue(
+                        Commands.runOnce(
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT)))
                 .whileTrue(
                         DriveCommands.autoAlignToReef(
                                 drive, DriveCommands.autoAlignLocations.reef));
 
         driverController
-                .leftBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
-        driverController
-                .rightBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
+                .y()
+                .whileTrue(
+                        DriveCommands.autoAlignToHumanPlayerStation(
+                                drive,
+                                () -> (yDirect * driverController.getLeftY()),
+                                () -> (xDirect * driverController.getLeftX())));
 
         // OPERATOR CONTROLLER
         // Elevator
-        operatorController
-                .start()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO));
+        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
         operatorController
                 .a()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1 Coral
         operatorController
                 .x()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2 Coral
         operatorController
                 .b()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3 Coral
         operatorController
                 .y()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4 Coral
     }
 
     /**
@@ -278,8 +308,11 @@ public class RobotContainer {
 
     public void displaySimFieldToAdvantageScope() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
+        Logger.recordOutput("MAX SPEED", SmartDashboard.getNumber("Max Speed/Max Speed", 0));
         Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
         Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
+        Logger.recordOutput(
+                "XY invert", SmartDashboard.getBoolean("INVERT AXES/X/Y INVERT", false));
         Logger.recordOutput(
                 "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
@@ -290,11 +323,42 @@ public class RobotContainer {
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
     }
 
+    /** For SIM only, adds a coral to the intake if the robot is at the human player station */
+    // TODO: FIX INTAKE SIM
+    public void intakeCoralIfAtStation() {
+        if (DriverStation.getAlliance().isEmpty()) return;
+        final double DISTANCE_THRESHOLD = 1.0;
+        Pose2d[] HpStations =
+                PosesOfAllHumanPlayerStations(
+                                Constants.getAllianceColor(DriverStation.getAlliance().get()))
+                        .toArray(new Pose2d[0]);
+        Logger.recordOutput("Intake/HumanPlayers", HpStations);
+        for (Pose2d stationPose : HpStations) {
+            Pose2d robotPose = drive.getPose();
+            double distance = robotPose.getTranslation().getDistance(stationPose.getTranslation());
+            Logger.recordOutput("Intake/HumanPlayerDist" + stationPose.toString(), distance);
+            if (distance < DISTANCE_THRESHOLD) {
+                // intake.simAddCoral(robotPose);
+            }
+        }
+    }
+
     public SwerveDriveSimulation getDriveSimulation() {
         return driveSimulation;
     }
 
+    public void resetSetpoints() {
+        elevator.setWristTargetAngle(elevator.getWristAngle());
+        elevator.setElevatorTargetHeight(elevator.getElevatorHeight());
+    }
+
     public void sendDataToSmartDashboard() {
+        SmartDashboard.putData(
+                "Vision",
+                builder -> {
+                    builder.setSmartDashboardType("Boolean");
+                    builder.addBooleanProperty("alignedToReef", drive::isAlignedToReef, null);
+                });
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
         SmartDashboard.putData(
                 "Override",
@@ -317,8 +381,23 @@ public class RobotContainer {
                     builder.setSmartDashboardType("boolean");
                     builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
                     builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
+                    builder.addBooleanProperty(
+                            "XY INVERT",
+                            () -> invertX && invertY,
+                            val -> {
+                                invertX = val;
+                                invertY = val;
+                            });
                 });
-
+        SmartDashboard.putData(
+                "MAX SPEED",
+                builder -> {
+                    builder.setSmartDashboardType("double");
+                    builder.addDoubleProperty(
+                            "Max",
+                            () -> drive.getMaxVelocity(),
+                            val -> Drive.maxUsableSpeedMetersPerSec = val);
+                });
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
