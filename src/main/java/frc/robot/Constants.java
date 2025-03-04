@@ -383,11 +383,11 @@ public final class Constants {
 
         public static final Pose2d[] processorLocation =
                 new Pose2d[] {
-                    new Pose2d(Units.inchesToMeters(235.725979), 0, new Rotation2d()),
+                    new Pose2d(Units.inchesToMeters(238.49), 0, Rotation2d.fromDegrees(90)),
                     new Pose2d(
-                            Units.inchesToMeters(690.875 - 235.725979),
-                            Units.inchesToMeters(317),
-                            new Rotation2d()),
+                            Units.inchesToMeters(452.40),
+                            Units.inchesToMeters(316.21),
+                            Rotation2d.fromDegrees(-90)),
                 };
     }
 
