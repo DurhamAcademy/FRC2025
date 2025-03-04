@@ -15,7 +15,7 @@ public class WristConstants {
     // Wrist angles in radians
     public static final double STARTING = Math.toRadians(90.0); // max angle
     public static final double ALGAE_IDLE =
-            Math.toRadians(80) - .3; // only needed when carrying algae
+            Math.toRadians(80) - .3;
     public static final double INTAKE = Math.toRadians(-40.0); // min angle, also acts as the idle
     public static final double L1 = Math.toRadians(-30.0);
     public static final double L2 = Math.toRadians(-35.0);

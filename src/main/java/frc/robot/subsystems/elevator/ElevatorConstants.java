@@ -13,7 +13,7 @@ public class ElevatorConstants {
     // Elevator PID Configuration
     // Manually tune PID?
     // TODO: FIGURE OUT
-    public static double elevatorKp = .65;
+    public static final double elevatorKp = .65;
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
     // TODO: Elevator FF can be found through SysID

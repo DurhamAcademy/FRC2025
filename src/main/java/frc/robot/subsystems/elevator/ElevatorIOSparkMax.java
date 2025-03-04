@@ -35,7 +35,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
-    private ElevatorFeedforward feedForward;
+    private final ElevatorFeedforward feedForward;
 
     /** Real IO Implementation for our elevator */
     public ElevatorIOSparkMax() {
