@@ -8,7 +8,7 @@ public class WristConstants {
     public static double wristKd = 0.3;
 
     public static final double wristKs = 0.0;
-    public static double wristKg = 0.7;
+    public static double wristKg = 0.2;
     public static final double wristKv = 0.0;
     public static final double wristKa = 0.0;
 
@@ -54,7 +54,8 @@ public class WristConstants {
     public static final double wristAbsoluteEncoderVelocityFactor =
             2 * Math.PI / 60.0 / wristChainReduction; // RPM => Radians per second
 
-    public static final double wristMotorReduction = 3 * 4 * 9 * (50.0 / 52.0) * wristChainReduction;
+    public static final double wristMotorReduction =
+            3 * 4 * 9 * (50.0 / 52.0) * wristChainReduction;
     public static final double wristRelativeEncoderReduction = 2 * Math.PI / wristMotorReduction;
     public static final double wristRelativeEncoderVelocityFactor =
             2 * Math.PI / 60.0 / wristMotorReduction; // RPM => Radians per second

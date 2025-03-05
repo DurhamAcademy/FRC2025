@@ -79,7 +79,7 @@ public class RobotContainer {
     private double xDirect = 1;
     private double yDirect = 1;
 
-    public boolean algaeMode = true;
+    public boolean algaeMode = false;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
