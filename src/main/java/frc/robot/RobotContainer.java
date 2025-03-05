@@ -227,6 +227,7 @@ public class RobotContainer {
 
         // if elevator has zeroed, run tipping prevention code
         // if not, zero the elevator for the first time
+        // todo untested
         elevator.setDefaultCommand(
                 either(
                         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
@@ -376,8 +377,10 @@ public class RobotContainer {
     }
 
     public void resetSetpoints() {
+        elevator.stopElevator();
+        elevator.stopWrist();
         elevator.setWristTargetAngle(elevator.getWristAngle());
-        elevator.setElevatorTargetHeight(elevator.getElevatorHeight());
+        elevator.setElevatorTargetHeight(0);
     }
 
     public void sendDataToSmartDashboard() {
@@ -387,7 +390,9 @@ public class RobotContainer {
                     builder.setSmartDashboardType("Boolean");
                     builder.addBooleanProperty("alignedToReef", drive::isAlignedToReef, null);
                 });
+
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
+
         SmartDashboard.putData(
                 "Override",
                 builder -> {
