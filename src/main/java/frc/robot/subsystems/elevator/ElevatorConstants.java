@@ -38,7 +38,7 @@ public class ElevatorConstants {
 
     public static final double elevatorMaxVelocity = Units.metersToInches(1); // 1 m/s
     public static final double elevatorMaxAcceleration = Units.metersToInches(1); // 1 m/s
-  
+
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
 
