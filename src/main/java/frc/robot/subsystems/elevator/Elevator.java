@@ -212,7 +212,7 @@ public class Elevator extends SubsystemBase {
                                         - Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
     }
 
-    public boolean isAtSetpoint(){
+    public boolean isAtSetpoint() {
         return elevatorInputs.isAtTargetLevel && wristInputs.isAtTargetAngle;
     }
 

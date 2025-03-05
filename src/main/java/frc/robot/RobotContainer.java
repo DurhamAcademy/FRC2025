@@ -239,50 +239,49 @@ public class RobotContainer {
         // DRIVER CONTROLLER
 
         // Automatically angle to HP & run intake
-        Command intakeCoral =  Commands.parallel(
-                DriveCommands.autoAlignToHumanPlayerStation(
-                        drive,
-                        () -> (yDirect * driverController.getLeftY()),
-                        () -> (xDirect * driverController.getLeftX())),
-                IntakeCommands.intakeCoral(intake, manipulator));
+        Command intakeCoral =
+                Commands.parallel(
+                        DriveCommands.autoAlignToHumanPlayerStation(
+                                drive,
+                                () -> (yDirect * driverController.getLeftY()),
+                                () -> (xDirect * driverController.getLeftX())),
+                        IntakeCommands.intakeCoral(intake, manipulator));
 
-        Command intakeAlgae =  ManipulatorCommands.algaeIntake(manipulator);
+        Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
-        Command manipulatorEject =  ManipulatorCommands.eject(manipulator);
+        Command manipulatorEject = ManipulatorCommands.eject(manipulator);
 
-        Command autoAlignToReef = DriveCommands.autoAlignToLocation(
-                drive, DriveCommands.autoAlignLocations.reef);
+        Command autoAlignToReef =
+                DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef);
 
-        Command autoAlignToProcessor = DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.processor);
+        Command autoAlignToProcessor =
+                DriveCommands.autoAlignToLocation(
+                        drive, DriveCommands.autoAlignLocations.processor);
 
-        Command setAlignLeft = Commands.runOnce(
-                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT));
+        Command setAlignLeft =
+                Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT));
 
-        Command setAlignRight = Commands.runOnce(
-                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT));
+        Command setAlignRight =
+                Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT));
 
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Intake from HP / Intake algae
         driverController
-            .leftTrigger()
-            .whileTrue(
-                    new ConditionalCommand(
-                            intakeAlgae,
-                            intakeCoral,
-                            () -> algaeMode
-                    )
-            );
+                .leftTrigger()
+                .whileTrue(new ConditionalCommand(intakeAlgae, intakeCoral, () -> algaeMode));
 
         // Shoot coral / algae
-        driverController.rightBumper()
+        driverController
+                .rightBumper()
                 .and(driverController.rightTrigger().negate())
                 .and(driverController.leftTrigger().negate())
-                        .whileTrue(manipulatorEject);
+                .whileTrue(manipulatorEject);
 
         // Auto align & Shoot
-        driverController.rightBumper()
+        driverController
+                .rightBumper()
                 .and(driverController.leftTrigger())
                 .onTrue(setAlignLeft)
                 .and(new Trigger(() -> !algaeMode))
@@ -290,9 +289,9 @@ public class RobotContainer {
                         Commands.either(
                                 autoAlignToReef,
                                 manipulatorEject,
-                                () -> drive.isAlignedToReef() && elevator.isAtSetpoint()
-                                ));
-        driverController.rightBumper()
+                                () -> drive.isAlignedToReef() && elevator.isAtSetpoint()));
+        driverController
+                .rightBumper()
                 .and(driverController.rightTrigger())
                 .onTrue(setAlignRight)
                 .whileTrue(
@@ -301,39 +300,29 @@ public class RobotContainer {
                                 Commands.either(
                                         autoAlignToProcessor,
                                         manipulatorEject,
-                                        () -> drive.isAlignedToReef() && elevator.isAtSetpoint()
-                                ),
+                                        () -> drive.isAlignedToReef() && elevator.isAtSetpoint()),
                                 Commands.either(
                                         autoAlignToReef,
                                         manipulatorEject,
-                                        () -> drive.isAlignedToReef() && elevator.isAtSetpoint()
-                                ),
-                        () -> algaeMode
-                        ));
+                                        () -> drive.isAlignedToReef() && elevator.isAtSetpoint()),
+                                () -> algaeMode));
 
         // Auto align
-        // TODO its probably not great to set reef to left if in algae mode, but it shouldn't conflict with anything
+        // TODO its probably not great to set reef to left if in algae mode, but it shouldn't
+        // conflict with anything
         driverController
                 .leftTrigger()
                 .onTrue(setAlignLeft)
                 .whileTrue(
                         new ConditionalCommand(
                                 // TODO replace with auto align algae
-                                Commands.none(),
-                                autoAlignToReef,
-                                () -> algaeMode
-                        )
-                );
+                                Commands.none(), autoAlignToReef, () -> algaeMode));
         driverController
                 .rightTrigger()
                 .onTrue(setAlignRight)
                 .whileTrue(
                         new ConditionalCommand(
-                                autoAlignToProcessor,
-                                autoAlignToReef,
-                                () -> algaeMode
-                        )
-                );
+                                autoAlignToProcessor, autoAlignToReef, () -> algaeMode));
 
         // OPERATOR CONTROLLER
         // Elevator
