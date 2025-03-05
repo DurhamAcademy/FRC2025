@@ -35,8 +35,8 @@ public class ElevatorConstants {
     // the distance between the floor and the bottom of the elevator
     public static final double elevatorBaseHeight = 4.750;
 
-    public static final double elevatorMaxVelocity = Units.metersToInches(1); // 0.3 m/s
-    public static final double elevatorMaxAcceleration = Units.metersToInches(1); // 0.3 m/s
+    public static final double elevatorMaxVelocity = Units.metersToInches(1); // 1 m/s
+    public static final double elevatorMaxAcceleration = Units.metersToInches(1); // 1 m/s
     public static final double minHeight = ZERO;
     public static final double maxHeight = L4;
 

@@ -116,7 +116,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
-        Logger.recordOutput("Elevator/current", primaryMotor.getOutputCurrent());
+        inputs.current = primaryMotor.getOutputCurrent();
         inputs.isLimitSwitchPressed = !limitSwitch.get(); // limit switch is inverted
         inputs.leftHeightInches = primaryEncoder.getPosition();
         inputs.rightHeightInches = followerEncoder.getPosition();
@@ -138,7 +138,9 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
         // setting the goal state of the trapezoid profile to the new target height
         goalState = new TrapezoidProfile.State(targetHeightInches, 0);
-        currentState = new TrapezoidProfile.State(primaryEncoder.getPosition(), 0);
+        currentState =
+                new TrapezoidProfile.State(
+                        primaryEncoder.getPosition(), primaryEncoder.getVelocity());
     }
 
     /**
@@ -151,7 +153,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         currentState = profile.calculate(0.02, currentState, goalState);
 
         double ffVolts = feedForward.calculate(currentState.velocity);
-        ;
 
         // Use the profiler's position as the target for the motor controller
         Logger.recordOutput("Elevator/ProfilerVelocity", currentState.velocity);

@@ -316,6 +316,7 @@ public class RobotContainer {
                 });
 
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
+
         SmartDashboard.putData(
                 "Override",
                 builder -> {

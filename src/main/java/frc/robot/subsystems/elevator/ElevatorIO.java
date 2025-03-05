@@ -14,6 +14,7 @@ public interface ElevatorIO {
         public boolean isAtTargetLevel;
         public double leftVoltage;
         public double rightVoltage;
+        public double current;
     }
 
     /** Update the set of loggable inputs. */
