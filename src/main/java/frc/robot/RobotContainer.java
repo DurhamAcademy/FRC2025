@@ -264,7 +264,7 @@ public class RobotContainer {
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-        // Intake from HP
+        // Intake from HP / Intake algae
         driverController
             .leftTrigger()
             .whileTrue(
@@ -275,7 +275,7 @@ public class RobotContainer {
                     )
             );
 
-        // Shoot coral/algae
+        // Shoot coral / algae
         driverController.rightTrigger()
                 .and(driverController.rightBumper().negate())
                 .and(driverController.leftBumper().negate())
