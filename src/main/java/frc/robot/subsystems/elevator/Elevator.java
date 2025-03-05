@@ -37,12 +37,12 @@ public class Elevator extends SubsystemBase {
     private boolean hasZeroed = false;
 
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
+        ZERO(ElevatorConstants.ZERO, WristConstants.ALGAE_IDLE),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
-        L1(ElevatorConstants.L1, WristConstants.LOWER_ALGAE_REMOVAL),
-        L2(ElevatorConstants.ZERO, WristConstants.L2),
-        L3(ElevatorConstants.ZERO, WristConstants.L3),
-        L4(ElevatorConstants.ZERO, WristConstants.NET),
+        L1(ElevatorConstants.L1, WristConstants.L1),
+        L2(ElevatorConstants.L2, WristConstants.L2),
+        L3(ElevatorConstants.L3, WristConstants.L3),
+        L4(ElevatorConstants.L4, WristConstants.L4),
         NET(ElevatorConstants.L4, WristConstants.NET),
         PROCESSOR(ElevatorConstants.L1, WristConstants.PROCESSOR),
         LOWER_ALGAE_REMOVAL(
@@ -245,6 +245,14 @@ public class Elevator extends SubsystemBase {
 
     public void setVoltage(double voltage) {
         elevatorIO.setVoltage(voltage);
+    }
+
+    public void stopElevator() {
+        elevatorIO.stopMotors();
+    }
+
+    public void stopWrist() {
+        wristIO.stopMotors();
     }
 
     /**
