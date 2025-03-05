@@ -276,14 +276,14 @@ public class RobotContainer {
             );
 
         // Shoot coral / algae
-        driverController.rightTrigger()
-                .and(driverController.rightBumper().negate())
-                .and(driverController.leftBumper().negate())
+        driverController.rightBumper()
+                .and(driverController.rightTrigger().negate())
+                .and(driverController.leftTrigger().negate())
                         .whileTrue(manipulatorEject);
 
         // Auto align & Shoot
-        driverController.rightTrigger()
-                .and(driverController.leftBumper())
+        driverController.rightBumper()
+                .and(driverController.leftTrigger())
                 .onTrue(setAlignLeft)
                 .and(new Trigger(() -> !algaeMode))
                 .whileTrue(
@@ -292,8 +292,8 @@ public class RobotContainer {
                                 manipulatorEject,
                                 () -> drive.isAlignedToReef() && elevator.isAtSetpoint()
                                 ));
-        driverController.rightTrigger()
-                .and(driverController.rightBumper())
+        driverController.rightBumper()
+                .and(driverController.rightTrigger())
                 .onTrue(setAlignRight)
                 .whileTrue(
                         new ConditionalCommand(
@@ -314,7 +314,7 @@ public class RobotContainer {
         // Auto align
         // TODO its probably not great to set reef to left if in algae mode, but it shouldn't conflict with anything
         driverController
-                .leftBumper()
+                .leftTrigger()
                 .onTrue(setAlignLeft)
                 .whileTrue(
                         new ConditionalCommand(
@@ -325,7 +325,7 @@ public class RobotContainer {
                         )
                 );
         driverController
-                .rightBumper()
+                .rightTrigger()
                 .onTrue(setAlignRight)
                 .whileTrue(
                         new ConditionalCommand(
