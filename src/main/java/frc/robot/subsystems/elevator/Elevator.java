@@ -1,6 +1,8 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.drive.DriveConstants.levelFourSpeedLimit;
+import static frc.robot.subsystems.drive.DriveConstants.maxSpeedLimitMetersPerSec;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
@@ -35,12 +37,12 @@ public class Elevator extends SubsystemBase {
     private boolean hasZeroed = false;
 
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
+        ZERO(ElevatorConstants.ZERO, WristConstants.ALGAE_IDLE),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
-        L1(ElevatorConstants.L1, WristConstants.LOWER_ALGAE_REMOVAL),
-        L2(ElevatorConstants.ZERO, WristConstants.L2),
-        L3(ElevatorConstants.ZERO, WristConstants.L3),
-        L4(ElevatorConstants.ZERO, WristConstants.NET),
+        L1(ElevatorConstants.L1, WristConstants.L1),
+        L2(ElevatorConstants.L2, WristConstants.L2),
+        L3(ElevatorConstants.L3, WristConstants.L3),
+        L4(ElevatorConstants.L4, WristConstants.L4),
         NET(ElevatorConstants.L4, WristConstants.NET),
         PROCESSOR(ElevatorConstants.L1, WristConstants.PROCESSOR),
         LOWER_ALGAE_REMOVAL(
@@ -113,6 +115,8 @@ public class Elevator extends SubsystemBase {
         Logger.processInputs("Elevator", elevatorInputs);
         Logger.processInputs("Wrist", wristInputs);
 
+        updateDriveMaxVelocity();
+
         // if wrist was previously restricted, but no longer needs to be
         if (wristRestricted && !isWristRestricted()) {
             // set the wrist target angle to the saved value
@@ -142,6 +146,12 @@ public class Elevator extends SubsystemBase {
 
     public void setElevatorTargetHeight(double heightInches) {
         elevatorIO.setTargetHeightInches(heightInches);
+    }
+
+    public void updateDriveMaxVelocity() {
+        double slope =
+                (levelFourSpeedLimit - maxSpeedLimitMetersPerSec) / ElevatorConstants.maxHeight;
+        drive.setMaxVelocity(slope * elevatorInputs.leftHeightInches + maxSpeedLimitMetersPerSec);
     }
 
     /**
@@ -235,6 +245,14 @@ public class Elevator extends SubsystemBase {
 
     public void setVoltage(double voltage) {
         elevatorIO.setVoltage(voltage);
+    }
+
+    public void stopElevator() {
+        elevatorIO.stopMotors();
+    }
+
+    public void stopWrist() {
+        wristIO.stopMotors();
     }
 
     /**
