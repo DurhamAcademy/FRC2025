@@ -56,7 +56,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
-    public static double maxUsableSpeedMetersPerSec = maxSpeedMetersPerSec;
+    public static double currentSpeedLimitMetersPerSec = maxSpeedLimitMetersPerSec;
     private final GyroIO gyroIO;
     private final Alert gyroDisconnectedAlert =
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
@@ -238,7 +238,7 @@ public class Drive extends SubsystemBase {
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxUsableSpeedMetersPerSec);
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, currentSpeedLimitMetersPerSec);
 
         // Log unoptimized setpoints
         Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
@@ -364,12 +364,12 @@ public class Drive extends SubsystemBase {
 
     /** Returns the maximum linear speed in meters per sec. */
     public double getMaxLinearSpeedMetersPerSec() {
-        return maxUsableSpeedMetersPerSec;
+        return currentSpeedLimitMetersPerSec;
     }
 
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
-        return maxUsableSpeedMetersPerSec / driveBaseRadius;
+        return currentSpeedLimitMetersPerSec / driveBaseRadius;
     }
 
     public Module getModule(int index) {
@@ -489,12 +489,16 @@ public class Drive extends SubsystemBase {
 
     public double getMaxVelocity() {
         clampMaxUsableSpeed();
-        return maxUsableSpeedMetersPerSec;
+        return currentSpeedLimitMetersPerSec;
+    }
+
+    public void setMaxVelocity(double maxVelocity) {
+        currentSpeedLimitMetersPerSec = maxVelocity;
     }
 
     public void clampMaxUsableSpeed() {
-        maxUsableSpeedMetersPerSec =
-                MathUtil.clamp(maxUsableSpeedMetersPerSec, 0.0, maxSpeedMetersPerSec);
+        currentSpeedLimitMetersPerSec =
+                MathUtil.clamp(currentSpeedLimitMetersPerSec, 0.0, maxSpeedLimitMetersPerSec);
     }
 
     public Pose2d getProcessor() {

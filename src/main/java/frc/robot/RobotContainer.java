@@ -14,20 +14,24 @@
 package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.*;
+import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.elevator.Elevator;
@@ -35,6 +39,14 @@ import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.manipulator.Manipulator;
+import frc.robot.subsystems.manipulator.ManipulatorIO;
+import frc.robot.subsystems.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.manipulator.ManipulatorIOSparkFlex;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -49,6 +61,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
+    private final Manipulator manipulator;
+    private final Intake intake;
     private final Elevator elevator;
     private SwerveDriveSimulation driveSimulation = null;
 
@@ -65,6 +79,8 @@ public class RobotContainer {
     private double xDirect = 1;
     private double yDirect = 1;
 
+    public boolean algaeMode = true;
+
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
@@ -79,6 +95,9 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
+
+                manipulator = new Manipulator(new ManipulatorIOSparkFlex());
+                intake = new Intake(new IntakeIOSparkMax());
                 elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
                 break;
 
@@ -99,6 +118,8 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
                                 driveSimulation::setSimulationWorldPose,
                                 this);
+                manipulator = new Manipulator(new ManipulatorIOSim());
+                intake = new Intake(new IntakeIOSim(driveSimulation));
                 // TODO: Elevator SIM
                 elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
 
@@ -124,9 +145,16 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
+
+                intake = new Intake(new IntakeIO() {});
+                manipulator = new Manipulator(new ManipulatorIO() {});
                 elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
                 break;
         }
+
+        NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
+        NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
+        NamedCommands.registerCommand("Algae Intake", ManipulatorCommands.algaeIntake(manipulator));
 
         NamedCommands.registerCommand(
                 "Elevator L1", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
@@ -249,19 +277,47 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
         // Elevator
+
+        // TODO ask natalie for confirmation on control scheme
+        operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
+        operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
+
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
+
         operatorController
-                .a()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)); // L1 Coral
+                .povLeft()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.NET),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1),
+                                () -> algaeMode));
+
         operatorController
-                .x()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2 Coral
+                .povDown()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
+                                () -> algaeMode));
+
         operatorController
-                .b()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3 Coral
+                .povRight()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.PROCESSOR),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3),
+                                () -> algaeMode));
+
         operatorController
-                .y()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4 Coral
+                .povUp()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4),
+                                () -> algaeMode));
     }
 
     /**
@@ -294,6 +350,26 @@ public class RobotContainer {
         Logger.recordOutput(
                 "FieldSimulation/Algae",
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    }
+
+    /** For SIM only, adds a coral to the intake if the robot is at the human player station */
+    // TODO: FIX INTAKE SIM
+    public void intakeCoralIfAtStation() {
+        if (DriverStation.getAlliance().isEmpty()) return;
+        final double DISTANCE_THRESHOLD = 1.0;
+        Pose2d[] HpStations =
+                PosesOfAllHumanPlayerStations(
+                                Constants.getAllianceColor(DriverStation.getAlliance().get()))
+                        .toArray(new Pose2d[0]);
+        Logger.recordOutput("Intake/HumanPlayers", HpStations);
+        for (Pose2d stationPose : HpStations) {
+            Pose2d robotPose = drive.getPose();
+            double distance = robotPose.getTranslation().getDistance(stationPose.getTranslation());
+            Logger.recordOutput("Intake/HumanPlayerDist" + stationPose.toString(), distance);
+            if (distance < DISTANCE_THRESHOLD) {
+                // intake.simAddCoral(robotPose);
+            }
+        }
     }
 
     public SwerveDriveSimulation getDriveSimulation() {
@@ -352,8 +428,8 @@ public class RobotContainer {
                     builder.setSmartDashboardType("double");
                     builder.addDoubleProperty(
                             "Max",
-                            () -> drive.getMaxVelocity(),
-                            val -> Drive.maxUsableSpeedMetersPerSec = val);
+                            drive::getMaxVelocity,
+                            val -> Drive.currentSpeedLimitMetersPerSec = val);
                 });
         SmartDashboard.putData(
                 "Swerve Drive",
