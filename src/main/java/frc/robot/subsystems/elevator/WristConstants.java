@@ -53,7 +53,8 @@ public class WristConstants {
             2 * Math.PI / wristChainReduction; // Rotations => Radians
     public static final double wristAbsoluteEncoderVelocityFactor =
             2 * Math.PI / 60.0 / wristChainReduction; // RPM => Radians per second
-    public static final double wristMotorReduction = 19.4133;
+
+    public static final double wristMotorReduction = 3 * 4 * 9 * (50.0 / 52.0) * wristChainReduction;
     public static final double wristRelativeEncoderReduction = 2 * Math.PI / wristMotorReduction;
     public static final double wristRelativeEncoderVelocityFactor =
             2 * Math.PI / 60.0 / wristMotorReduction; // RPM => Radians per second
