@@ -12,8 +12,8 @@ import frc.robot.subsystems.lights.LEDs;
 public class LEDCommands {
     public static Command flameCommand(LEDs leds, double brightness) {
         if (leds == null) return none();
-        if (leds.getCandle() == null) return idle(leds);
         CANdle candle = leds.getCandle();
+        if (candle == null) return idle(leds);
         return startEnd(
                 () -> {
                     candle.animate(new RgbFadeAnimation(1.0, 0.5, candleLength, 0));
