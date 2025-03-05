@@ -28,9 +28,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
@@ -235,49 +237,107 @@ public class RobotContainer {
                         elevator::hasZeroed));
 
         // DRIVER CONTROLLER
-        // Lock to 0° when A button is held
-        driverController
-                .a()
-                .whileTrue(
-                        DriveCommands.joystickDriveAtAngle(
-                                drive,
-                                () -> (yDirect * driverController.getLeftY()),
-                                () -> (xDirect * driverController.getLeftX()),
-                                Rotation2d::new));
+
+        // Automatically angle to HP & run intake
+        Command intakeCoral =  Commands.parallel(
+                DriveCommands.autoAlignToHumanPlayerStation(
+                        drive,
+                        () -> (yDirect * driverController.getLeftY()),
+                        () -> (xDirect * driverController.getLeftX())),
+                IntakeCommands.intakeCoral(intake, manipulator));
+
+        Command intakeAlgae =  ManipulatorCommands.algaeIntake(manipulator);
+
+        Command manipulatorEject =  ManipulatorCommands.eject(manipulator);
+
+        Command autoAlignToReef = DriveCommands.autoAlignToLocation(
+                drive, DriveCommands.autoAlignLocations.reef);
+
+        Command autoAlignToProcessor = DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.processor);
+
+        Command setAlignLeft = Commands.runOnce(
+                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT));
+
+        Command setAlignRight = Commands.runOnce(
+                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT));
 
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-        // Align to the closest reef
+        // Intake from HP
+        driverController
+            .leftTrigger()
+            .whileTrue(
+                    new ConditionalCommand(
+                            intakeAlgae,
+                            intakeCoral,
+                            () -> algaeMode
+                    )
+            );
+
+        // Shoot coral/algae
+        driverController.rightTrigger()
+                .and(driverController.rightBumper().negate())
+                .and(driverController.leftBumper().negate())
+                        .whileTrue(manipulatorEject);
+
+        // Auto align & Shoot
+        driverController.rightTrigger()
+                .and(driverController.leftBumper())
+                .onTrue(setAlignLeft)
+                .and(new Trigger(() -> !algaeMode))
+                .whileTrue(
+                        Commands.either(
+                                autoAlignToReef,
+                                manipulatorEject,
+                                () -> drive.isAlignedToReef() && elevator.isAtSetpoint()
+                                ));
+        driverController.rightTrigger()
+                .and(driverController.rightBumper())
+                .onTrue(setAlignRight)
+                .whileTrue(
+                        new ConditionalCommand(
+                                // TODO make this use isAlignedToLocation with new PR
+                                Commands.either(
+                                        autoAlignToProcessor,
+                                        manipulatorEject,
+                                        () -> drive.isAlignedToReef() && elevator.isAtSetpoint()
+                                ),
+                                Commands.either(
+                                        autoAlignToReef,
+                                        manipulatorEject,
+                                        () -> drive.isAlignedToReef() && elevator.isAtSetpoint()
+                                ),
+                        () -> algaeMode
+                        ));
+
+        // Auto align
+        // TODO its probably not great to set reef to left if in algae mode, but it shouldn't conflict with anything
         driverController
                 .leftBumper()
-                .onTrue(
-                        Commands.runOnce(
-                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT)))
+                .onTrue(setAlignLeft)
                 .whileTrue(
-                        DriveCommands.autoAlignToReef(
-                                drive, DriveCommands.autoAlignLocations.reef));
+                        new ConditionalCommand(
+                                // TODO replace with auto align algae
+                                Commands.none(),
+                                autoAlignToReef,
+                                () -> algaeMode
+                        )
+                );
         driverController
                 .rightBumper()
-                .onTrue(
-                        Commands.runOnce(
-                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT)))
+                .onTrue(setAlignRight)
                 .whileTrue(
-                        DriveCommands.autoAlignToReef(
-                                drive, DriveCommands.autoAlignLocations.reef));
-
-        driverController
-                .y()
-                .whileTrue(
-                        DriveCommands.autoAlignToHumanPlayerStation(
-                                drive,
-                                () -> (yDirect * driverController.getLeftY()),
-                                () -> (xDirect * driverController.getLeftX())));
+                        new ConditionalCommand(
+                                autoAlignToProcessor,
+                                autoAlignToReef,
+                                () -> algaeMode
+                        )
+                );
 
         // OPERATOR CONTROLLER
         // Elevator
 
-        // TODO ask natalie for confirmation on control scheme
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
