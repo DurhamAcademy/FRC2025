@@ -132,11 +132,86 @@ public class LEDCommands {
      * @return
      */
     public static Command aligned(LEDs leds, double brightness) {
-        return null;
+        if (leds == null) return none();
+        if (leds.getCandle() == null) return idle(leds);
+        CANdle candle = leds.getCandle();
+        return startEnd(
+                () -> {
+                    candle.animate(new StrobeAnimation(0,255,0, 0,0,1),0);
+                    candle.animate(new StrobeAnimation(0,255,0,0,0,1),1);
+                    candle.animate(new StrobeAnimation(0,255,0,0,0,1),2);
+                    candle.animate(new StrobeAnimation(0,255,0,0,0,1),3);
+                },
+                () -> {
+                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
+                        candle.clearAnimation(i);
+                    }
+                }, leds
+        );
     }
 
     public static Command hasCoral(LEDs leds, double brightness) {
-        return null;
+        if (leds == null) return none();
+        if (leds.getCandle() == null) return idle(leds);
+        CANdle candle = leds.getCandle();
+
+        return startEnd(
+                () -> {
+                    candle.animate(
+                            new LarsonAnimation(
+                                    255,
+                                    192,
+                                    203,
+                                    0,
+                                    0,
+                                    stripLength,
+                                    LarsonAnimation.BounceMode.Back,
+                                    stripLength,
+                                    candleLength),
+                            0);
+                    candle.animate(
+                            new LarsonAnimation(
+                                    255,
+                                    192,
+                                    203,
+                                    0,
+                                    0,
+                                    stripLength,
+                                    LarsonAnimation.BounceMode.Front,
+                                    stripLength,
+                                    candleLength + stripLength),
+                            1);
+                    candle.animate(
+                            new LarsonAnimation(
+                                    255,
+                                    192,
+                                    203,
+                                    0,
+                                    0,
+                                    stripLength,
+                                    LarsonAnimation.BounceMode.Back,
+                                    stripLength,
+                                    candleLength + stripLength * 2),
+                            2);
+                    candle.animate(
+                            new LarsonAnimation(
+                                    255,
+                                    192,
+                                    203,
+                                    0,
+                                    0,
+                                    stripLength,
+                                    LarsonAnimation.BounceMode.Front,
+                                    stripLength,
+                                    candleLength + stripLength * 3),
+                            3);
+                },
+                () -> {
+                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
+                        candle.clearAnimation(i);
+                    }
+                },
+                leds);
     }
 
     public static Command ryanLandisBaurothTheUltimateKingHeIsMyEternalGoat(
