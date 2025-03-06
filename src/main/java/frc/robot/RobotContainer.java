@@ -231,11 +231,8 @@ public class RobotContainer {
         // if not, zero the elevator for the first time
         // todo untested
         elevator.setDefaultCommand(
-                either(
-                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
-                                .onlyIf(drive::isTipping),
-                        ElevatorCommands.zeroElevator(elevator),
-                        elevator::hasZeroed));
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
+                        .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
         // DRIVER CONTROLLER
 
@@ -265,20 +262,23 @@ public class RobotContainer {
         Command setAlignRight =
                 Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT));
 
+        Command stopManipulator = ManipulatorCommands.runManipulator(manipulator, 0);
+
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Intake from HP / Intake algae
         driverController
                 .leftTrigger()
-                .whileTrue(new ConditionalCommand(intakeAlgae, intakeCoral, () -> algaeMode));
+                .whileTrue(Commands.either(intakeAlgae, intakeCoral, () -> algaeMode));
 
         // Shoot coral / algae
         driverController
                 .rightBumper()
-                .and(driverController.rightTrigger().negate())
                 .and(driverController.leftTrigger().negate())
-                .whileTrue(manipulatorEject);
+                .and(driverController.rightTrigger().negate())
+                .whileTrue(manipulatorEject)
+                .onFalse(stopManipulator);
 
         // Auto align & Shoot
         driverController
@@ -296,7 +296,7 @@ public class RobotContainer {
                 .and(driverController.rightTrigger())
                 .onTrue(setAlignRight)
                 .whileTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 // TODO make this use isAlignedToLocation with new PR
                                 Commands.either(
                                         autoAlignToProcessor,
@@ -315,15 +315,13 @@ public class RobotContainer {
                 .leftTrigger()
                 .onTrue(setAlignLeft)
                 .whileTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 // TODO replace with auto align algae
                                 Commands.none(), autoAlignToReef, () -> algaeMode));
         driverController
                 .rightTrigger()
                 .onTrue(setAlignRight)
-                .whileTrue(
-                        new ConditionalCommand(
-                                autoAlignToProcessor, autoAlignToReef, () -> algaeMode));
+                .whileTrue(Commands.either(autoAlignToProcessor, autoAlignToReef, () -> algaeMode));
 
         // OPERATOR CONTROLLER
         // Elevator
@@ -351,7 +349,6 @@ public class RobotContainer {
                                 () -> algaeMode));
 
         operatorController.leftTrigger().onTrue(IntakeCommands.intakeCoral(intake, manipulator));
-        // operatorController.leftTrigger().onTrue(ManipulatorCommands.intakeCoral(manipulator));
 
         operatorController
                 .povRight()

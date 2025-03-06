@@ -19,7 +19,7 @@ public class WristConstants {
     public static final double L1 = Math.toRadians(-30.0);
     public static final double L2 = Math.toRadians(-35.0);
     public static final double L3 = Math.toRadians(-35.0);
-    public static final double L4 = Math.toRadians(-25.0);
+    public static final double L4 = Math.toRadians(-45.0);
     public static final double LOWER_ALGAE_REMOVAL = Math.toRadians(0.0);
     public static final double UPPER_ALGAE_REMOVAL = Math.toRadians(0.0);
     public static final double NET = Math.toRadians(30.0);
