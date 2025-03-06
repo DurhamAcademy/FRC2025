@@ -28,7 +28,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
@@ -280,44 +279,47 @@ public class RobotContainer {
                 .whileTrue(manipulatorEject)
                 .onFalse(stopManipulator);
 
-        // Auto align & Shoot
-        driverController
-                .rightBumper()
-                .and(driverController.leftTrigger())
-                .onTrue(setAlignLeft)
-                .and(new Trigger(() -> !algaeMode))
-                .whileTrue(
-                        Commands.either(
-                                autoAlignToReef,
-                                manipulatorEject,
-                                () -> drive.isAlignedToReef() && elevator.isAtSetpoint()));
-        driverController
-                .rightBumper()
-                .and(driverController.rightTrigger())
-                .onTrue(setAlignRight)
-                .whileTrue(
-                        Commands.either(
-                                // TODO make this use isAlignedToLocation with new PR
-                                Commands.either(
-                                        autoAlignToProcessor,
-                                        manipulatorEject,
-                                        () -> drive.isAlignedToReef() && elevator.isAtSetpoint()),
-                                Commands.either(
-                                        autoAlignToReef,
-                                        manipulatorEject,
-                                        () -> drive.isAlignedToReef() && elevator.isAtSetpoint()),
-                                () -> algaeMode));
+        //        // Auto align & Shoot
+        //        driverController
+        //                .rightBumper()
+        //                .and(driverController.leftTrigger())
+        //                .onTrue(setAlignLeft)
+        //                .and(new Trigger(() -> !algaeMode))
+        //                .whileTrue(
+        //                        Commands.either(
+        //                                autoAlignToReef,
+        //                                manipulatorEject,
+        //                                () -> drive.isAlignedToReef() &&
+        // elevator.isAtSetpoint()));
+        //        driverController
+        //                .rightBumper()
+        //                .and(driverController.rightTrigger())
+        //                .onTrue(setAlignRight)
+        //                .whileTrue(
+        //                        Commands.either(
+        //                                // TODO make this use isAlignedToLocation with new PR
+        //                                Commands.either(
+        //                                        autoAlignToProcessor,
+        //                                        manipulatorEject,
+        //                                        () -> drive.isAlignedToReef() &&
+        // elevator.isAtSetpoint()),
+        //                                Commands.either(
+        //                                        autoAlignToReef,
+        //                                        manipulatorEject,
+        //                                        () -> drive.isAlignedToReef() &&
+        // elevator.isAtSetpoint()),
+        //                                () -> algaeMode));
 
         // Auto align
         // TODO its probably not great to set reef to left if in algae mode, but it shouldn't
         // conflict with anything
-        driverController
-                .leftTrigger()
-                .onTrue(setAlignLeft)
-                .whileTrue(
-                        Commands.either(
-                                // TODO replace with auto align algae
-                                Commands.none(), autoAlignToReef, () -> algaeMode));
+        //        driverController
+        //                .leftTrigger()
+        //                .onTrue(setAlignLeft)
+        //                .whileTrue(
+        //                        Commands.either(
+        //                                // TODO replace with auto align algae
+        //                                Commands.none(), autoAlignToReef, () -> algaeMode));
         driverController
                 .rightTrigger()
                 .onTrue(setAlignRight)

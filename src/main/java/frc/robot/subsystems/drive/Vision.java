@@ -36,8 +36,7 @@ public class Vision extends SubsystemBase {
                                     new Translation3d(0.0, 0.306, -0.240),
                                     new Rotation3d(0.0, Math.toRadians(75), 0.0)), // Camera pose
                             new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
-                    )
-            );
+                            ));
             cameraConfigs.add(
                     new CameraConfig(
                             "limelight_back", // camera name
@@ -45,8 +44,7 @@ public class Vision extends SubsystemBase {
                                     new Translation3d(0.252, -0.138, -0.190),
                                     new Rotation3d(0.0, Math.toRadians(45), 0.0)), // Camera pose
                             new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
-                    )
-            );
+                            ));
         }
 
         // Initialize pose estimator
