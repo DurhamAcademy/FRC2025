@@ -27,7 +27,7 @@ public class IntakeCommands {
     }
 
     public static Command runIntake(Intake intake) {
-        return Commands.runOnce(() -> intake.setVoltage(3.0));
+        return Commands.runOnce(() -> intake.setVoltage(2.0));
     }
 
     public static Command stopIntake(Intake intake) {
