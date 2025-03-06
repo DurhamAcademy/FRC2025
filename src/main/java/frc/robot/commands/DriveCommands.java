@@ -502,7 +502,7 @@ public class DriveCommands {
      * @param drive subsystem
      * @return Commands.repeatingSequence
      */
-    public static Command autoAlignToReef(Drive drive, autoAlignLocations location) {
+    public static Command autoAlignToLocation(Drive drive, autoAlignLocations location) {
         return Commands.repeatingSequence(
                         new ConditionalCommand(
                                 // goalPose > .5 m away
