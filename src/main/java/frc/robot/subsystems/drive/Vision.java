@@ -31,7 +31,7 @@ public class Vision extends SubsystemBase {
         if (Constants.currentMode != Constants.Mode.SIM) {
             cameraConfigs.add(
                     new CameraConfig(
-                            "limelight_front", // camera name
+                            "limelight-front", // camera name
                             new Transform3d(
                                     new Translation3d(0.0, 0.306, -0.240),
                                     new Rotation3d(0.0, Math.toRadians(75), 0.0)), // Camera pose
@@ -39,7 +39,7 @@ public class Vision extends SubsystemBase {
                             ));
             cameraConfigs.add(
                     new CameraConfig(
-                            "limelight_back", // camera name
+                            "limelight-back", // camera name
                             new Transform3d(
                                     new Translation3d(0.252, -0.138, -0.190),
                                     new Rotation3d(0.0, Math.toRadians(45), 0.0)), // Camera pose
