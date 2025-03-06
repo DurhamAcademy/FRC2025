@@ -26,4 +26,6 @@ public interface ManipulatorIO {
     public default void setRollerVoltage(double volts) {}
 
     public default void updateProfile() {}
+
+    public default void stopMotors() {}
 }

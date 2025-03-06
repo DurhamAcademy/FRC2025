@@ -37,7 +37,7 @@ public class Elevator extends SubsystemBase {
     private boolean hasZeroed = false;
 
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ZERO, WristConstants.ALGAE_IDLE),
+        ZERO(ElevatorConstants.ZERO, WristConstants.INTAKE),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
         L1(ElevatorConstants.L1, WristConstants.L1),
         L2(ElevatorConstants.L2, WristConstants.L2),

@@ -3,9 +3,9 @@ package frc.robot.subsystems.elevator;
 public class WristConstants {
     public static final int wristCanId = 12;
 
-    public static double wristKp = 0.4;
+    public static double wristKp = 6; // .4
     public static final double wristKi = 0.0;
-    public static double wristKd = 0.3;
+    public static double wristKd = 1; // .3
 
     public static final double wristKs = 0.0;
     public static double wristKg = 0.2;

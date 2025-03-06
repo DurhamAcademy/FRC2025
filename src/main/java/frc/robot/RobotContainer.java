@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
@@ -301,6 +302,9 @@ public class RobotContainer {
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
                                 () -> algaeMode));
 
+        operatorController.leftTrigger().onTrue(IntakeCommands.intakeCoral(intake, manipulator));
+        // operatorController.leftTrigger().onTrue(ManipulatorCommands.intakeCoral(manipulator));
+
         operatorController
                 .povRight()
                 .onTrue(
@@ -381,6 +385,8 @@ public class RobotContainer {
         elevator.stopWrist();
         elevator.setWristTargetAngle(elevator.getWristAngle());
         elevator.setElevatorTargetHeight(0);
+        intake.stopMotors();
+        manipulator.stopMotors();
     }
 
     public void sendDataToSmartDashboard() {
@@ -431,6 +437,7 @@ public class RobotContainer {
                             drive::getMaxVelocity,
                             val -> Drive.currentSpeedLimitMetersPerSec = val);
                 });
+
         SmartDashboard.putData(
                 "Swerve Drive",
                 builder -> {
