@@ -33,15 +33,15 @@ public class Vision extends SubsystemBase {
                     new CameraConfig(
                             "limelight-front", // camera name
                             new Transform3d(
-                                    new Translation3d(0.0, 0.306, -0.240),
-                                    new Rotation3d(0.0, Math.toRadians(75), 0.0)), // Camera pose
+                                    new Translation3d(0.306, 0.0, 0.240),
+                                    new Rotation3d(0.0, Math.toRadians(15), 0.0)), // Camera pose
                             new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
                             ));
             cameraConfigs.add(
                     new CameraConfig(
                             "limelight-back", // camera name
                             new Transform3d(
-                                    new Translation3d(0.252, -0.138, -0.190),
+                                    new Translation3d(-0.138, -0.252, 0.190),
                                     new Rotation3d(0.0, Math.toRadians(45), 0.0)), // Camera pose
                             new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
                             ));

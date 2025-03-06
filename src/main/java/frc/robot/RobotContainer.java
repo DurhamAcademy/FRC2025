@@ -45,10 +45,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
-import frc.robot.subsystems.manipulator.Manipulator;
-import frc.robot.subsystems.manipulator.ManipulatorIO;
-import frc.robot.subsystems.manipulator.ManipulatorIOSim;
-import frc.robot.subsystems.manipulator.ManipulatorIOSparkFlex;
+import frc.robot.subsystems.manipulator.*;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -347,6 +344,11 @@ public class RobotContainer {
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
+
+        driverController
+                .rightBumper()
+                .whileTrue(ManipulatorCommands.eject(manipulator))
+                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
 
         operatorController
                 .povLeft()
