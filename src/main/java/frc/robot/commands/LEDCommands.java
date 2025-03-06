@@ -137,17 +137,17 @@ public class LEDCommands {
         CANdle candle = leds.getCandle();
         return startEnd(
                 () -> {
-                    candle.animate(new StrobeAnimation(0,255,0, 0,0,1),0);
-                    candle.animate(new StrobeAnimation(0,255,0,0,0,1),1);
-                    candle.animate(new StrobeAnimation(0,255,0,0,0,1),2);
-                    candle.animate(new StrobeAnimation(0,255,0,0,0,1),3);
+                    candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, 1), 0);
+                    candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, 1), 1);
+                    candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, 1), 2);
+                    candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, 1), 3);
                 },
                 () -> {
                     for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
                         candle.clearAnimation(i);
                     }
-                }, leds
-        );
+                },
+                leds);
     }
 
     public static Command hasCoral(LEDs leds, double brightness) {
