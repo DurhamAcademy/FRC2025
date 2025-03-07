@@ -89,6 +89,11 @@ public class Drive extends SubsystemBase {
     public boolean overrideReefAutoAlign = false;
     public boolean overrideTipProtection = false;
 
+    public Constants.AlgaeConstants targetAlgae = Constants.AlgaeConstants.ONE;
+    public boolean overrideAlgaeAutoAlign = false;
+
+    public DriveCommands.autoAlignLocations currentAlignLocation;
+
     public Drive(
             GyroIO gyroIO,
             ModuleIO flModuleIO,
@@ -376,6 +381,7 @@ public class Drive extends SubsystemBase {
         return modules[index];
     }
 
+    // TODO figure this out
     public Constants.ReefConstants getClosestReef() {
         Constants.ReefConstants closestReef = Constants.ReefConstants.SIX;
         if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
@@ -501,6 +507,49 @@ public class Drive extends SubsystemBase {
                 MathUtil.clamp(currentSpeedLimitMetersPerSec, 0.0, maxSpeedLimitMetersPerSec);
     }
 
+    // take a drivecommands location var (from the enum)
+    public boolean isAlignedToLocation() {
+        boolean isAligned = false;
+        if (currentAlignLocation == DriveCommands.autoAlignLocations.reef) {
+            // gets reef goal pose
+            isAligned = isAlignedToReef();
+
+        } else if (currentAlignLocation == DriveCommands.autoAlignLocations.algae) {
+            isAligned = isAlignedToAlgae();
+
+        } else if (currentAlignLocation == DriveCommands.autoAlignLocations.processor) {
+            isAligned = isAlignedToProcessor();
+        }
+        Logger.recordOutput("Vision/alignedToLocation", isAligned);
+        return isAligned;
+    }
+
+    public boolean isAlignedToProcessor() {
+
+        // Overall condition to stop this command (robot
+        // must be at goal pose)
+        Pose2d currentPose = getPose();
+        Pose2d targetPose =
+                DriveCommands.calculateRobotTargetPose(
+                        this, DriveCommands.autoAlignLocations.processor);
+        // Calculate distance and rotation
+        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+        double rotationError =
+                Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
+
+        // Stop when BOTH distance and orientation are
+        // within the thresholds
+
+        boolean alignedToProcessor =
+                distance
+                                < Constants.coralInnerWidth
+                                        - Constants.reefPipeDiameter
+                                        - Units.inchesToMeters(.25)
+                        && rotationError < 2.0; // 2.5 inches and < 2 degrees
+        Logger.recordOutput("Vision/alignedToProcessor", alignedToProcessor);
+        return alignedToProcessor;
+    }
+
     public Pose2d getProcessor() {
         int alliance =
                 DriverStation.getAlliance().isPresent()
@@ -546,6 +595,96 @@ public class Drive extends SubsystemBase {
                         builder.setSmartDashboardType("Boolean");
                         builder.addBooleanProperty(
                                 "Target Reef" + index, () -> reefIndex + 1 == index, null);
+                    });
+        }
+    }
+
+    public Constants.AlgaeConstants getClosestTargetAlgae() {
+        Constants.AlgaeConstants closestAlgae = Constants.AlgaeConstants.ONE;
+        if (!overrideAlgaeAutoAlign && DriverStation.getAlliance().isPresent()) {
+            int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
+            // Find closest algae position to current pose
+            Pose2d estimatedAlgaePose =
+                    poseEstimator
+                            .getEstimatedPosition()
+                            .nearest(
+                                    Constants.LocationConstants.PosesOfAllAlgaeLocations(alliance));
+
+            // Find corresponding algae constant value
+            closestAlgae =
+                    Constants.LocationConstants.AlgaeLocations.entrySet().stream()
+                            .filter(entry -> entry.getValue()[alliance].equals(estimatedAlgaePose))
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(Constants.AlgaeConstants.SIX);
+        }
+        return closestAlgae;
+    }
+
+    public void setTargetAlgaeToClosest() {
+        Constants.AlgaeConstants oldTargetAlgae = targetAlgae;
+        targetAlgae = getClosestTargetAlgae();
+        if (oldTargetAlgae != targetAlgae) {
+            updateDashboardAlgaeVisualization(targetAlgae.ordinal());
+        }
+    }
+
+    public Pose2d getAlgaePose(Constants.AlgaeConstants algae) {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        return Constants.LocationConstants.AlgaeLocations.get(algae)[alliance];
+    }
+
+    public Pose2d getTargetAlgaePose() {
+        return getAlgaePose(targetAlgae);
+    }
+
+    public Constants.AlgaeConstants getTargetAlgae() {
+        return targetAlgae;
+    }
+
+    /**
+     * If robot is within 5 cm of
+     *
+     * @return boolean
+     */
+    public boolean isAlignedToAlgae() {
+
+        // Overall condition to stop this command (robot
+        // must be at goal pose)
+        Pose2d currentPose = getPose();
+        Pose2d targetPose =
+                DriveCommands.calculateRobotTargetPose(
+                        this, DriveCommands.autoAlignLocations.algae);
+        // Calculate distance and rotation
+        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+        double rotationError =
+                Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
+
+        // Stop when BOTH distance and orientation are
+        // within the thresholds
+
+        boolean alignedToAlgae =
+                distance
+                                < Constants.coralInnerWidth
+                                        - Constants.reefPipeDiameter
+                                        - Units.inchesToMeters(.25)
+                        && rotationError < 2.0; // 2.5 inches and < 2 degrees
+        Logger.recordOutput("Vision/alignedToAlgae", alignedToAlgae);
+        return alignedToAlgae;
+    }
+
+    public void updateDashboardAlgaeVisualization(int algaeIndex) {
+        for (int i = 1; i <= 12; i++) {
+            final int index = i;
+            SmartDashboard.putData(
+                    "Target Algae",
+                    builder -> {
+                        builder.setSmartDashboardType("Boolean");
+                        builder.addBooleanProperty(
+                                "Target Reef" + index, () -> algaeIndex + 1 == index, null);
                     });
         }
     }

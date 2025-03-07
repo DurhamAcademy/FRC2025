@@ -366,9 +366,14 @@ public class DriveCommands {
      */
     public static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
         Pose2d locationPose = new Pose2d();
+        drive.currentAlignLocation = location;
         if (location == autoAlignLocations.reef) {
             // gets reef goal pose
             locationPose = drive.getTargetReefPose();
+
+        } else if (location == autoAlignLocations.algae) {
+            locationPose = drive.getTargetAlgaePose();
+
         } else if (location == autoAlignLocations.processor) {
             locationPose = drive.getProcessor();
         }
@@ -397,6 +402,7 @@ public class DriveCommands {
 
     public enum autoAlignLocations {
         reef,
+        algae,
         processor
     }
 
@@ -527,7 +533,7 @@ public class DriveCommands {
                                     // true if distance > threshold distance (m)
                                     return distance > .5;
                                 }))
-                .until(drive::isAlignedToReef);
+                .until(drive::isAlignedToLocation);
     }
 
     /**

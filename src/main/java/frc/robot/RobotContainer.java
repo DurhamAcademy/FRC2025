@@ -323,7 +323,8 @@ public class RobotContainer {
                 .onTrue(setAlignLeft)
                 .whileTrue(
                         new ConditionalCommand(
-                                Commands.none(),
+                                DriveCommands.autoAlignToLocation(
+                                        drive, DriveCommands.autoAlignLocations.algae),
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.reef),
                                 () -> algaeMode));
@@ -333,7 +334,8 @@ public class RobotContainer {
                 .onTrue(setAlignRight)
                 .whileTrue(
                         new ConditionalCommand(
-                                Commands.none(),
+                                DriveCommands.autoAlignToLocation(
+                                        drive, DriveCommands.autoAlignLocations.processor),
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.reef),
                                 () -> algaeMode));
@@ -455,11 +457,17 @@ public class RobotContainer {
     }
 
     public void sendDataToSmartDashboard() {
+        Logger.recordOutput(
+                "Algea reaf",
+                Constants.LocationConstants.PosesOfAllAlgaeLocations(0).toArray(new Pose2d[0]));
+        Logger.recordOutput(
+                "red alliance",
+                Constants.LocationConstants.PosesOfAllAlgaeLocations(1).toArray(new Pose2d[0]));
         SmartDashboard.putData(
                 "Vision",
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
-                    builder.addBooleanProperty("alignedToReef", drive::isAlignedToReef, null);
+                    builder.addBooleanProperty("alignedToTarget", drive::isAlignedToLocation, null);
                 });
 
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
