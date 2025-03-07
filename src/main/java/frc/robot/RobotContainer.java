@@ -199,16 +199,38 @@ public class RobotContainer {
      */
     private void registerNamedCommands() {
         NamedCommands.registerCommand(
-                "Elevator L1", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
+                "Elevator L1",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)
+                        .repeatedly()
+                        .until(elevator::isAtSetpoint));
 
         NamedCommands.registerCommand(
-                "Elevator L2", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2));
+                "Elevator L2",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)
+                        .repeatedly()
+                        .until(elevator::isAtSetpoint));
 
         NamedCommands.registerCommand(
-                "Elevator L3", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3));
+                "Elevator L3",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)
+                        .repeatedly()
+                        .until(elevator::isAtSetpoint));
 
         NamedCommands.registerCommand(
-                "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
+                "Elevator L4",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)
+                        .repeatedly()
+                        .until(elevator::isAtSetpoint));
+
+        NamedCommands.registerCommand(
+                "Elevator Zero",
+                ElevatorCommands.zeroElevator(elevator).repeatedly().until(elevator::isAtSetpoint));
+
+        NamedCommands.registerCommand(
+                "Elevator Intake",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE)
+                        .repeatedly()
+                        .until(elevator::isAtSetpoint));
 
         NamedCommands.registerCommand(
                 "Run Intake",

@@ -25,4 +25,13 @@ public class ElevatorCommands {
                 .until(() -> Math.abs(0 - elevator.getElevatorHeight()) < 1)
                 .andThen(setElevatorVoltage(elevator, -.1).until(elevator::isZeroed));
     }
+
+    // TODO consider this
+    /*
+    public static Command zeroElevator(Elevator elevator) {
+        return setElevatorLevel(elevator, ElevatorLevel.ZERO).repeatedly()
+                .until(() -> Math.abs(0 - elevator.getElevatorHeight()) < 1).withTimeout(5.0)
+                .andThen(setElevatorVoltage(elevator, -.1).until(elevator::isZeroed));
+    }
+     */
 }
