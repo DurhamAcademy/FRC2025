@@ -135,8 +135,8 @@ public final class Constants {
             SIXTEEN(
                     new Pose2d(
                             Units.inchesToMeters(238.49),
-                            Units.inchesToMeters(0.42),              
-                      new Rotation2d())),
+                            Units.inchesToMeters(0.42),
+                            new Rotation2d())),
             SEVENTEEN(
                     new Pose2d(
                             Units.inchesToMeters(160.39),
@@ -488,6 +488,7 @@ public final class Constants {
             }
             return allPoses;
         }
+
         public static final Pose2d[] processorLocation =
                 new Pose2d[] {
                     new Pose2d(Units.inchesToMeters(238.49), 0, Rotation2d.fromDegrees(90)),
@@ -519,7 +520,9 @@ public final class Constants {
         THREE,
         FOUR,
         FIVE,
-        SIX
+        SIX,
+    }
+
     public static final Map<HumanPlayerConstants, Pose2d[]> HumanPlayerLocations =
             new HashMap<>() {
                 {

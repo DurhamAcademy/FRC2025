@@ -209,9 +209,6 @@ public class Drive extends SubsystemBase {
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode == Mode.SIM);
-
-        setTargetReefToClosest();
-        setTargetAlgaeToClosest();
     }
 
     /**
@@ -384,8 +381,7 @@ public class Drive extends SubsystemBase {
         return modules[index];
     }
 
-  // TODO figure this out
-    public Constants.ReefConstants getClosestTargetReef() {
+    // TODO figure this out
     public Constants.ReefConstants getClosestReef() {
         Constants.ReefConstants closestReef = Constants.ReefConstants.SIX;
         if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
@@ -470,17 +466,6 @@ public class Drive extends SubsystemBase {
     public Constants.ReefConstants getTargetReef() {
         return targetReef;
     }
-
-    public void setTargetReef(Constants.ReefConstants reef) {
-        targetReef = reef;
-    }
-
-    public void setTargetReef(int reef) {
-        reef =
-                (reef + 12)
-                        % 12; // if reef is less than 0 or greater than 11 it will loop around (ex
-        // 11 -> 12 would turn into 11 -> 0 for target reef
-        targetReef = Constants.ReefConstants.values()[reef];
 
     /**
      * Function that returns whether the gyro pitch or roll is greater than the specified tipping
@@ -658,21 +643,6 @@ public class Drive extends SubsystemBase {
 
     public Constants.AlgaeConstants getTargetAlgae() {
         return targetAlgae;
-    }
-
-    public void setTargetAlgae(Constants.AlgaeConstants algae) {
-        targetAlgae = algae;
-    }
-
-    // TODO if we want the option for operator set locations this could be nice
-    public void setTargetAlgae(int algae) {
-        algae =
-                (algae + 6)
-                        % 6; // if reef is less than 0 or greater than 11 it will loop around (ex
-        // 11 -> 12 would turn into 11 -> 0 for target reef
-        targetAlgae = Constants.AlgaeConstants.values()[algae];
-
-        updateDashboardAlgaeVisualization(algae);
     }
 
     /**
