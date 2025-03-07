@@ -67,7 +67,7 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
-        switch (FieldConstants.currentMode) {
+        switch (Constants.currentMode) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 drive =
@@ -258,12 +258,12 @@ public class RobotContainer {
 
     /** Sets the robot to a default position and reset's the simulation field. */
     public void resetSimulationField() {
-        if (FieldConstants.currentMode != FieldConstants.Mode.SIM) return;
+        if (Constants.currentMode != Constants.Mode.SIM) return;
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 
     public void displaySimFieldToAdvantageScope() {
-        if (FieldConstants.currentMode != FieldConstants.Mode.SIM) return;
+        if (Constants.currentMode != Constants.Mode.SIM) return;
         Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
         Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
         Logger.recordOutput(
@@ -283,12 +283,10 @@ public class RobotContainer {
     public void sendDataToSmartDashboard() {
         Logger.recordOutput(
                 "Algea reaf",
-                FieldConstants.LocationConstants.PosesOfAllAlgaeLocations(0)
-                        .toArray(new Pose2d[0]));
+                Constants.LocationConstants.PosesOfAllAlgaeLocations(0).toArray(new Pose2d[0]));
         Logger.recordOutput(
                 "red alliance",
-                FieldConstants.LocationConstants.PosesOfAllAlgaeLocations(1)
-                        .toArray(new Pose2d[0]));
+                Constants.LocationConstants.PosesOfAllAlgaeLocations(1).toArray(new Pose2d[0]));
         SmartDashboard.putData(
                 "Vision",
                 builder -> {

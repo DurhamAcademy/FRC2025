@@ -42,8 +42,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.FieldConstants;
-import frc.robot.FieldConstants.Mode;
+import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveCommands;
 import frc.robot.util.LocalADStarAK;
@@ -83,10 +83,10 @@ public class Drive extends SubsystemBase {
                     lastModulePositions,
                     new Pose2d(3, 3, new Rotation2d()));
 
-    public FieldConstants.ReefConstants targetReef = FieldConstants.ReefConstants.SEVEN;
+    public Constants.ReefConstants targetReef = Constants.ReefConstants.SEVEN;
     public boolean overrideReefAutoAlign = false;
 
-    public FieldConstants.AlgaeConstants targetAlgae = FieldConstants.AlgaeConstants.ONE;
+    public Constants.AlgaeConstants targetAlgae = Constants.AlgaeConstants.ONE;
     public boolean overrideAlgaeAutoAlign = false;
 
     public DriveCommands.autoAlignLocations currentAlignLocation;
@@ -205,7 +205,7 @@ public class Drive extends SubsystemBase {
         }
 
         // Update gyro alert
-        gyroDisconnectedAlert.set(!gyroInputs.connected && FieldConstants.currentMode == Mode.SIM);
+        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode == Mode.SIM);
 
         setTargetReefToClosest();
         setTargetAlgaeToClosest();
@@ -343,7 +343,7 @@ public class Drive extends SubsystemBase {
     /** Returns the current odometry pose. */
     @AutoLogOutput(key = "Odometry/Robot")
     public Pose2d getPose() {
-        if (FieldConstants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
+        if (Constants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
             return robotContainer.getDriveSimulation().getSimulatedDriveTrainPose();
         }
         return poseEstimator.getEstimatedPosition();
@@ -351,7 +351,7 @@ public class Drive extends SubsystemBase {
 
     /** Returns the current odometry rotation. */
     public Rotation2d getRotation() {
-        if (FieldConstants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
+        if (Constants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
             return robotContainer.getDriveSimulation().getSimulatedDriveTrainPose().getRotation();
         }
         return getPose().getRotation();
@@ -381,55 +381,53 @@ public class Drive extends SubsystemBase {
         return modules[index];
     }
 
-    public FieldConstants.ReefConstants getClosestTargetReef() {
-        FieldConstants.ReefConstants closestReef = FieldConstants.ReefConstants.SIX;
+    public Constants.ReefConstants getClosestTargetReef() {
+        Constants.ReefConstants closestReef = Constants.ReefConstants.SIX;
         if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
-            int alliance = FieldConstants.getAllianceColor(DriverStation.getAlliance().get());
+            int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
 
             // Find closest reef position to current pose
             Pose2d estimatedReefPose =
                     poseEstimator
                             .getEstimatedPosition()
-                            .nearest(
-                                    FieldConstants.LocationConstants.PosesOfAllReefLocations(
-                                            alliance));
+                            .nearest(Constants.LocationConstants.PosesOfAllReefLocations(alliance));
 
             // Find corresponding reef constant value
             closestReef =
-                    FieldConstants.LocationConstants.ReefLocations.entrySet().stream()
+                    Constants.LocationConstants.ReefLocations.entrySet().stream()
                             .filter(entry -> entry.getValue()[alliance].equals(estimatedReefPose))
                             .map(Map.Entry::getKey)
                             .findFirst()
-                            .orElse(FieldConstants.ReefConstants.SIX);
+                            .orElse(Constants.ReefConstants.SIX);
         }
         return closestReef;
     }
 
     public void setTargetReefToClosest() {
-        FieldConstants.ReefConstants oldTargetReef = targetReef;
+        Constants.ReefConstants oldTargetReef = targetReef;
         targetReef = getClosestTargetReef();
         if (oldTargetReef != targetReef) {
             updateDashboardReefVisualization(targetReef.ordinal());
         }
     }
 
-    public Pose2d getReefPose(FieldConstants.ReefConstants reef) {
+    public Pose2d getReefPose(Constants.ReefConstants reef) {
         int alliance =
                 DriverStation.getAlliance().isPresent()
-                        ? FieldConstants.getAllianceColor(DriverStation.getAlliance().get())
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
                         : 0;
-        return FieldConstants.LocationConstants.ReefLocations.get(reef)[alliance];
+        return Constants.LocationConstants.ReefLocations.get(reef)[alliance];
     }
 
     public Pose2d getTargetReefPose() {
         return getReefPose(targetReef);
     }
 
-    public FieldConstants.ReefConstants getTargetReef() {
+    public Constants.ReefConstants getTargetReef() {
         return targetReef;
     }
 
-    public void setTargetReef(FieldConstants.ReefConstants reef) {
+    public void setTargetReef(Constants.ReefConstants reef) {
         targetReef = reef;
     }
 
@@ -438,7 +436,7 @@ public class Drive extends SubsystemBase {
                 (reef + 12)
                         % 12; // if reef is less than 0 or greater than 11 it will loop around (ex
         // 11 -> 12 would turn into 11 -> 0 for target reef
-        targetReef = FieldConstants.ReefConstants.values()[reef];
+        targetReef = Constants.ReefConstants.values()[reef];
 
         updateDashboardReefVisualization(reef);
     }
@@ -478,8 +476,8 @@ public class Drive extends SubsystemBase {
 
         boolean alignedToProcessor =
                 distance
-                                < FieldConstants.coralInnerWidth
-                                        - FieldConstants.reefPipeDiameter
+                                < Constants.coralInnerWidth
+                                        - Constants.reefPipeDiameter
                                         - Units.inchesToMeters(.25)
                         && rotationError < 2.0; // 2.5 inches and < 2 degrees
         Logger.recordOutput("Vision/alignedToProcessor", alignedToProcessor);
@@ -489,9 +487,9 @@ public class Drive extends SubsystemBase {
     public Pose2d getProcessor() {
         int alliance =
                 DriverStation.getAlliance().isPresent()
-                        ? FieldConstants.getAllianceColor(DriverStation.getAlliance().get())
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
                         : 0;
-        return FieldConstants.LocationConstants.processorLocation[alliance];
+        return Constants.LocationConstants.processorLocation[alliance];
     }
 
     /**
@@ -516,8 +514,8 @@ public class Drive extends SubsystemBase {
 
         boolean alignedToReef =
                 distance
-                                < FieldConstants.coralInnerWidth
-                                        - FieldConstants.reefPipeDiameter
+                                < Constants.coralInnerWidth
+                                        - Constants.reefPipeDiameter
                                         - Units.inchesToMeters(.25)
                         && rotationError < 2.0; // 2.5 inches and < 2 degrees
         Logger.recordOutput("Vision/alignedToReef", alignedToReef);
@@ -537,54 +535,53 @@ public class Drive extends SubsystemBase {
         }
     }
 
-    public FieldConstants.AlgaeConstants getClosestTargetAlgae() {
-        FieldConstants.AlgaeConstants closestAlgae = FieldConstants.AlgaeConstants.ONE;
+    public Constants.AlgaeConstants getClosestTargetAlgae() {
+        Constants.AlgaeConstants closestAlgae = Constants.AlgaeConstants.ONE;
         if (!overrideAlgaeAutoAlign && DriverStation.getAlliance().isPresent()) {
-            int alliance = FieldConstants.getAllianceColor(DriverStation.getAlliance().get());
+            int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
             // Find closest algae position to current pose
             Pose2d estimatedAlgaePose =
                     poseEstimator
                             .getEstimatedPosition()
                             .nearest(
-                                    FieldConstants.LocationConstants.PosesOfAllAlgaeLocations(
-                                            alliance));
+                                    Constants.LocationConstants.PosesOfAllAlgaeLocations(alliance));
 
             // Find corresponding algae constant value
             closestAlgae =
-                    FieldConstants.LocationConstants.AlgaeLocations.entrySet().stream()
+                    Constants.LocationConstants.AlgaeLocations.entrySet().stream()
                             .filter(entry -> entry.getValue()[alliance].equals(estimatedAlgaePose))
                             .map(Map.Entry::getKey)
                             .findFirst()
-                            .orElse(FieldConstants.AlgaeConstants.SIX);
+                            .orElse(Constants.AlgaeConstants.SIX);
         }
         return closestAlgae;
     }
 
     public void setTargetAlgaeToClosest() {
-        FieldConstants.AlgaeConstants oldTargetAlgae = targetAlgae;
+        Constants.AlgaeConstants oldTargetAlgae = targetAlgae;
         targetAlgae = getClosestTargetAlgae();
         if (oldTargetAlgae != targetAlgae) {
             updateDashboardAlgaeVisualization(targetAlgae.ordinal());
         }
     }
 
-    public Pose2d getAlgaePose(FieldConstants.AlgaeConstants algae) {
+    public Pose2d getAlgaePose(Constants.AlgaeConstants algae) {
         int alliance =
                 DriverStation.getAlliance().isPresent()
-                        ? FieldConstants.getAllianceColor(DriverStation.getAlliance().get())
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
                         : 0;
-        return FieldConstants.LocationConstants.AlgaeLocations.get(algae)[alliance];
+        return Constants.LocationConstants.AlgaeLocations.get(algae)[alliance];
     }
 
     public Pose2d getTargetAlgaePose() {
         return getAlgaePose(targetAlgae);
     }
 
-    public FieldConstants.AlgaeConstants getTargetAlgae() {
+    public Constants.AlgaeConstants getTargetAlgae() {
         return targetAlgae;
     }
 
-    public void setTargetAlgae(FieldConstants.AlgaeConstants algae) {
+    public void setTargetAlgae(Constants.AlgaeConstants algae) {
         targetAlgae = algae;
     }
 
@@ -594,7 +591,7 @@ public class Drive extends SubsystemBase {
                 (algae + 6)
                         % 6; // if reef is less than 0 or greater than 11 it will loop around (ex
         // 11 -> 12 would turn into 11 -> 0 for target reef
-        targetAlgae = FieldConstants.AlgaeConstants.values()[algae];
+        targetAlgae = Constants.AlgaeConstants.values()[algae];
 
         updateDashboardAlgaeVisualization(algae);
     }
@@ -622,8 +619,8 @@ public class Drive extends SubsystemBase {
 
         boolean alignedToAlgae =
                 distance
-                                < FieldConstants.coralInnerWidth
-                                        - FieldConstants.reefPipeDiameter
+                                < Constants.coralInnerWidth
+                                        - Constants.reefPipeDiameter
                                         - Units.inchesToMeters(.25)
                         && rotationError < 2.0; // 2.5 inches and < 2 degrees
         Logger.recordOutput("Vision/alignedToAlgae", alignedToAlgae);
