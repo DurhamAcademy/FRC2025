@@ -3,9 +3,9 @@ package frc.robot.subsystems.elevator;
 public class WristConstants {
     public static final int wristCanId = 12;
 
-    public static double wristKp = 0.4;
+    public static double wristKp = 6; // .4
     public static final double wristKi = 0.0;
-    public static double wristKd = 0.3;
+    public static double wristKd = 1; // .3
 
     public static final double wristKs = 0.0;
     public static double wristKg = 0.2;
@@ -19,7 +19,7 @@ public class WristConstants {
     public static final double L1 = Math.toRadians(-30.0);
     public static final double L2 = Math.toRadians(-35.0);
     public static final double L3 = Math.toRadians(-35.0);
-    public static final double L4 = Math.toRadians(-25.0);
+    public static final double L4 = Math.toRadians(-45.0);
     public static final double LOWER_ALGAE_REMOVAL = Math.toRadians(0.0);
     public static final double UPPER_ALGAE_REMOVAL = Math.toRadians(0.0);
     public static final double NET = Math.toRadians(30.0);

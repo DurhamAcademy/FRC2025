@@ -32,7 +32,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         // beam = new DigitalInput(ManipulatorConstants.MANIPULATOR_BEAM_ID);
 
         resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        resetConfig.smartCurrentLimit(40);
+        resetConfig.smartCurrentLimit(80);
         resetConfig.voltageCompensation(12.0);
         resetConfig
                 .closedLoop
@@ -73,9 +73,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
                         primaryRollerR.getExternalEncoder().getVelocity());
         // inputs.beamObstructed = beam.get();
         inputs.sensorDistance =
-                27.86
-                        / (distanceSensor.getVoltage()
-                                - 0.42); // todo: distance formula might not work
+                distanceSensor.getVoltage(); // todo: distance formula might not work
     }
 
     /** Set intake wheel percent -1 to 1 */

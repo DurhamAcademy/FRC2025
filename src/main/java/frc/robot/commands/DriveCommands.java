@@ -52,6 +52,7 @@ public class DriveCommands {
     // TODO: update these numbers
     public static final double LINEAR_MAX_ACCELERATION = 11.77;
     public static final double ANGLE_MAX_VELOCITY = 12.37;
+    // TODO change this with characterization
     public static final double ANGLE_MAX_ACCELERATION = 74.34;
 
     private static final double FF_START_DELAY = 2.0; // Secs
@@ -365,9 +366,14 @@ public class DriveCommands {
      */
     public static Pose2d calculateRobotTargetPose(Drive drive, autoAlignLocations location) {
         Pose2d locationPose = new Pose2d();
+        drive.currentAlignLocation = location;
         if (location == autoAlignLocations.reef) {
             // gets reef goal pose
             locationPose = drive.getTargetReefPose();
+
+        } else if (location == autoAlignLocations.algae) {
+            locationPose = drive.getTargetAlgaePose();
+
         } else if (location == autoAlignLocations.processor) {
             locationPose = drive.getProcessor();
         }
@@ -396,6 +402,7 @@ public class DriveCommands {
 
     public enum autoAlignLocations {
         reef,
+        algae,
         processor
     }
 
@@ -412,13 +419,14 @@ public class DriveCommands {
                         0.0,
                         ANGLE_KD,
                         new TrapezoidProfile.Constraints(
-                                ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+                                // TODO change this max acceleration
+                                drive.getMaxVelocity(), ANGLE_MAX_ACCELERATION));
         angleController.enableContinuousInput(-Math.PI, Math.PI);
         PathConstraints constraints =
                 new PathConstraints(
                         Drive.currentSpeedLimitMetersPerSec,
                         LINEAR_MAX_ACCELERATION,
-                        ANGLE_MAX_VELOCITY,
+                        drive.getMaxAngularSpeedRadPerSec(),
                         ANGLE_MAX_ACCELERATION);
 
         return Commands.defer(
@@ -502,7 +510,7 @@ public class DriveCommands {
      * @param drive subsystem
      * @return Commands.repeatingSequence
      */
-    public static Command autoAlignToReef(Drive drive, autoAlignLocations location) {
+    public static Command autoAlignToLocation(Drive drive, autoAlignLocations location) {
         return Commands.repeatingSequence(
                         new ConditionalCommand(
                                 // goalPose > .5 m away
@@ -525,7 +533,7 @@ public class DriveCommands {
                                     // true if distance > threshold distance (m)
                                     return distance > .5;
                                 }))
-                .until(drive::isAlignedToReef);
+                .until(drive::isAlignedToLocation);
     }
 
     /**
@@ -544,7 +552,7 @@ public class DriveCommands {
                         0.0,
                         ANGLE_KD,
                         new TrapezoidProfile.Constraints(
-                                ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+                                drive.getMaxAngularSpeedRadPerSec(), ANGLE_MAX_ACCELERATION));
 
         // Enable continuous input
         angleController.enableContinuousInput(-Math.PI, Math.PI);

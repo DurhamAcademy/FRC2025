@@ -1,5 +1,7 @@
 # FRC 2025
 
+![coraldelius](https://github.com/user-attachments/assets/11114160-7afa-407a-adb6-eec3e177b2d2)
+
 Download these
 - https://github.com/mjansen4857/pathplanner/releases
 - https://github.com/SleipnirGroup/Choreo/releases
