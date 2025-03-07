@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftMobilityPath"
+            "pathName": "RightMobilityPath"
           }
         }
       ]
