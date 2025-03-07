@@ -15,10 +15,15 @@ public class Manipulator extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Manipulator", inputs);
+        Logger.recordOutput("Manipulator/beamBroken", beamBroken());
     }
 
     public void setVoltage(double voltage) {
         io.setRollerVoltage(voltage);
+    }
+
+    public void stopMotors() {
+        io.stopMotors();
     }
 
     public void setPower(double power) {
@@ -31,6 +36,8 @@ public class Manipulator extends SubsystemBase {
     }*/
 
     public boolean beamBroken() {
-        return inputs.sensorDistance < ManipulatorConstants.maxCoralSensorDistance;
+        return inputs.sensorDistance
+                > ManipulatorConstants.maxCoralSensorDistance
+                        - ManipulatorConstants.sensorDistanceTolerance; // sensor is inverted
     }
 }

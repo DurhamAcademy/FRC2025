@@ -1,6 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface IntakeIO {
@@ -10,12 +9,6 @@ public interface IntakeIO {
         public double intakeAppliedVolts = 0.0;
         public double intakeCurrentAmps = 0.0;
         public double intakeTemperature = 0.0;
-
-        public double rotatorVelocityRadPerSec = 0.0;
-        public double rotatorAppliedVolts = 0.0;
-        public double rotatorCurrentAmps = 0.0;
-        public double rotatorTemperature = 0.0;
-        public double rotatorPosRad = 0.0;
 
         public boolean isBeamBroken = false;
     }
@@ -28,9 +21,5 @@ public interface IntakeIO {
 
     public default void setIntakeVoltage(double volts) {}
 
-    public default void setRotatorVoltage(double volts) {}
-
-    public default void setRotatorReference(double position, double ffVolts) {}
-
-    public default void simAddCoral(Pose2d robotPose) {}
+    public default void stopMotors() {}
 }

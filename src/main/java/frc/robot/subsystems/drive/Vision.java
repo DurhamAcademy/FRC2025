@@ -31,10 +31,18 @@ public class Vision extends SubsystemBase {
         if (Constants.currentMode != Constants.Mode.SIM) {
             cameraConfigs.add(
                     new CameraConfig(
-                            "limelight", // camera name
+                            "limelight-front", // camera name
                             new Transform3d(
-                                    new Translation3d(0.06220, 0, 0.4683),
-                                    new Rotation3d(0.0, Math.toRadians(-15), 0.0)), // Camera pose
+                                    new Translation3d(0.306, 0.0, 0.240),
+                                    new Rotation3d(0.0, Math.toRadians(15), 0.0)), // Camera pose
+                            new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
+                            ));
+            cameraConfigs.add(
+                    new CameraConfig(
+                            "limelight-back", // camera name
+                            new Transform3d(
+                                    new Translation3d(-0.138, -0.252, 0.190),
+                                    new Rotation3d(0.0, Math.toRadians(45), 0.0)), // Camera pose
                             new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
                             ));
         }
@@ -42,8 +50,7 @@ public class Vision extends SubsystemBase {
         // Initialize pose estimator
         poseEstimator = drive.getPoseEstimator();
 
-        // TODO do we want to do this in code or via limelight local
-        // initializeLimelightHelpers(); // sets up all the cameras in the cameraConfigs list
+        initializeLimelightHelpers(); // sets up all the cameras in the cameraConfigs list
     }
 
     /** sets up limelight cameras from cameraConfig list */

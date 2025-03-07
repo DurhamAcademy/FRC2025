@@ -6,7 +6,7 @@ public class ManipulatorConstants {
     public static final int leftManipulatorRollerCanId = 31;
     public static final int rightManipulatorRollerCanId = 30;
     public static final int manipulatorBeamBrakePort = 7;
-    public static final int manipulatorDistanceSensorPort = 0;
+    public static final int manipulatorDistanceSensorPort = 3;
 
     // the gear ratio of the gear box
     public static final double manipulatorGearRatio = 1;
@@ -26,5 +26,6 @@ public class ManipulatorConstants {
     public static final double maxVelocity = 0.0;
     public static final double maxAcceleration = 0.0;
 
-    public static final double maxCoralSensorDistance = 0.0;
+    public static final double maxCoralSensorDistance = 2.65;
+    public static final double sensorDistanceTolerance = 0.15; // allow some tolerance
 }
