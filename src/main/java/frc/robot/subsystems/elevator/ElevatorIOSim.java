@@ -97,7 +97,7 @@ public class ElevatorIOSim implements ElevatorIO {
     }
 
     @Override
-    public void updateProfile() {
+    public void updateStates() {
         // Calculate motion profile for position and velocity over a 20ms control loop
         currentState = new TrapezoidProfile(constraints).calculate(0.02, currentState, goalState);
 

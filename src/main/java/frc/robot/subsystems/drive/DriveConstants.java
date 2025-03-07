@@ -26,7 +26,9 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
 public class DriveConstants {
     // update max speed meters per sec
-    public static final double maxSpeedMetersPerSec = 5.05;
+    public static final double maxSpeedLimitMetersPerSec = 5.05;
+    // TODO TUNE MIN SPEED
+    public static final double levelFourSpeedLimit = 2.0;
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = Units.inchesToMeters(22.75);
     public static final double wheelBase = Units.inchesToMeters(22.75);
@@ -42,10 +44,10 @@ public class DriveConstants {
 
     // Zeroed rotation values for each module
     // 2024 robot
-    //    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.284); // 0
-    //    public static final Rotation2d frontRightZeroRotation = new Rotation2d(-1.901); // 1
-    //    public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.460); // 2
-    //    public static final Rotation2d backRightZeroRotation = new Rotation2d(-2.835); // 3
+    // public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.284); // 0
+    // public static final Rotation2d frontRightZeroRotation = new Rotation2d(-1.901); // 1
+    // public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.460); // 2
+    // public static final Rotation2d backRightZeroRotation = new Rotation2d(-2.835); // 3
     // 2025 robot
     public static final Rotation2d frontLeftZeroRotation = new Rotation2d(.296); // 0
     public static final Rotation2d frontRightZeroRotation = new Rotation2d(1.763); // 1
@@ -112,6 +114,9 @@ public class DriveConstants {
     public static final double turnSimP = 8.0;
     public static final double turnSimD = 0.0;
 
+    // Tipping threshold angle
+    public static final double tippingThresholdDegrees = 8.0;
+
     // PathPlanner configuration
     public static final double robotMassKg = 74.088;
     public static final double robotMOI = 6.883;
@@ -122,7 +127,7 @@ public class DriveConstants {
                     robotMOI,
                     new ModuleConfig(
                             wheelRadiusMeters,
-                            maxSpeedMetersPerSec,
+                            Drive.currentSpeedLimitMetersPerSec,
                             wheelCOF,
                             driveGearbox.withReduction(driveMotorReduction),
                             driveMotorCurrentLimit,

@@ -14,20 +14,25 @@
 package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.*;
+import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.elevator.Elevator;
@@ -35,6 +40,11 @@ import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOSparkMax;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.manipulator.*;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -49,6 +59,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
+    private final Manipulator manipulator;
+    private final Intake intake;
     private final Elevator elevator;
     private SwerveDriveSimulation driveSimulation = null;
 
@@ -59,11 +71,13 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
-    // inverse axises
+    // inverse axes
     private boolean invertX = false;
     private boolean invertY = false;
     private double xDirect = 1;
     private double yDirect = 1;
+
+    public boolean algaeMode = false;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -79,6 +93,9 @@ public class RobotContainer {
                                 new ModuleIOSpark(3),
                                 (pose) -> {},
                                 this);
+
+                manipulator = new Manipulator(new ManipulatorIOSparkFlex());
+                intake = new Intake(new IntakeIOSparkMax());
                 elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
                 break;
 
@@ -99,6 +116,8 @@ public class RobotContainer {
                                 new ModuleIOSim(driveSimulation.getModules()[3]),
                                 driveSimulation::setSimulationWorldPose,
                                 this);
+                manipulator = new Manipulator(new ManipulatorIOSim());
+                intake = new Intake(new IntakeIOSim(driveSimulation));
                 // TODO: Elevator SIM
                 elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
 
@@ -124,9 +143,16 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 (pose) -> {},
                                 this);
+
+                intake = new Intake(new IntakeIO() {});
+                manipulator = new Manipulator(new ManipulatorIO() {});
                 elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
                 break;
         }
+
+        NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
+        NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
+        NamedCommands.registerCommand("Algae Intake", ManipulatorCommands.algaeIntake(manipulator));
 
         NamedCommands.registerCommand(
                 "Elevator L1", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
@@ -197,54 +223,170 @@ public class RobotContainer {
                         () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
-        elevator.setDefaultCommand(null);
-        //                either(
-        //                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO),
-        //                        ElevatorCommands.zeroElevator(elevator),
-        //                        elevator::isZeroed));
+        // if elevator has zeroed, run tipping prevention code
+        // if not, zero the elevator for the first time
+        // todo untested
+        elevator.setDefaultCommand(
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
+                        .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
         // DRIVER CONTROLLER
-        // Lock to 0° when A button is held
-        driverController
-                .a()
-                .whileTrue(
-                        DriveCommands.joystickDriveAtAngle(
+
+        // Automatically angle to HP & run intake
+        Command intakeCoral =
+                Commands.parallel(
+                        DriveCommands.autoAlignToHumanPlayerStation(
                                 drive,
                                 () -> (yDirect * driverController.getLeftY()),
-                                () -> (xDirect * driverController.getLeftX()),
-                                Rotation2d::new));
+                                () -> (xDirect * driverController.getLeftX())),
+                        IntakeCommands.intakeCoral(intake, manipulator));
+
+        Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
+
+        Command manipulatorEject = ManipulatorCommands.eject(manipulator);
+
+        Command autoAlignToReef =
+                DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef);
+
+        Command autoAlignToProcessor =
+                DriveCommands.autoAlignToLocation(
+                        drive, DriveCommands.autoAlignLocations.processor);
+
+        Command setAlignLeft =
+                Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT));
+
+        Command setAlignRight =
+                Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT));
+
+        Command stopManipulator = ManipulatorCommands.runManipulator(manipulator, 0);
 
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-        // Align to the closest reef
-        driverController
-                .b()
-                .whileTrue(
-                        DriveCommands.autoAlignToLocation(
-                                drive, DriveCommands.autoAlignLocations.algae));
-
+        // Intake from HP / Intake algae
         driverController
                 .leftBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() - 1)));
+                .whileTrue(Commands.either(intakeAlgae, intakeCoral, () -> algaeMode));
+
+        // Shoot coral / algae
         driverController
                 .rightBumper()
-                .onTrue(runOnce(() -> drive.setTargetReef(drive.getTargetReef().ordinal() + 1)));
+                .and(driverController.leftTrigger().negate())
+                .and(driverController.rightTrigger().negate())
+                .whileTrue(manipulatorEject)
+                .onFalse(stopManipulator);
+
+        // Auto align & Shoot
+        driverController
+                .leftTrigger()
+                .and(driverController.rightBumper())
+                .and(() -> !algaeMode) // Only when NOT in algaeMode
+                .onTrue(setAlignLeft)
+                .whileTrue(
+                        new ConditionalCommand(
+                                ManipulatorCommands.eject(
+                                        manipulator), // Command if condition is true
+                                DriveCommands.autoAlignToLocation(
+                                        drive,
+                                        DriveCommands.autoAlignLocations
+                                                .reef), // Command if condition is false
+                                () ->
+                                        drive.isAlignedToReef()
+                                                && elevator.isAtSetpoint()
+                                                && elevator.getElevatorHeight()
+                                                        > ElevatorConstants.L1 - 4));
+        driverController
+                .rightTrigger()
+                .and(driverController.rightBumper())
+                .and(() -> !algaeMode) // Only when NOT in algaeMode
+                .onTrue(setAlignRight)
+                .whileTrue(
+                        new ConditionalCommand(
+                                ManipulatorCommands.eject(
+                                        manipulator), // Command if condition is true
+                                DriveCommands.autoAlignToLocation(
+                                        drive,
+                                        DriveCommands.autoAlignLocations
+                                                .reef), // Command if condition is false
+                                () ->
+                                        drive.isAlignedToReef()
+                                                && elevator.isAtSetpoint()
+                                                && elevator.getElevatorHeight()
+                                                        > ElevatorConstants.L1 - 4));
+
+        // Auto align
+        // TODO its probably not great to set reef to left if in algae mode, but it shouldn't
+        // conflict with anything
+        driverController
+                .leftTrigger()
+                .and(driverController.rightBumper().negate())
+                .onTrue(setAlignLeft)
+                .whileTrue(
+                        new ConditionalCommand(
+                                Commands.none(),
+                                DriveCommands.autoAlignToLocation(
+                                        drive, DriveCommands.autoAlignLocations.reef),
+                                () -> algaeMode));
+        driverController
+                .rightTrigger()
+                .and(driverController.rightBumper().negate())
+                .onTrue(setAlignRight)
+                .whileTrue(
+                        new ConditionalCommand(
+                                Commands.none(),
+                                DriveCommands.autoAlignToLocation(
+                                        drive, DriveCommands.autoAlignLocations.reef),
+                                () -> algaeMode));
+
         // OPERATOR CONTROLLER
         // Elevator
+
+        operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
+        operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
+
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
+
+        driverController
+                .rightBumper()
+                .whileTrue(ManipulatorCommands.eject(manipulator))
+                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
+
         operatorController
-                .a()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
+                .povLeft()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.NET),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1),
+                                () -> algaeMode));
+
         operatorController
-                .x()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)); // L2
+                .povDown()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
+                                () -> algaeMode));
+
+        operatorController.leftTrigger().onTrue(IntakeCommands.intakeCoral(intake, manipulator));
+
         operatorController
-                .b()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)); // L3
+                .povRight()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.PROCESSOR),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3),
+                                () -> algaeMode));
+
         operatorController
-                .y()
-                .onTrue(ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)); // L4
+                .povUp()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4),
+                                () -> algaeMode));
     }
 
     /**
@@ -264,8 +406,11 @@ public class RobotContainer {
 
     public void displaySimFieldToAdvantageScope() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
+        Logger.recordOutput("MAX SPEED", SmartDashboard.getNumber("Max Speed/Max Speed", 0));
         Logger.recordOutput("X invert", SmartDashboard.getBoolean("INVERT AXES/X INVERT", false));
         Logger.recordOutput("Y invert", SmartDashboard.getBoolean("INVERT AXES/Y INVERT", false));
+        Logger.recordOutput(
+                "XY invert", SmartDashboard.getBoolean("INVERT AXES/X/Y INVERT", false));
         Logger.recordOutput(
                 "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
@@ -276,8 +421,37 @@ public class RobotContainer {
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
     }
 
+    /** For SIM only, adds a coral to the intake if the robot is at the human player station */
+    // TODO: FIX INTAKE SIM
+    public void intakeCoralIfAtStation() {
+        if (DriverStation.getAlliance().isEmpty()) return;
+        final double DISTANCE_THRESHOLD = 1.0;
+        Pose2d[] HpStations =
+                PosesOfAllHumanPlayerStations(
+                                Constants.getAllianceColor(DriverStation.getAlliance().get()))
+                        .toArray(new Pose2d[0]);
+        Logger.recordOutput("Intake/HumanPlayers", HpStations);
+        for (Pose2d stationPose : HpStations) {
+            Pose2d robotPose = drive.getPose();
+            double distance = robotPose.getTranslation().getDistance(stationPose.getTranslation());
+            Logger.recordOutput("Intake/HumanPlayerDist" + stationPose.toString(), distance);
+            if (distance < DISTANCE_THRESHOLD) {
+                // intake.simAddCoral(robotPose);
+            }
+        }
+    }
+
     public SwerveDriveSimulation getDriveSimulation() {
         return driveSimulation;
+    }
+
+    public void resetSetpoints() {
+        elevator.stopElevator();
+        elevator.stopWrist();
+        elevator.setWristTargetAngle(elevator.getWristAngle());
+        elevator.setElevatorTargetHeight(0);
+        intake.stopMotors();
+        manipulator.stopMotors();
     }
 
     public void sendDataToSmartDashboard() {
@@ -293,17 +467,23 @@ public class RobotContainer {
                     builder.setSmartDashboardType("Boolean");
                     builder.addBooleanProperty("alignedToTarget", drive::isAlignedToLocation, null);
                 });
+
         drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
+
         SmartDashboard.putData(
                 "Override",
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
                     builder.addBooleanProperty(
-                            "Override Reef AA",
+                            "Reef AA",
                             // Getter to read the current value
                             () -> drive.overrideReefAutoAlign,
                             // Setter to update the value
                             val -> drive.overrideReefAutoAlign = val);
+                    builder.addBooleanProperty(
+                            "Anti-Tip",
+                            () -> drive.overrideTipProtection,
+                            val -> drive.overrideTipProtection = val);
                 });
         SmartDashboard.putData(
                 "INVERT AXES",
@@ -311,6 +491,22 @@ public class RobotContainer {
                     builder.setSmartDashboardType("boolean");
                     builder.addBooleanProperty("X INVERT", () -> invertX, val -> invertX = val);
                     builder.addBooleanProperty("Y INVERT", () -> invertY, val -> invertY = val);
+                    builder.addBooleanProperty(
+                            "XY INVERT",
+                            () -> invertX && invertY,
+                            val -> {
+                                invertX = val;
+                                invertY = val;
+                            });
+                });
+        SmartDashboard.putData(
+                "MAX SPEED",
+                builder -> {
+                    builder.setSmartDashboardType("double");
+                    builder.addDoubleProperty(
+                            "Max",
+                            drive::getMaxVelocity,
+                            val -> Drive.currentSpeedLimitMetersPerSec = val);
                 });
 
         SmartDashboard.putData(

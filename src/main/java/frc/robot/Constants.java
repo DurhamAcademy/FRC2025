@@ -18,10 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -138,8 +135,8 @@ public final class Constants {
             SIXTEEN(
                     new Pose2d(
                             Units.inchesToMeters(238.49),
-                            Units.inchesToMeters(0.42),
-                            new Rotation2d())),
+                            Units.inchesToMeters(0.42),              
+                      new Rotation2d())),
             SEVENTEEN(
                     new Pose2d(
                             Units.inchesToMeters(160.39),
@@ -491,14 +488,13 @@ public final class Constants {
             }
             return allPoses;
         }
-
         public static final Pose2d[] processorLocation =
                 new Pose2d[] {
-                    new Pose2d(Units.inchesToMeters(235.725979), 0, new Rotation2d()),
+                    new Pose2d(Units.inchesToMeters(238.49), 0, Rotation2d.fromDegrees(90)),
                     new Pose2d(
-                            Units.inchesToMeters(690.875 - 235.725979),
-                            Units.inchesToMeters(317),
-                            new Rotation2d()),
+                            Units.inchesToMeters(452.40),
+                            Units.inchesToMeters(316.21),
+                            Rotation2d.fromDegrees(-90)),
                 };
     }
 
@@ -524,5 +520,50 @@ public final class Constants {
         FOUR,
         FIVE,
         SIX
+    public static final Map<HumanPlayerConstants, Pose2d[]> HumanPlayerLocations =
+            new HashMap<>() {
+                {
+                    final double xMidline = Units.inchesToMeters(345.437979);
+                    final double yMidline = Units.inchesToMeters(158.5);
+                    final double xDist = Units.inchesToMeters(311.912311);
+                    final double yDist = Units.inchesToMeters(132.675768);
+                    final double angleOffset = 54.011;
+                    put(
+                            HumanPlayerConstants.HP_RIGHT,
+                            new Pose2d[] {
+                                new Pose2d(
+                                        xMidline - xDist,
+                                        yMidline - yDist,
+                                        Rotation2d.fromDegrees(angleOffset)),
+                                new Pose2d(
+                                        xMidline + xDist,
+                                        yMidline - yDist,
+                                        Rotation2d.fromDegrees(-angleOffset))
+                            });
+                    put(
+                            HumanPlayerConstants.HP_LEFT,
+                            new Pose2d[] {
+                                new Pose2d(
+                                        xMidline - xDist,
+                                        yMidline + yDist,
+                                        Rotation2d.fromDegrees(-angleOffset)),
+                                new Pose2d(
+                                        xMidline + xDist,
+                                        yMidline + yDist,
+                                        Rotation2d.fromDegrees(angleOffset))
+                            });
+                }
+            };
+
+    public static List<Pose2d> PosesOfAllHumanPlayerStations(int color) {
+        return new ArrayList<>(
+                Arrays.asList(
+                        HumanPlayerLocations.get(HumanPlayerConstants.HP_LEFT)[color],
+                        HumanPlayerLocations.get(HumanPlayerConstants.HP_RIGHT)[color]));
+    }
+
+    public enum HumanPlayerConstants {
+        HP_LEFT,
+        HP_RIGHT
     }
 }

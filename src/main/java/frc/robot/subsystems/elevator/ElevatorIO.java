@@ -14,6 +14,7 @@ public interface ElevatorIO {
         public boolean isAtTargetLevel;
         public double leftVoltage;
         public double rightVoltage;
+        public double current;
     }
 
     /** Update the set of loggable inputs. */
@@ -34,5 +35,5 @@ public interface ElevatorIO {
     /** Resets encoder */
     public default void setEncoder(double position) {}
 
-    public default void updateProfile() {}
+    public default void updateStates() {}
 }

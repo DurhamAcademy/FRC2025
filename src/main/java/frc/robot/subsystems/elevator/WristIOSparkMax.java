@@ -1,5 +1,6 @@
 package frc.robot.subsystems.elevator;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -13,16 +14,29 @@ public class WristIOSparkMax implements WristIO {
     private final SparkMax wristMotor;
     private final SparkClosedLoopController wristController;
     private final SparkAbsoluteEncoder wristEncoder;
+    private final RelativeEncoder relativeEncoder;
     SparkMaxConfig resetConfig = new SparkMaxConfig();
     private final TrapezoidProfile.Constraints constraints;
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
-    private final double zeroOffset = .0714 + .3;
-    private final double horizontalFromZero =
-            2.8107917308807373 - 1.3093030452728271; // 2.462753652191162 - 0.9380345331192017;
 
-    private final ArmFeedforward feedForward;
+    // Zero offset is the distance from the absolute encoder's default offset to where we want it to
+    // set as zero
+    // This value is intentionally a point where the wrist can never reach, avoiding issues with
+    // chain reduction
+    // and angle wraparound
+    private final double zeroOffset = .0714 + .3;
+    // Horizontal from zero is the distance from the newly set zero point to a point horizontal with
+    // the ground
+    // This is calculated by setting the wrist level, then getting the value of the absolute encoder
+    // in advantage scope
+    // Note: you can only accurately get this value from the WristIO on advantage scope if the
+    // deployed code has this
+    // temporarily set to 0
+    private final double horizontalFromZero = 1.4490557670593262;
+
+    private ArmFeedforward feedForward;
 
     // target angle in radians. default angle is horizontal with the ground
     private double targetAngle = 0.0;
@@ -30,20 +44,30 @@ public class WristIOSparkMax implements WristIO {
     public WristIOSparkMax() {
         // using a neo and an absolute encoder
         wristMotor = new SparkMax(WristConstants.wristCanId, SparkLowLevel.MotorType.kBrushless);
-        // zeroed in REV to be horizontal with floor
         wristEncoder = wristMotor.getAbsoluteEncoder();
+        // this wrist controller uses a relative encoder
         wristController = wristMotor.getClosedLoopController();
+        relativeEncoder = wristMotor.getEncoder();
 
         resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+
         resetConfig.closedLoop.pid(
                 WristConstants.wristKp, WristConstants.wristKi, WristConstants.wristKd);
 
-        // sets SparkMax to encode the position of wrist, accounting for gear ratios
+        // sets SparkMax to encode the position of wrist, accounting for gear ratios and the zero
+        // offset
         resetConfig
                 .absoluteEncoder
-                .positionConversionFactor(WristConstants.wristEncoderPositionFactor)
-                .velocityConversionFactor(WristConstants.wristEncoderVelocityFactor)
+                .positionConversionFactor(WristConstants.wristAbsoluteEncoderReduction)
+                .velocityConversionFactor(WristConstants.wristAbsoluteEncoderVelocityFactor)
                 .zeroOffset(zeroOffset);
+
+        // the relative encoder is used for setpoint calculation, so gear ratios must be set
+        // these values are different from the absolute encoder as this encoder is from the motor
+        resetConfig
+                .encoder
+                .positionConversionFactor(WristConstants.wristRelativeEncoderReduction)
+                .velocityConversionFactor(WristConstants.wristRelativeEncoderVelocityFactor);
 
         wristMotor.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
 
@@ -52,11 +76,11 @@ public class WristIOSparkMax implements WristIO {
                 new TrapezoidProfile.Constraints(
                         WristConstants.wristMaxVelocity, WristConstants.wristMaxAcceleration);
         profile = new TrapezoidProfile(constraints);
+
         // default goal and current state
-        currentState =
-                new TrapezoidProfile.State(wristEncoder.getPosition() - horizontalFromZero, 0);
-        goalState = new TrapezoidProfile.State(wristEncoder.getPosition() - horizontalFromZero, 0);
-        targetAngle = wristEncoder.getPosition() - horizontalFromZero;
+        currentState = new TrapezoidProfile.State(getWristOffsetAngle(), 0);
+        targetAngle = getWristOffsetAngle();
+        goalState = new TrapezoidProfile.State(targetAngle, 0);
 
         // feedforward to deal with gravity
         feedForward =
@@ -68,12 +92,13 @@ public class WristIOSparkMax implements WristIO {
     }
 
     /**
-     * Resets the position of the wrist's relative encoder to a specified value.
+     * Gets the angle of the wrist with the zero set as horizontal with the ground
      *
-     * @param position The position value to set the encoder to (radians).
+     * @return double in radians
      */
-    @Override
-    public void setEncoder(double position) {}
+    private double getWristOffsetAngle() {
+        return wristEncoder.getPosition() - horizontalFromZero;
+    }
 
     /**
      * Sets the speed of the wrist motor.
@@ -111,20 +136,19 @@ public class WristIOSparkMax implements WristIO {
     @Override
     public void updateInputs(WristIO.WristIOInputs inputs) {
         // sets inputs from raw values
-        inputs.angle = wristEncoder.getPosition() - horizontalFromZero;
+        inputs.angle = getWristOffsetAngle();
         inputs.velocity = wristEncoder.getVelocity();
-        Logger.recordOutput("Wrist/current", wristMotor.getOutputCurrent());
-        Logger.recordOutput("Wrist/angle", wristMotor.getAppliedOutput());
         inputs.voltage = wristMotor.getAppliedOutput() * wristMotor.getBusVoltage();
 
         inputs.targetAngle = targetAngle;
 
-        // determines if wrist is at target angle from angle and velocity
-        // TODO adjust how precise angle needs to be
+        // determines if wrist is on target
+        // uses angle and velocity tolerance
         inputs.isAtTargetAngle =
                 Math.abs(
                                         Units.radiansToDegrees(inputs.angle)
-                                                - Units.radiansToDegrees(inputs.targetAngle))
+                                                - Units.radiansToDegrees(
+                                                        inputs.targetAngle - horizontalFromZero))
                                 < WristConstants.wristAngularTolerance
                         && Math.abs(inputs.velocity) < WristConstants.wristVelocityTolerance;
     }
@@ -136,29 +160,41 @@ public class WristIOSparkMax implements WristIO {
      */
     @Override
     public void setTargetAngle(double targetAngle) {
-        Logger.recordOutput("Wrist/targetAngle", targetAngle);
         this.targetAngle =
                 MathUtil.clamp(
                         targetAngle,
                         WristConstants.minWristPosition,
                         WristConstants.maxWristPosition);
+
+        // resets current state to encoder values in case anything has changed since target angle
+        // set
+        currentState =
+                new TrapezoidProfile.State(getWristOffsetAngle(), wristEncoder.getVelocity());
         goalState = new TrapezoidProfile.State(targetAngle, 0);
     }
 
     /** Updates wrist trapezoid profile with feed forward calculations */
     @Override
     public void updateStates() {
+        double wristOffsetAngle = getWristOffsetAngle();
+        // sets the relative encoder to horizontally zeroed value from absolute encoder
+        // this is used in wristController.setReference() below
+        relativeEncoder.setPosition(wristOffsetAngle);
+
+        // moves the profile forward. calculates feedforward volts using horizontally-zeroed value
         currentState = profile.calculate(0.02, currentState, goalState);
-        double ffVolts = feedForward.calculate(currentState.position, currentState.velocity);
+        double ffVolts = feedForward.calculate(wristOffsetAngle, wristEncoder.getVelocity());
 
-        // Use the profiler's position as the target for the motor controller
-        Logger.recordOutput("Wrist/ProfilerVelocity", currentState.velocity);
-        Logger.recordOutput("Wrist/ProfilerPosition", currentState.position);
-
+        // actually moves the motor to the setpoint
         wristController.setReference(
-                currentState.position + horizontalFromZero,
+                currentState.position,
                 SparkBase.ControlType.kPosition,
                 ClosedLoopSlot.kSlot0,
                 ffVolts);
+
+        // Log profile and feedforward values
+        Logger.recordOutput("Wrist/feedForwardVolts", ffVolts);
+        Logger.recordOutput("Wrist/ProfilerVelocity", currentState.velocity);
+        Logger.recordOutput("Wrist/ProfilerPosition", currentState.position);
     }
 }

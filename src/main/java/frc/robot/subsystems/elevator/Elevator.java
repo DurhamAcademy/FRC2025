@@ -1,6 +1,8 @@
 package frc.robot.subsystems.elevator;
 
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.drive.DriveConstants.levelFourSpeedLimit;
+import static frc.robot.subsystems.drive.DriveConstants.maxSpeedLimitMetersPerSec;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
@@ -29,14 +31,19 @@ public class Elevator extends SubsystemBase {
     public LoggedMechanismLigament2d wristLigament;
     public LoggedMechanismLigament2d elevatorLigament;
 
+    SysIdRoutine elevatorSysIDRoutine;
+    SysIdRoutine wristSysIDRoutine;
+
+    private boolean hasZeroed = false;
+
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ZERO, WristConstants.STARTING),
+        ZERO(ElevatorConstants.ZERO, WristConstants.INTAKE),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
-        L1(ElevatorConstants.ZERO, WristConstants.LOWER_ALGAE_REMOVAL),
-        L2(ElevatorConstants.ZERO, WristConstants.L2),
-        L3(ElevatorConstants.ZERO, WristConstants.L3),
-        L4(ElevatorConstants.ZERO, WristConstants.L4),
-        NET(ElevatorConstants.ZERO, WristConstants.NET),
+        L1(ElevatorConstants.L1, WristConstants.L1),
+        L2(ElevatorConstants.L2, WristConstants.L2),
+        L3(ElevatorConstants.L3, WristConstants.L3),
+        L4(ElevatorConstants.L4, WristConstants.L4),
+        NET(ElevatorConstants.L4, WristConstants.NET),
         PROCESSOR(ElevatorConstants.L1, WristConstants.PROCESSOR),
         LOWER_ALGAE_REMOVAL(
                 ElevatorConstants.LOWER_ALGAE_REMOVAL, WristConstants.LOWER_ALGAE_REMOVAL),
@@ -52,24 +59,30 @@ public class Elevator extends SubsystemBase {
         }
     }
 
-    SysIdRoutine sysIdRoutine;
-
     public Elevator(ElevatorIO elevatorIO, WristIO wristIO, Drive drive) {
         this.elevatorIO = elevatorIO;
         this.wristIO = wristIO;
         this.drive = drive;
 
-        sysIdRoutine =
+        elevatorSysIDRoutine =
                 new SysIdRoutine(
                         new SysIdRoutine.Config(
                                 null,
                                 null,
                                 null,
-                                (state ->
-                                        Logger.recordOutput(
-                                                "Elevator/SysIdTestState", state.toString()))),
+                                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> elevatorIO.setVoltage(voltage.in(Volts)), null, this));
+
+        wristSysIDRoutine =
+                new SysIdRoutine(
+                        new SysIdRoutine.Config(
+                                Volts.per(Second).of(.5),
+                                Volts.of(2),
+                                Seconds.of(5),
+                                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
+                        new SysIdRoutine.Mechanism(
+                                (voltage) -> wristIO.setVoltage(voltage.in(Volts)), null, this));
 
         loggedMechanismRoot =
                 loggedMechanism.getRoot(
@@ -96,6 +109,14 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
+        elevatorIO.updateInputs(elevatorInputs);
+        wristIO.updateInputs(wristInputs);
+
+        Logger.processInputs("Elevator", elevatorInputs);
+        Logger.processInputs("Wrist", wristInputs);
+
+        updateDriveMaxVelocity();
+
         // if wrist was previously restricted, but no longer needs to be
         if (wristRestricted && !isWristRestricted()) {
             // set the wrist target angle to the saved value
@@ -103,17 +124,14 @@ public class Elevator extends SubsystemBase {
             wristIO.setTargetAngle(savedWristTargetAngle);
         }
 
-        elevatorIO.updateInputs(elevatorInputs);
-        wristIO.updateInputs(wristInputs);
-        Logger.processInputs("Elevator", elevatorInputs);
-        Logger.processInputs("Wrist", wristInputs);
-
         if (elevatorInputs.isLimitSwitchPressed) {
             elevatorIO.setEncoder(ElevatorConstants.minHeight);
         }
 
-        elevatorIO.updateProfile();
-        wristIO.updateStates();
+        if (isZeroed()) {
+            elevatorIO.setEncoder(ElevatorConstants.minHeight);
+            if (!hasZeroed) hasZeroed = true;
+        }
 
         elevatorLigament.setLength(
                 Units.inchesToMeters(
@@ -121,10 +139,19 @@ public class Elevator extends SubsystemBase {
         // -90 because the '0' for the wrist is horizontal with the ground
         wristLigament.setAngle(Units.radiansToDegrees(wristInputs.angle) - 90);
         Logger.recordOutput("FieldSimulation/ElevatorMech2d", loggedMechanism);
+
+        elevatorIO.updateStates();
+        wristIO.updateStates();
     }
 
     public void setElevatorTargetHeight(double heightInches) {
         elevatorIO.setTargetHeightInches(heightInches);
+    }
+
+    public void updateDriveMaxVelocity() {
+        double slope =
+                (levelFourSpeedLimit - maxSpeedLimitMetersPerSec) / ElevatorConstants.maxHeight;
+        drive.setMaxVelocity(slope * elevatorInputs.leftHeightInches + maxSpeedLimitMetersPerSec);
     }
 
     /**
@@ -169,8 +196,7 @@ public class Elevator extends SubsystemBase {
         // if the robot isn't near the closest reef, allow normal wrist movement
         if (drive.getPose()
                         .getTranslation()
-                        .getDistance(
-                                drive.getReefPose(drive.getClosestTargetReef()).getTranslation())
+                        .getDistance(drive.getReefPose(drive.getClosestReef()).getTranslation())
                 > 1) {
             return false;
         }
@@ -186,6 +212,10 @@ public class Elevator extends SubsystemBase {
                                         - Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
     }
 
+    public boolean isAtSetpoint() {
+        return elevatorInputs.isAtTargetLevel && wristInputs.isAtTargetAngle;
+    }
+
     /**
      * Sets the speed of the wrist
      *
@@ -198,6 +228,10 @@ public class Elevator extends SubsystemBase {
 
     public double getElevatorHeight() {
         return elevatorInputs.leftHeightInches;
+    }
+
+    public double getWristAngle() {
+        return wristInputs.angle;
     }
 
     /**
@@ -217,16 +251,46 @@ public class Elevator extends SubsystemBase {
         elevatorIO.setVoltage(voltage);
     }
 
+    public void stopElevator() {
+        elevatorIO.stopMotors();
+    }
+
+    public void stopWrist() {
+        wristIO.stopMotors();
+    }
+
+    /**
+     * Whether the elevator has found its zero at least once
+     *
+     * @return boolean
+     */
+    public boolean hasZeroed() {
+        return hasZeroed;
+    }
+
+    /**
+     * Whether the elevator is currently zeroed
+     *
+     * @return boolean
+     */
     public boolean isZeroed() {
         return elevatorInputs.isLimitSwitchPressed;
     }
 
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return sysIdRoutine.quasistatic(direction);
+    public Command wristSysIDQuasistatic(SysIdRoutine.Direction direction) {
+        return wristSysIDRoutine.quasistatic(direction);
     }
 
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return sysIdRoutine.dynamic(direction);
+    public Command wristSysIDDynamic(SysIdRoutine.Direction direction) {
+        return wristSysIDRoutine.dynamic(direction);
+    }
+
+    public Command elevatorSysIDQuasistatic(SysIdRoutine.Direction direction) {
+        return elevatorSysIDRoutine.quasistatic(direction);
+    }
+
+    public Command elevatorSysIDDynamic(SysIdRoutine.Direction direction) {
+        return elevatorSysIDRoutine.dynamic(direction);
     }
 
     /*

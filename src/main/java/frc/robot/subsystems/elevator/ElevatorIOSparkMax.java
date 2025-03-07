@@ -7,7 +7,6 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
@@ -52,21 +51,15 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         limitSwitch = new DigitalInput(ElevatorConstants.limitSwitchPort);
 
         resetConfig.idleMode(IdleMode.kBrake);
-        resetConfig.smartCurrentLimit(40);
-        resetConfig.voltageCompensation(12.0);
+        resetConfig.smartCurrentLimit(80);
         resetConfig
                 .encoder
                 .positionConversionFactor(ElevatorConstants.elevatorEncoderPositionFactor)
-                .velocityConversionFactor(ElevatorConstants.elevatorEncoderVelocityFactor)
-                .uvwMeasurementPeriod(10)
-                .uvwAverageDepth(2);
-        resetConfig
-                .closedLoop
-                .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                        ElevatorConstants.elevatorKp,
-                        ElevatorConstants.elevatorKi,
-                        ElevatorConstants.elevatorKd);
+                .velocityConversionFactor(ElevatorConstants.elevatorEncoderVelocityFactor);
+        resetConfig.closedLoop.pid(
+                ElevatorConstants.elevatorKp,
+                ElevatorConstants.elevatorKi,
+                ElevatorConstants.elevatorKd);
 
         configureMotors();
 
@@ -123,11 +116,9 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
-        Logger.recordOutput("Elevator/current", primaryMotor.getOutputCurrent());
-        Logger.recordOutput("Elevator/rightcurrent", followerMotor.getOutputCurrent());
+        inputs.current = primaryMotor.getOutputCurrent();
         inputs.isLimitSwitchPressed = !limitSwitch.get(); // limit switch is inverted
         inputs.leftHeightInches = primaryEncoder.getPosition();
-        Logger.recordOutput("Elevator/primaryEncoder", primaryEncoder.getPosition());
         inputs.rightHeightInches = followerEncoder.getPosition();
         inputs.targetHeightInches = targetHeightInches;
         inputs.velocityInches = primaryEncoder.getVelocity();
@@ -147,6 +138,9 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
         // setting the goal state of the trapezoid profile to the new target height
         goalState = new TrapezoidProfile.State(targetHeightInches, 0);
+        currentState =
+                new TrapezoidProfile.State(
+                        primaryEncoder.getPosition(), primaryEncoder.getVelocity());
     }
 
     /**
@@ -154,12 +148,11 @@ public class ElevatorIOSparkMax implements ElevatorIO {
      * subsystem's periodic function
      */
     @Override
-    public void updateProfile() {
+    public void updateStates() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);
-        double ffVolts = 0;
-        // not sure if this works yet
-        // double ffVolts = feedForward.calculate(currentState.velocity);;
+
+        double ffVolts = feedForward.calculate(currentState.velocity);
 
         // Use the profiler's position as the target for the motor controller
         Logger.recordOutput("Elevator/ProfilerVelocity", currentState.velocity);

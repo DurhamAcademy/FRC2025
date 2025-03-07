@@ -111,6 +111,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void disabledInit() {
         robotContainer.resetSimulationField();
+        robotContainer.resetSetpoints();
     }
 
     /** This function is called periodically when disabled. */
@@ -122,6 +123,7 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void autonomousInit() {
+        robotContainer.resetSetpoints();
         autonomousCommand = robotContainer.getAutonomousCommand();
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
@@ -136,6 +138,7 @@ public class Robot extends LoggedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
+        robotContainer.resetSetpoints();
         // This makes sure that the autonomous stops running when
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
@@ -162,26 +165,13 @@ public class Robot extends LoggedRobot {
 
     /** This function is called once when the robot is first started up. */
     @Override
-    public void simulationInit() {
-        //        Map<FieldConstants.ReefConstants, Pose2d[]> reefLocations =
-        //                FieldConstants.LocationConstants.ReefLocations;
-        //
-        //        // Iterate through each reef constant
-        //        for (Map.Entry<FieldConstants.ReefConstants, Pose2d[]> entry :
-        // reefLocations.entrySet()) {
-        //            FieldConstants.ReefConstants reef = entry.getKey();
-        //            Pose2d[] poses = entry.getValue(); // [0] = blue, [1] = red
-        //
-        //            // Log each reef for both Blue and Red alliance poses
-        //            Logger.recordOutput("Reefs/" + reef.name() + "/Blue", poses[0]);
-        //            Logger.recordOutput("Reefs/" + reef.name() + "/Red", poses[1]);
-        //        }
-    }
+    public void simulationInit() {}
 
     /** This function is called periodically whilst in simulation. */
     @Override
     public void simulationPeriodic() {
         SimulatedArena.getInstance().simulationPeriodic();
         robotContainer.displaySimFieldToAdvantageScope();
+        robotContainer.intakeCoralIfAtStation();
     }
 }

@@ -52,6 +52,7 @@ public class DriveCommands {
     // TODO: update these numbers
     public static final double LINEAR_MAX_ACCELERATION = 11.77;
     public static final double ANGLE_MAX_VELOCITY = 12.37;
+    // TODO change this with characterization
     public static final double ANGLE_MAX_ACCELERATION = 74.34;
 
     private static final double FF_START_DELAY = 2.0; // Secs
@@ -418,13 +419,14 @@ public class DriveCommands {
                         0.0,
                         ANGLE_KD,
                         new TrapezoidProfile.Constraints(
-                                ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+                                // TODO change this max acceleration
+                                drive.getMaxVelocity(), ANGLE_MAX_ACCELERATION));
         angleController.enableContinuousInput(-Math.PI, Math.PI);
         PathConstraints constraints =
                 new PathConstraints(
-                        DriveConstants.maxSpeedMetersPerSec,
+                        Drive.currentSpeedLimitMetersPerSec,
                         LINEAR_MAX_ACCELERATION,
-                        ANGLE_MAX_VELOCITY,
+                        drive.getMaxAngularSpeedRadPerSec(),
                         ANGLE_MAX_ACCELERATION);
 
         return Commands.defer(
@@ -505,7 +507,7 @@ public class DriveCommands {
     /**
      * Runs both rough and precise auto align to target code
      *
-     * @param drive
+     * @param drive subsystem
      * @return Commands.repeatingSequence
      */
     public static Command autoAlignToLocation(Drive drive, autoAlignLocations location) {
@@ -532,5 +534,65 @@ public class DriveCommands {
                                     return distance > .5;
                                 }))
                 .until(drive::isAlignedToLocation);
+    }
+
+    /**
+     * Align to human player station
+     *
+     * @param drive subsystem
+     * @param xSupplier left joystick x value
+     * @param ySupplier left joystick y value
+     * @return command
+     */
+    public static Command autoAlignToHumanPlayerStation(
+            Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+        ProfiledPIDController angleController =
+                new ProfiledPIDController(
+                        ANGLE_KP,
+                        0.0,
+                        ANGLE_KD,
+                        new TrapezoidProfile.Constraints(
+                                drive.getMaxAngularSpeedRadPerSec(), ANGLE_MAX_ACCELERATION));
+
+        // Enable continuous input
+        angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+        return Commands.run(
+                        () -> {
+                            Translation2d linearVelocity =
+                                    getLinearVelocityFromJoysticks(
+                                            xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+                            Pose2d hps = drive.getNearestHumanPlayerStation();
+
+                            double omega =
+                                    angleController.calculate(
+                                            drive.getRotation().getRadians(),
+                                            hps.getRotation().getRadians());
+
+                            ChassisSpeeds speeds =
+                                    new ChassisSpeeds(
+                                            linearVelocity.getX()
+                                                    * drive.getMaxLinearSpeedMetersPerSec(),
+                                            linearVelocity.getY()
+                                                    * drive.getMaxLinearSpeedMetersPerSec(),
+                                            omega * drive.getMaxAngularSpeedRadPerSec());
+
+                            // See if rotation should be flipped, red = flipped, blue =
+                            // normal
+                            boolean isFlipped =
+                                    DriverStation.getAlliance().isPresent()
+                                            && DriverStation.getAlliance().get() == Alliance.Red;
+
+                            // Run the velocity on the drive
+                            drive.runVelocity(
+                                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                                            speeds,
+                                            isFlipped
+                                                    ? drive.getRotation()
+                                                            .plus(new Rotation2d(Math.PI))
+                                                    : drive.getRotation()));
+                        })
+                .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
     }
 }
