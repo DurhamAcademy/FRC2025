@@ -209,6 +209,8 @@ public class Drive extends SubsystemBase {
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode == Mode.SIM);
+
+        setTargetAlgaeToClosest();
     }
 
     /**
@@ -447,7 +449,7 @@ public class Drive extends SubsystemBase {
 
         // Update visualization if the reef has changed
         if (oldTargetReef != targetReef) {
-            updateDashboardReefVisualization(targetReef.ordinal());
+            updateTargetDashboardVisualization(targetReef.ordinal());
         }
     }
 
@@ -586,15 +588,17 @@ public class Drive extends SubsystemBase {
         return alignedToReef;
     }
 
-    public void updateDashboardReefVisualization(int reefIndex) {
-        for (int i = 1; i <= 12; i++) {
+    public void updateTargetDashboardVisualization(int locationIndex) {
+        for (int i = 1; i <= 6; i++) {
             final int index = i;
             SmartDashboard.putData(
-                    "Target Reef",
+                    "Target Location",
                     builder -> {
                         builder.setSmartDashboardType("Boolean");
                         builder.addBooleanProperty(
-                                "Target Reef" + index, () -> reefIndex + 1 == index, null);
+                                String.valueOf(index),
+                                () -> (locationIndex + 4) % 6 == index,
+                                null);
                     });
         }
     }
@@ -625,7 +629,7 @@ public class Drive extends SubsystemBase {
         Constants.AlgaeConstants oldTargetAlgae = targetAlgae;
         targetAlgae = getClosestTargetAlgae();
         if (oldTargetAlgae != targetAlgae) {
-            updateDashboardAlgaeVisualization(targetAlgae.ordinal());
+            updateTargetDashboardVisualization(targetAlgae.ordinal());
         }
     }
 
@@ -674,18 +678,5 @@ public class Drive extends SubsystemBase {
                         && rotationError < 2.0; // 2.5 inches and < 2 degrees
         Logger.recordOutput("Vision/alignedToAlgae", alignedToAlgae);
         return alignedToAlgae;
-    }
-
-    public void updateDashboardAlgaeVisualization(int algaeIndex) {
-        for (int i = 1; i <= 12; i++) {
-            final int index = i;
-            SmartDashboard.putData(
-                    "Target Algae",
-                    builder -> {
-                        builder.setSmartDashboardType("Boolean");
-                        builder.addBooleanProperty(
-                                "Target Reef" + index, () -> algaeIndex + 1 == index, null);
-                    });
-        }
     }
 }

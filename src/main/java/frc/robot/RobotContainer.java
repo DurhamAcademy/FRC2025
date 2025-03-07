@@ -13,7 +13,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.wpilibj2.command.Commands.*;
 import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -167,7 +166,7 @@ public class RobotContainer {
                 "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
 
         // Set up auto routines
-        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+        autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser());
 
         // Set up SysId routines
         autoChooser.addOption(
@@ -470,7 +469,7 @@ public class RobotContainer {
                     builder.addBooleanProperty("alignedToTarget", drive::isAlignedToLocation, null);
                 });
 
-        drive.updateDashboardReefVisualization(drive.getTargetReef().ordinal());
+        drive.updateTargetDashboardVisualization(drive.getTargetAlgae().ordinal());
 
         SmartDashboard.putData(
                 "Override",
