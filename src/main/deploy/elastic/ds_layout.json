@@ -11,7 +11,7 @@
             "x": 0.0,
             "y": 256.0,
             "width": 256.0,
-            "height": 192.0,
+            "height": 320.0,
             "type": "List Layout",
             "properties": {
               "label_position": "LEFT"
@@ -39,6 +39,45 @@
                 "type": "Toggle Switch",
                 "properties": {
                   "topic": "/SmartDashboard/Override/Reef AA",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "XY INVERT",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/INVERT AXES/XY INVERT",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "Y INVERT",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/INVERT AXES/Y INVERT",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "X INVERT",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/INVERT AXES/X INVERT",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -80,7 +119,7 @@
           },
           {
             "title": "IsRedAlliance",
-            "x": 128.0,
+            "x": 0.0,
             "y": 0.0,
             "width": 128.0,
             "height": 128.0,
@@ -96,41 +135,31 @@
             }
           },
           {
-            "title": "StationNumber",
-            "x": 0.0,
-            "y": 0.0,
+            "title": "1",
+            "x": 640.0,
+            "y": 64.0,
             "width": 128.0,
             "height": 128.0,
-            "type": "Text Display",
+            "type": "Boolean Box",
             "properties": {
-              "topic": "/FMSInfo/StationNumber",
+              "topic": "/SmartDashboard/Target Location/1",
               "period": 0.06,
-              "data_type": "int",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Auto Chooser",
-            "x": 0.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "ComboBox Chooser",
-            "properties": {
-              "topic": "/SmartDashboard/Auto Choices",
-              "period": 0.06,
-              "sort_options": false
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           },
           {
             "title": "2",
             "x": 832.0,
             "y": 192.0,
-            "width": 64.0,
-            "height": 64.0,
+            "width": 128.0,
+            "height": 128.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef2",
+              "topic": "/SmartDashboard/Target Location/2",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -141,13 +170,13 @@
           },
           {
             "title": "3",
-            "x": 896.0,
-            "y": 256.0,
-            "width": 64.0,
-            "height": 64.0,
+            "x": 832.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef3",
+              "topic": "/SmartDashboard/Target Location/3",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -158,13 +187,13 @@
           },
           {
             "title": "4",
-            "x": 896.0,
-            "y": 384.0,
-            "width": 64.0,
-            "height": 64.0,
+            "x": 640.0,
+            "y": 512.0,
+            "width": 128.0,
+            "height": 128.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef4",
+              "topic": "/SmartDashboard/Target Location/4",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -175,13 +204,13 @@
           },
           {
             "title": "5",
-            "x": 832.0,
-            "y": 448.0,
-            "width": 64.0,
-            "height": 64.0,
+            "x": 448.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef5",
+              "topic": "/SmartDashboard/Target Location/5",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -192,98 +221,13 @@
           },
           {
             "title": "6",
-            "x": 704.0,
-            "y": 512.0,
-            "width": 64.0,
-            "height": 64.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef6",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "7",
-            "x": 640.0,
-            "y": 512.0,
-            "width": 64.0,
-            "height": 64.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef7",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "8",
-            "x": 512.0,
-            "y": 448.0,
-            "width": 64.0,
-            "height": 64.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef8",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "9",
             "x": 448.0,
-            "y": 384.0,
-            "width": 64.0,
-            "height": 64.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef9",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "10",
-            "x": 448.0,
-            "y": 256.0,
-            "width": 64.0,
-            "height": 64.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef10",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "11",
-            "x": 512.0,
             "y": 192.0,
-            "width": 64.0,
-            "height": 64.0,
+            "width": 128.0,
+            "height": 128.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef11",
+              "topic": "/SmartDashboard/Target Location/6",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -293,14 +237,14 @@
             }
           },
           {
-            "title": "12",
+            "title": "Aligned",
             "x": 640.0,
-            "y": 128.0,
-            "width": 64.0,
+            "y": 320.0,
+            "width": 128.0,
             "height": 64.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef12",
+              "topic": "/SmartDashboard/Vision/alignedToTarget",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -310,14 +254,44 @@
             }
           },
           {
-            "title": "1",
-            "x": 704.0,
+            "title": "Max",
+            "x": 0.0,
             "y": 128.0,
-            "width": 64.0,
-            "height": 64.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/MAX SPEED/Max",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "MatchTime",
+            "x": 1152.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 192.0,
+            "type": "Match Time",
+            "properties": {
+              "topic": "/AdvantageKit/DriverStation/MatchTime",
+              "period": 0.06,
+              "data_type": "double",
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 15,
+              "yellow_start_time": 30
+            }
+          },
+          {
+            "title": "Enabled",
+            "x": 128.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Target Reef/Target Reef1",
+              "topic": "/AdvantageKit/DriverStation/Enabled",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -333,7 +307,145 @@
       "name": "Autonomous",
       "grid_layout": {
         "layouts": [],
-        "containers": []
+        "containers": [
+          {
+            "title": "Auto Chooser",
+            "x": 576.0,
+            "y": 0.0,
+            "width": 320.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Chooser",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "StationNumber",
+            "x": 1280.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/FMSInfo/StationNumber",
+              "period": 0.06,
+              "data_type": "int",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Connected",
+            "x": 128.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RadioStatus/Connected",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FMSAttached",
+            "x": 128.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/DriverStation/FMSAttached",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Enabled",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/DriverStation/Enabled",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "DSAttached",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/DriverStation/DSAttached",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "GitBranch",
+            "x": 1280.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealMetadata/GitBranch",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "BatteryVoltage",
+            "x": 1152.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/SystemStats/BatteryVoltage",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "MatchNumber",
+            "x": 1152.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/DriverStation/MatchNumber",
+              "period": 0.06,
+              "data_type": "int",
+              "show_submit_button": false
+            }
+          }
+        ]
       }
     }
   ]
