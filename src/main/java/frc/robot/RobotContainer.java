@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
@@ -211,6 +212,14 @@ public class RobotContainer {
 
         NamedCommands.registerCommand(
                 "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
+
+        NamedCommands.registerCommand(
+                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator).repeatedly().until(intake::getBeamBroken).withTimeout(3)
+        );
+
+        NamedCommands.registerCommand("Eject Coral",
+                ManipulatorCommands.eject(manipulator).repeatedly().withTimeout(0.5)
+        );
     }
 
     /**
