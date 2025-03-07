@@ -22,7 +22,9 @@ public class ElevatorCommands {
 
     public static Command zeroElevator(Elevator elevator) {
         return setElevatorLevel(elevator, ElevatorLevel.ZERO)
-                .until(() -> Math.abs(0 - elevator.getElevatorHeight()) < 1)
+                .andThen(
+                        Commands.waitUntil(() -> Math.abs(0 - elevator.getElevatorHeight()) < 1)
+                                .withTimeout(5))
                 .andThen(setElevatorVoltage(elevator, -.1).until(elevator::isZeroed));
     }
 
