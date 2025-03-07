@@ -277,46 +277,42 @@ public class RobotContainer {
                 .onFalse(stopManipulator);
 
         // Auto align & Shoot
-                driverController
-                        .leftTrigger()
-                        .and(driverController.rightBumper())
-                        .and(() -> !algaeMode) // Only when NOT in algaeMode
-                        .onTrue(setAlignLeft)
-                        .whileTrue(
-                                new ConditionalCommand(
-                                        ManipulatorCommands.eject(
-                                                manipulator), // Command if condition is true
-                                        DriveCommands.autoAlignToLocation(
-                                                drive,
-                                                DriveCommands.autoAlignLocations
-                                                        .reef), // Command if condition is false
-                                        () ->
-                                                drive.isAlignedToReef()
-                                                        && elevator.isAtSetpoint()
-                                                        && elevator.getElevatorHeight()
-                                                                > ElevatorConstants.L1
-                                                                        - 4)
-                                );
-                driverController
-                        .rightTrigger()
-                        .and(driverController.rightBumper())
-                        .and(() -> !algaeMode) // Only when NOT in algaeMode
-                        .onTrue(setAlignRight)
-                        .whileTrue(
-                                new ConditionalCommand(
-                                        ManipulatorCommands.eject(
-                                                manipulator), // Command if condition is true
-                                        DriveCommands.autoAlignToLocation(
-                                                drive,
-                                                DriveCommands.autoAlignLocations
-                                                        .reef), // Command if condition is false
-                                        () ->
-                                                drive.isAlignedToReef()
-                                                        && elevator.isAtSetpoint()
-                                                        && elevator.getElevatorHeight()
-                                                                > ElevatorConstants.L1
-                                                                        - 4)
-                                );
+        driverController
+                .leftTrigger()
+                .and(driverController.rightBumper())
+                .and(() -> !algaeMode) // Only when NOT in algaeMode
+                .onTrue(setAlignLeft)
+                .whileTrue(
+                        new ConditionalCommand(
+                                ManipulatorCommands.eject(
+                                        manipulator), // Command if condition is true
+                                DriveCommands.autoAlignToLocation(
+                                        drive,
+                                        DriveCommands.autoAlignLocations
+                                                .reef), // Command if condition is false
+                                () ->
+                                        drive.isAlignedToReef()
+                                                && elevator.isAtSetpoint()
+                                                && elevator.getElevatorHeight()
+                                                        > ElevatorConstants.L1 - 4));
+        driverController
+                .rightTrigger()
+                .and(driverController.rightBumper())
+                .and(() -> !algaeMode) // Only when NOT in algaeMode
+                .onTrue(setAlignRight)
+                .whileTrue(
+                        new ConditionalCommand(
+                                ManipulatorCommands.eject(
+                                        manipulator), // Command if condition is true
+                                DriveCommands.autoAlignToLocation(
+                                        drive,
+                                        DriveCommands.autoAlignLocations
+                                                .reef), // Command if condition is false
+                                () ->
+                                        drive.isAlignedToReef()
+                                                && elevator.isAtSetpoint()
+                                                && elevator.getElevatorHeight()
+                                                        > ElevatorConstants.L1 - 4));
 
         // Auto align
         // TODO its probably not great to set reef to left if in algae mode, but it shouldn't
