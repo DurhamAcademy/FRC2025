@@ -234,11 +234,14 @@ public class RobotContainer {
         // Automatically angle to HP & run intake
         Command intakeCoral =
                 Commands.parallel(
-                        DriveCommands.autoAlignToHumanPlayerStation(
-                                drive,
-                                () -> (yDirect * driverController.getLeftY()),
-                                () -> (xDirect * driverController.getLeftX())),
-                        IntakeCommands.intakeCoral(intake, manipulator));
+                        //                        DriveCommands.autoAlignToHumanPlayerStation(
+                        //                                drive,
+                        //                                () -> (yDirect *
+                        // driverController.getLeftY()),
+                        //                                () -> (xDirect *
+                        // driverController.getLeftX())),
+                        IntakeCommands.intakeCoral(intake, manipulator),
+                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));
 
         Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
@@ -265,7 +268,7 @@ public class RobotContainer {
         // Intake from HP / Intake algae
         driverController
                 .leftBumper()
-                .whileTrue(Commands.either(intakeAlgae, intakeCoral, () -> algaeMode));
+                .onTrue(Commands.either(intakeAlgae, intakeCoral, () -> algaeMode));
 
         // Shoot coral / algae
         driverController
@@ -368,8 +371,6 @@ public class RobotContainer {
                                         elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
                                 () -> algaeMode));
-
-        operatorController.leftTrigger().onTrue(IntakeCommands.intakeCoral(intake, manipulator));
 
         operatorController
                 .povRight()

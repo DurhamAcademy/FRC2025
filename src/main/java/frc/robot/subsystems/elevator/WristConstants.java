@@ -24,7 +24,7 @@ public class WristConstants {
     public static final double UPPER_ALGAE_REMOVAL = Math.toRadians(0.0);
     public static final double NET = Math.toRadians(30.0);
     // fixme seems wrong in sim
-    public static final double PROCESSOR = Math.toRadians(-15.0);
+    public static final double PROCESSOR = Math.toRadians(0);
 
     // inches
     public static final double WRIST_LENGTH = 11.875;

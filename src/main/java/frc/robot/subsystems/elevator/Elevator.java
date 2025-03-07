@@ -37,14 +37,14 @@ public class Elevator extends SubsystemBase {
     private boolean hasZeroed = false;
 
     public enum ElevatorLevel {
-        ZERO(ElevatorConstants.ZERO, WristConstants.INTAKE),
+        ZERO(ElevatorConstants.ZERO, WristConstants.ALGAE_IDLE),
         INTAKE(ElevatorConstants.ZERO, WristConstants.INTAKE),
         L1(ElevatorConstants.L1, WristConstants.L1),
         L2(ElevatorConstants.L2, WristConstants.L2),
         L3(ElevatorConstants.L3, WristConstants.L3),
         L4(ElevatorConstants.L4, WristConstants.L4),
         NET(ElevatorConstants.L4, WristConstants.NET),
-        PROCESSOR(ElevatorConstants.L1, WristConstants.PROCESSOR),
+        PROCESSOR(ElevatorConstants.ZERO, WristConstants.PROCESSOR),
         LOWER_ALGAE_REMOVAL(
                 ElevatorConstants.LOWER_ALGAE_REMOVAL, WristConstants.LOWER_ALGAE_REMOVAL),
         UPPER_ALGAE_REMOVAL(
