@@ -578,12 +578,20 @@ public class Drive extends SubsystemBase {
         // Stop when BOTH distance and orientation are
         // within the thresholds
 
+        Logger.recordOutput("Vision/currentPose", currentPose);
+        Logger.recordOutput("Vision/targetPose", targetPose);
+        Logger.recordOutput(
+                "Vision/maxDistance",
+                Constants.coralInnerWidth - Constants.reefPipeDiameter - Units.inchesToMeters(.25));
+        Logger.recordOutput("Vision/distance", distance);
+        Logger.recordOutput("Vision/rotationError", rotationError);
+
         boolean alignedToReef =
                 distance
                                 < Constants.coralInnerWidth
                                         - Constants.reefPipeDiameter
                                         - Units.inchesToMeters(.25)
-                        && rotationError < 2.0; // 2.5 inches and < 2 degrees
+                        && rotationError < 5; // 2.5 inches and < 2 degrees
         Logger.recordOutput("Vision/alignedToReef", alignedToReef);
         return alignedToReef;
     }
