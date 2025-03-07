@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.IntakeCommands;
@@ -155,24 +154,24 @@ public class RobotContainer {
         autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser());
 
         // Set up SysId routines
-        autoChooser.addOption(
-                "Drive Wheel Radius Characterization",
-                DriveCommands.wheelRadiusCharacterization(drive));
-        autoChooser.addOption(
-                "Drive Simple FF Characterization",
-                DriveCommands.feedforwardCharacterization(drive));
-        autoChooser.addOption(
-                "Drive SysId (Quasistatic Forward)",
-                drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        autoChooser.addOption(
-                "Drive SysId (Quasistatic Reverse)",
-                drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        autoChooser.addOption(
-                "Drive SysId (Dynamic Forward)",
-                drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        autoChooser.addOption(
-                "Drive SysId (Dynamic Reverse)",
-                drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        //        autoChooser.addOption(
+        //                "Drive Wheel Radius Characterization",
+        //                DriveCommands.wheelRadiusCharacterization(drive));
+        //        autoChooser.addOption(
+        //                "Drive Simple FF Characterization",
+        //                DriveCommands.feedforwardCharacterization(drive));
+        //        autoChooser.addOption(
+        //                "Drive SysId (Quasistatic Forward)",
+        //                drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        //        autoChooser.addOption(
+        //                "Drive SysId (Quasistatic Reverse)",
+        //                drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        //        autoChooser.addOption(
+        //                "Drive SysId (Dynamic Forward)",
+        //                drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        //        autoChooser.addOption(
+        //                "Drive SysId (Dynamic Reverse)",
+        //                drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
         sendDataToSmartDashboard();
@@ -200,43 +199,35 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "Elevator L1",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)
-                        .repeatedly()
-                        .until(elevator::isAtSetpoint));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
 
         NamedCommands.registerCommand(
                 "Elevator L2",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)
-                        .repeatedly()
-                        .until(elevator::isAtSetpoint));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
 
         NamedCommands.registerCommand(
                 "Elevator L3",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)
-                        .repeatedly()
-                        .until(elevator::isAtSetpoint));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
 
         NamedCommands.registerCommand(
                 "Elevator L4",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)
-                        .repeatedly()
-                        .until(elevator::isAtSetpoint));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
 
         NamedCommands.registerCommand(
                 "Elevator Zero",
-                ElevatorCommands.zeroElevator(elevator).repeatedly().until(elevator::isAtSetpoint));
+                ElevatorCommands.zeroElevator(elevator)
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
 
         NamedCommands.registerCommand(
                 "Elevator Intake",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE)
-                        .repeatedly()
-                        .until(elevator::isAtSetpoint));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
 
         NamedCommands.registerCommand(
-                "Run Intake",
-                IntakeCommands.intakeCoral(intake, manipulator)
-                        .repeatedly()
-                        .until(intake::getBeamBroken)
-                        .withTimeout(3));
+                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator));
 
         NamedCommands.registerCommand(
                 "Eject Coral",
