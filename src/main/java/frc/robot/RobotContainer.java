@@ -323,7 +323,8 @@ public class RobotContainer {
                 .onTrue(setAlignLeft)
                 .whileTrue(
                         new ConditionalCommand(
-                                Commands.none(),
+                                DriveCommands.autoAlignToLocation(
+                                        drive, DriveCommands.autoAlignLocations.algae),
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.reef),
                                 () -> algaeMode));
@@ -333,7 +334,8 @@ public class RobotContainer {
                 .onTrue(setAlignRight)
                 .whileTrue(
                         new ConditionalCommand(
-                                Commands.none(),
+                                DriveCommands.autoAlignToLocation(
+                                        drive, DriveCommands.autoAlignLocations.processor),
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.reef),
                                 () -> algaeMode));
