@@ -211,23 +211,39 @@ public class RobotContainer {
                 "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
 
         NamedCommands.registerCommand(
-                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator).repeatedly().until(intake::getBeamBroken).withTimeout(3)
-        );
+                "Run Intake",
+                IntakeCommands.intakeCoral(intake, manipulator)
+                        .repeatedly()
+                        .until(intake::getBeamBroken)
+                        .withTimeout(3));
 
-        NamedCommands.registerCommand("Eject Coral",
-                ManipulatorCommands.eject(manipulator).repeatedly().withTimeout(0.5)
-        );
+        NamedCommands.registerCommand(
+                "Eject Coral",
+                ManipulatorCommands.eject(manipulator).repeatedly().withTimeout(0.5));
 
         // todo change align timeouts
-        NamedCommands.registerCommand("Align Reef Left",
-                Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT), drive).andThen(
-                DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef).repeatedly().until(drive::isAlignedToReef).withTimeout(5))
-        );
+        NamedCommands.registerCommand(
+                "Align Reef Left",
+                Commands.runOnce(
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT), drive)
+                        .andThen(
+                                DriveCommands.autoAlignToLocation(
+                                                drive, DriveCommands.autoAlignLocations.reef)
+                                        .repeatedly()
+                                        .until(drive::isAlignedToReef)
+                                        .withTimeout(5)));
 
-        NamedCommands.registerCommand("Align Reef Right",
-                Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT), drive).andThen(
-                        DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef).repeatedly().until(drive::isAlignedToReef).withTimeout(5))
-        );
+        NamedCommands.registerCommand(
+                "Align Reef Right",
+                Commands.runOnce(
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT),
+                                drive)
+                        .andThen(
+                                DriveCommands.autoAlignToLocation(
+                                                drive, DriveCommands.autoAlignLocations.reef)
+                                        .repeatedly()
+                                        .until(drive::isAlignedToReef)
+                                        .withTimeout(5)));
     }
 
     /**
