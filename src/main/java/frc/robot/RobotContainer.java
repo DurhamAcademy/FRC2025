@@ -253,8 +253,6 @@ public class RobotContainer {
                         .andThen(
                                 DriveCommands.autoAlignToLocation(
                                                 drive, DriveCommands.autoAlignLocations.reef)
-                                        .repeatedly()
-                                        .until(drive::isAlignedToReef)
                                         .withTimeout(5)));
     }
 
