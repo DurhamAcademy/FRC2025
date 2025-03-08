@@ -62,6 +62,8 @@ public class WristIOSparkMax implements WristIO {
                 .velocityConversionFactor(WristConstants.wristAbsoluteEncoderVelocityFactor)
                 .zeroOffset(zeroOffset);
 
+        resetConfig.smartCurrentLimit(30);
+
         // the relative encoder is used for setpoint calculation, so gear ratios must be set
         // these values are different from the absolute encoder as this encoder is from the motor
         resetConfig

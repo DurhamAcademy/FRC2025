@@ -290,11 +290,11 @@ public class RobotContainer {
         // Automatically angle to HP & run intake
         Command intakeCoral =
                 Commands.parallel(
-                        // todo test this in a practice match
-                        DriveCommands.autoAlignToHumanPlayerStation(
-                                drive,
-                                () -> (yDirect * driverController.getLeftY()),
-                                () -> (xDirect * driverController.getLeftX())),
+                        // fixme bugging the whole match
+//                        DriveCommands.autoAlignToHumanPlayerStation(
+//                                drive,
+//                                () -> (yDirect * driverController.getLeftY()),
+//                                () -> (xDirect * driverController.getLeftX())),
                         IntakeCommands.intakeCoral(intake, manipulator),
                         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));
 
@@ -405,6 +405,8 @@ public class RobotContainer {
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
+
+        operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
         driverController
                 .rightBumper()

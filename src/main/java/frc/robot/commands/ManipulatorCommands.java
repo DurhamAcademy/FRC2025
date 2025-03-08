@@ -20,7 +20,7 @@ public class ManipulatorCommands {
     }
 
     public static Command eject(Manipulator manipulator) {
-        return runManipulator(manipulator, 4);
+        return runManipulator(manipulator, 2);
     }
 
     public static Command algaeIntake(Manipulator manipulator) {
