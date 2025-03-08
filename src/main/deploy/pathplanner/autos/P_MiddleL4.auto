@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "strategic path"
+            "pathName": "Middle L4 Path"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "New Path"
+            "name": "Elevator L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Eject Coral"
           }
         }
       ]
@@ -21,5 +27,5 @@
   },
   "resetOdom": true,
   "folder": null,
-  "choreoAuto": true
+  "choreoAuto": false
 }

@@ -214,7 +214,8 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Runs the drive at the desired velocity.
+     * Runs the drive at the desired velocity. it should go a certain acceleration and stop at
+     * whatever
      *
      * @param speeds Speeds in meters/sec
      */
