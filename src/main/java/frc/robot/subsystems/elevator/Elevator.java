@@ -118,7 +118,7 @@ public class Elevator extends SubsystemBase {
         updateDriveMaxVelocity();
 
         // if wrist was previously restricted, but no longer needs to be
-        if (wristRestricted && !isWristRestricted()) {
+        if (wristRestricted && !isWristHeightRestricted()) {
             // set the wrist target angle to the saved value
             wristRestricted = false;
             wristIO.setTargetAngle(savedWristTargetAngle);
@@ -161,56 +161,70 @@ public class Elevator extends SubsystemBase {
      */
     public void setWristTargetAngle(double targetAngle) {
         // if wrist could possibly hit the reef
-        if (false) {
+        if (isWristHeightRestricted()) {
             // set vars to hold targetAngle until safe to move the wrist
             wristRestricted = true;
             savedWristTargetAngle = targetAngle;
 
-            // get the safe angles for the wrist when right next to the reef + extra room
-            double restrictedAngle =
-                    Math.acos(WristConstants.REEF_MIN_DISTANCE / WristConstants.WRIST_LENGTH) + .1;
+            targetAngle = wristInputs.angle;
 
-            // if the target angle is in the restricted area, set it to the closest angle it can get
-            // to safely
-            if (Math.abs(targetAngle) < restrictedAngle) {
-                targetAngle = wristInputs.angle > 0 ? restrictedAngle : -restrictedAngle;
-            }
-            // if the target angle is on the opposite side of the restricted area from the wrist's
-            // current angle,
-            // set it to the closest angle it can get to safely
-            else if (targetAngle > 0 && wristInputs.angle < 0) {
-                targetAngle = -restrictedAngle;
-            } else if (targetAngle < 0 && wristInputs.angle > 0) {
-                targetAngle = restrictedAngle;
-            }
+            //            // get the safe angles for the wrist when right next to the reef + extra
+            // room
+            //            double restrictedAngle =
+            //                    Math.acos(WristConstants.REEF_MIN_DISTANCE /
+            // WristConstants.WRIST_LENGTH) + .1;
+            //
+            //            // if the target angle is in the restricted area, set it to the closest
+            // angle it can get
+            //            // to safely
+            //            if (Math.abs(targetAngle) < restrictedAngle) {
+            //                targetAngle = wristInputs.angle > 0 ? restrictedAngle :
+            // -restrictedAngle;
+            //            }
+            //            // if the target angle is on the opposite side of the restricted area from
+            // the wrist's
+            //            // current angle,
+            //            // set it to the closest angle it can get to safely
+            //            else if (targetAngle > 0 && wristInputs.angle < 0) {
+            //                targetAngle = -restrictedAngle;
+            //            } else if (targetAngle < 0 && wristInputs.angle > 0) {
+            //                targetAngle = restrictedAngle;
+            //            }
         }
+
         wristIO.setTargetAngle(targetAngle);
     }
 
-    /**
-     * Determines if wrist should be restricted
-     *
-     * @return boolean
-     */
-    public boolean isWristRestricted() {
-        // if the robot isn't near the closest reef, allow normal wrist movement
-        if (drive.getPose()
-                        .getTranslation()
-                        .getDistance(drive.getReefPose(drive.getClosestReef()).getTranslation())
-                > 1) {
-            return false;
-        }
-
-        // if elevator height (off the ground) > than the reef height +
-        // the height of a triangle formed by the wrist and the robot's minimum distance to the reef
-        return elevatorInputs.leftHeightInches
-                        + ElevatorConstants.elevatorBaseHeight
-                        + WristConstants.WRIST_AXLE_HEIGHT
-                < WristConstants.REEF_PANEL_HEIGHT
-                        + Math.sqrt(
-                                Math.pow(WristConstants.WRIST_LENGTH, 2)
-                                        - Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
+    public boolean isWristHeightRestricted() {
+        return elevatorInputs.leftHeightInches > 50;
     }
+
+    //    /**
+    //     * Determines if wrist should be restricted
+    //     *
+    //     * @return boolean
+    //     */
+    //    public boolean isWristRestricted() {
+    //        // if the robot isn't near the closest reef, allow normal wrist movement
+    //        if (drive.getPose()
+    //                        .getTranslation()
+    //
+    // .getDistance(drive.getReefPose(drive.getClosestReef()).getTranslation())
+    //                > 1) {
+    //            return false;
+    //        }
+    //
+    //        // if elevator height (off the ground) > than the reef height +
+    //        // the height of a triangle formed by the wrist and the robot's minimum distance to
+    // the reef
+    //        return elevatorInputs.leftHeightInches
+    //                        + ElevatorConstants.elevatorBaseHeight
+    //                        + WristConstants.WRIST_AXLE_HEIGHT
+    //                < WristConstants.REEF_PANEL_HEIGHT
+    //                        + Math.sqrt(
+    //                                Math.pow(WristConstants.WRIST_LENGTH, 2)
+    //                                        - Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
+    //    }
 
     public boolean isAtSetpoint() {
         return elevatorInputs.isAtTargetLevel && wristInputs.isAtTargetAngle;
