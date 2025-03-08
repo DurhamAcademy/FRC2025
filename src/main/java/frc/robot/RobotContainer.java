@@ -199,39 +199,46 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "Elevator L1",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(3));
 
         NamedCommands.registerCommand(
                 "Elevator L2",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(3.5));
 
         NamedCommands.registerCommand(
                 "Elevator L3",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(4));
 
         NamedCommands.registerCommand(
                 "Elevator L4",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(4.5));
 
         NamedCommands.registerCommand(
                 "Elevator Zero",
                 ElevatorCommands.zeroElevator(elevator)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(4.5));
 
         NamedCommands.registerCommand(
                 "Elevator Intake",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint)));
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(4.5));
 
+        // TODO auto with intake untested
         NamedCommands.registerCommand(
-                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator));
+                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator).withTimeout(6));
 
         NamedCommands.registerCommand(
                 "Eject Coral",
-                ManipulatorCommands.eject(manipulator).repeatedly().withTimeout(0.5));
+                ManipulatorCommands.eject(manipulator).repeatedly().withTimeout(.75));
 
         // todo change align timeouts
         NamedCommands.registerCommand(

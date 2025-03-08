@@ -7,25 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "NO MOVE TEST PATH"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
+            "pathName": "Middle L4 Path"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Elevator L4"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 5.0
           }
         },
         {
