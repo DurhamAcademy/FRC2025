@@ -13,13 +13,13 @@ public class ElevatorConstants {
     // Elevator PID Configuration
     // Manually tune PID?
     // TODO: FIGURE OUT
-    public static final double elevatorKp = .65;
+    public static final double elevatorKp = .65 * (9 / 5);
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
     // TODO: Elevator FF can be found through SysID
     public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 1.12;
-    public static final double elevatorKv = 0.07;
+    public static final double elevatorKg = 1.12 * ((double) 5 / 9);
+    public static final double elevatorKv = 0.07 * ((double) 5 / 9);
     public static final double elevatorKa = 0.0;
 
     // Elevator Levels in inches from master sketch
@@ -43,7 +43,7 @@ public class ElevatorConstants {
     public static final double maxHeight = L4;
 
     public static final double elevatorMotorReduction =
-            10.0; // Motor gear reduction 5:1 (NEO) and 2:1 (22t -> 44t)
+            18.0; // Motor gear reduction 5:1 (NEO) and 2:1 (22t -> 44t)
     public static final double elevatorEffectiveDrumRadius =
             0.955 * 3; // Drum radius in inches multiplied by 3 because 3-stage elevator
     public static final double elevatorEncoderPositionFactor =

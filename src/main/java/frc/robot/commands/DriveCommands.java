@@ -378,7 +378,7 @@ public class DriveCommands {
             locationPose = drive.getProcessor();
         }
 
-        double shiftDistance = DriveConstants.robotWidth - .25;
+        double shiftDistance = DriveConstants.robotWidth - .28;
         Rotation2d shiftRotation =
                 Rotation2d.fromDegrees(
                         locationPose.getRotation().getDegrees()
@@ -420,7 +420,7 @@ public class DriveCommands {
                         ANGLE_KD,
                         new TrapezoidProfile.Constraints(
                                 // TODO change this max acceleration
-                                drive.getMaxVelocity(), 4));
+                                drive.getMaxVelocity() - 1, 4));
         angleController.enableContinuousInput(-Math.PI, Math.PI);
         PathConstraints constraints =
                 new PathConstraints(

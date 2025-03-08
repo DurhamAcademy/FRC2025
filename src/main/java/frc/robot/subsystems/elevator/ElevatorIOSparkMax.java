@@ -51,7 +51,7 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         limitSwitch = new DigitalInput(ElevatorConstants.limitSwitchPort);
 
         resetConfig.idleMode(IdleMode.kBrake);
-        resetConfig.smartCurrentLimit(80);
+        resetConfig.smartCurrentLimit(50);
         resetConfig
                 .encoder
                 .positionConversionFactor(ElevatorConstants.elevatorEncoderPositionFactor)

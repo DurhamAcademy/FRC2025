@@ -238,7 +238,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand(
                 "Eject Coral",
-                ManipulatorCommands.eject(manipulator).repeatedly().withTimeout(.75));
+                ManipulatorCommands.eject(manipulator, 1).repeatedly().withTimeout(.75));
 
         // todo change align timeouts
         NamedCommands.registerCommand(
@@ -291,10 +291,12 @@ public class RobotContainer {
         Command intakeCoral =
                 Commands.parallel(
                         // fixme bugging the whole match
-//                        DriveCommands.autoAlignToHumanPlayerStation(
-//                                drive,
-//                                () -> (yDirect * driverController.getLeftY()),
-//                                () -> (xDirect * driverController.getLeftX())),
+                        //                        DriveCommands.autoAlignToHumanPlayerStation(
+                        //                                drive,
+                        //                                () -> (yDirect *
+                        // driverController.getLeftY()),
+                        //                                () -> (xDirect *
+                        // driverController.getLeftX())),
                         IntakeCommands.intakeCoral(intake, manipulator),
                         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));
 
@@ -330,7 +332,11 @@ public class RobotContainer {
                 .rightBumper()
                 .and(driverController.leftTrigger().negate())
                 .and(driverController.rightTrigger().negate())
-                .whileTrue(manipulatorEject)
+                .whileTrue(
+                        Commands.either(
+                                ManipulatorCommands.eject(manipulator, 4),
+                                manipulatorEject,
+                                () -> algaeMode))
                 .onFalse(stopManipulator);
 
         // Auto align & Shoot

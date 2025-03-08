@@ -33,7 +33,6 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
 
         resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
         resetConfig.smartCurrentLimit(80);
-        resetConfig.voltageCompensation(12.0);
         resetConfig
                 .closedLoop
                 .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
