@@ -420,14 +420,14 @@ public class DriveCommands {
                         ANGLE_KD,
                         new TrapezoidProfile.Constraints(
                                 // TODO change this max acceleration
-                                drive.getMaxVelocity(), ANGLE_MAX_ACCELERATION));
+                                drive.getMaxVelocity(), 4));
         angleController.enableContinuousInput(-Math.PI, Math.PI);
         PathConstraints constraints =
                 new PathConstraints(
-                        Drive.currentSpeedLimitMetersPerSec,
-                        LINEAR_MAX_ACCELERATION,
+                        drive.getMaxVelocity(),
+                        4,
                         drive.getMaxAngularSpeedRadPerSec(),
-                        ANGLE_MAX_ACCELERATION);
+                        4 / DriveConstants.driveBaseRadius);
 
         return Commands.defer(
                         () -> {
@@ -461,7 +461,7 @@ public class DriveCommands {
                                 0,
                                 0,
                                 // max velocity and max acceleration TODO check these values
-                                new TrapezoidProfile.Constraints(5.63, 8.44)));
+                                new TrapezoidProfile.Constraints(drive.getMaxVelocity(), 4)));
         holonomicDriveController.getThetaController().enableContinuousInput(-Math.PI, Math.PI);
         // sets 5cm and 5 degree precision
         holonomicDriveController.setTolerance(new Pose2d(0.05, 0.05, Rotation2d.fromDegrees(5)));
@@ -551,8 +551,7 @@ public class DriveCommands {
                         ANGLE_KP,
                         0.0,
                         ANGLE_KD,
-                        new TrapezoidProfile.Constraints(
-                                drive.getMaxAngularSpeedRadPerSec(), ANGLE_MAX_ACCELERATION));
+                        new TrapezoidProfile.Constraints(drive.getMaxVelocity(), 4));
 
         // Enable continuous input
         angleController.enableContinuousInput(-Math.PI, Math.PI);

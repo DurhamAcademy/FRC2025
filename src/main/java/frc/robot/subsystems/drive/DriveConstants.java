@@ -26,7 +26,7 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
 public class DriveConstants {
     // update max speed meters per sec
-    public static final double maxSpeedLimitMetersPerSec = 5.05;
+    public static final double maxSpeedLimitMetersPerSec = 4.1;
     // TODO TUNE MIN SPEED
     public static final double levelFourSpeedLimit = 2.0;
     public static final double odometryFrequency = 100.0; // Hz
@@ -87,8 +87,8 @@ public class DriveConstants {
     // Drive PID configuration
     public static final double driveKp = 0.0;
     public static final double driveKd = 0.0;
-    public static final double driveKs = 0.0;
-    public static final double driveKv = 0.1;
+    public static final double driveKs = 0.18527;
+    public static final double driveKv = 0.11972;
     public static final double driveSimP = 0.05;
     public static final double driveSimD = 0.0;
     public static final double driveSimKs = 0.0;

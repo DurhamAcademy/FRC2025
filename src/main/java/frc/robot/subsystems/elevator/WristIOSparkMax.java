@@ -144,11 +144,11 @@ public class WristIOSparkMax implements WristIO {
 
         // determines if wrist is on target
         // uses angle and velocity tolerance
+
         inputs.isAtTargetAngle =
                 Math.abs(
                                         Units.radiansToDegrees(inputs.angle)
-                                                - Units.radiansToDegrees(
-                                                        inputs.targetAngle - horizontalFromZero))
+                                                - Units.radiansToDegrees(inputs.targetAngle))
                                 < WristConstants.wristAngularTolerance
                         && Math.abs(inputs.velocity) < WristConstants.wristVelocityTolerance;
     }

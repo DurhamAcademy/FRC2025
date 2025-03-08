@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.IntakeCommands;
@@ -149,44 +148,30 @@ public class RobotContainer {
                 break;
         }
 
-        NamedCommands.registerCommand("Force Intake", ManipulatorCommands.forceIntake(manipulator));
-        NamedCommands.registerCommand("Eject", ManipulatorCommands.eject(manipulator));
-        NamedCommands.registerCommand("Algae Intake", ManipulatorCommands.algaeIntake(manipulator));
-
-        NamedCommands.registerCommand(
-                "Elevator L1", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1));
-
-        NamedCommands.registerCommand(
-                "Elevator L2", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2));
-
-        NamedCommands.registerCommand(
-                "Elevator L3", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3));
-
-        NamedCommands.registerCommand(
-                "Elevator L4", ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4));
+        registerNamedCommands();
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser());
 
         // Set up SysId routines
-        autoChooser.addOption(
-                "Drive Wheel Radius Characterization",
-                DriveCommands.wheelRadiusCharacterization(drive));
-        autoChooser.addOption(
-                "Drive Simple FF Characterization",
-                DriveCommands.feedforwardCharacterization(drive));
-        autoChooser.addOption(
-                "Drive SysId (Quasistatic Forward)",
-                drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        autoChooser.addOption(
-                "Drive SysId (Quasistatic Reverse)",
-                drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        autoChooser.addOption(
-                "Drive SysId (Dynamic Forward)",
-                drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        autoChooser.addOption(
-                "Drive SysId (Dynamic Reverse)",
-                drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        //        autoChooser.addOption(
+        //                "Drive Wheel Radius Characterization",
+        //                DriveCommands.wheelRadiusCharacterization(drive));
+        //        autoChooser.addOption(
+        //                "Drive Simple FF Characterization",
+        //                DriveCommands.feedforwardCharacterization(drive));
+        //        autoChooser.addOption(
+        //                "Drive SysId (Quasistatic Forward)",
+        //                drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        //        autoChooser.addOption(
+        //                "Drive SysId (Quasistatic Reverse)",
+        //                drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        //        autoChooser.addOption(
+        //                "Drive SysId (Dynamic Forward)",
+        //                drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        //        autoChooser.addOption(
+        //                "Drive SysId (Dynamic Reverse)",
+        //                drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
         sendDataToSmartDashboard();
@@ -205,6 +190,77 @@ public class RobotContainer {
         } else {
             yDirect = 1;
         }
+    }
+
+    /**
+     * Method that registers all the named commands to be used by pathplanner for autos and whatnot.
+     */
+    private void registerNamedCommands() {
+        NamedCommands.registerCommand(
+                "Elevator L1",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(3));
+
+        NamedCommands.registerCommand(
+                "Elevator L2",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(3.5));
+
+        NamedCommands.registerCommand(
+                "Elevator L3",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(4));
+
+        NamedCommands.registerCommand(
+                "Elevator L4",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(4.5));
+
+        NamedCommands.registerCommand(
+                "Elevator Zero",
+                ElevatorCommands.zeroElevator(elevator)
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(4.5));
+
+        NamedCommands.registerCommand(
+                "Elevator Intake",
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE)
+                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .withTimeout(4.5));
+
+        // TODO auto with intake untested
+        NamedCommands.registerCommand(
+                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator).withTimeout(6));
+
+        NamedCommands.registerCommand(
+                "Eject Coral",
+                ManipulatorCommands.eject(manipulator).repeatedly().withTimeout(.75));
+
+        // todo change align timeouts
+        NamedCommands.registerCommand(
+                "Align Reef Left",
+                Commands.runOnce(
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT), drive)
+                        .andThen(
+                                DriveCommands.autoAlignToLocation(
+                                                drive, DriveCommands.autoAlignLocations.reef)
+                                        .repeatedly()
+                                        .until(drive::isAlignedToReef)
+                                        .withTimeout(5)));
+
+        NamedCommands.registerCommand(
+                "Align Reef Right",
+                Commands.runOnce(
+                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT),
+                                drive)
+                        .andThen(
+                                DriveCommands.autoAlignToLocation(
+                                                drive, DriveCommands.autoAlignLocations.reef)
+                                        .withTimeout(5)));
     }
 
     /**
@@ -235,12 +291,10 @@ public class RobotContainer {
         Command intakeCoral =
                 Commands.parallel(
                         // todo test this in a practice match
-                                                DriveCommands.autoAlignToHumanPlayerStation(
-                                                        drive,
-                                                        () -> (yDirect *
-                         driverController.getLeftY()),
-                                                        () -> (xDirect *
-                         driverController.getLeftX())),
+                        DriveCommands.autoAlignToHumanPlayerStation(
+                                drive,
+                                () -> (yDirect * driverController.getLeftY()),
+                                () -> (xDirect * driverController.getLeftX())),
                         IntakeCommands.intakeCoral(intake, manipulator),
                         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));
 
@@ -280,43 +334,43 @@ public class RobotContainer {
                 .onFalse(stopManipulator);
 
         // Auto align & Shoot
-        //fixme not going to be competition ready
-//        driverController
-//                .leftTrigger()
-//                .and(driverController.rightBumper())
-//                .and(() -> !algaeMode) // Only when NOT in algaeMode
-//                .onTrue(setAlignLeft)
-//                .whileTrue(
-//                        new ConditionalCommand(
-//                                ManipulatorCommands.eject(
-//                                        manipulator), // Command if condition is true
-//                                DriveCommands.autoAlignToLocation(
-//                                        drive,
-//                                        DriveCommands.autoAlignLocations
-//                                                .reef), // Command if condition is false
-//                                () ->
-//                                        drive.isAlignedToReef()
-//                                                && elevator.isAtSetpoint()
-//                                                && elevator.getElevatorHeight()
-//                                                        > ElevatorConstants.L1 - 4));
-//        driverController
-//                .rightTrigger()
-//                .and(driverController.rightBumper())
-//                .and(() -> !algaeMode) // Only when NOT in algaeMode
-//                .onTrue(setAlignRight)
-//                .whileTrue(
-//                        new ConditionalCommand(
-//                                ManipulatorCommands.eject(
-//                                        manipulator), // Command if condition is true
-//                                DriveCommands.autoAlignToLocation(
-//                                        drive,
-//                                        DriveCommands.autoAlignLocations
-//                                                .reef), // Command if condition is false
-//                                () ->
-//                                        drive.isAlignedToReef()
-//                                                && elevator.isAtSetpoint()
-//                                                && elevator.getElevatorHeight()
-//                                                        > ElevatorConstants.L1 - 4));
+        // fixme not going to be competition ready
+        //        driverController
+        //                .leftTrigger()
+        //                .and(driverController.rightBumper())
+        //                .and(() -> !algaeMode) // Only when NOT in algaeMode
+        //                .onTrue(setAlignLeft)
+        //                .whileTrue(
+        //                        new ConditionalCommand(
+        //                                ManipulatorCommands.eject(
+        //                                        manipulator), // Command if condition is true
+        //                                DriveCommands.autoAlignToLocation(
+        //                                        drive,
+        //                                        DriveCommands.autoAlignLocations
+        //                                                .reef), // Command if condition is false
+        //                                () ->
+        //                                        drive.isAlignedToReef()
+        //                                                && elevator.isAtSetpoint()
+        //                                                && elevator.getElevatorHeight()
+        //                                                        > ElevatorConstants.L1 - 4));
+        //        driverController
+        //                .rightTrigger()
+        //                .and(driverController.rightBumper())
+        //                .and(() -> !algaeMode) // Only when NOT in algaeMode
+        //                .onTrue(setAlignRight)
+        //                .whileTrue(
+        //                        new ConditionalCommand(
+        //                                ManipulatorCommands.eject(
+        //                                        manipulator), // Command if condition is true
+        //                                DriveCommands.autoAlignToLocation(
+        //                                        drive,
+        //                                        DriveCommands.autoAlignLocations
+        //                                                .reef), // Command if condition is false
+        //                                () ->
+        //                                        drive.isAlignedToReef()
+        //                                                && elevator.isAtSetpoint()
+        //                                                && elevator.getElevatorHeight()
+        //                                                        > ElevatorConstants.L1 - 4));
 
         // Auto align
         // TODO its probably not great to set reef to left if in algae mode, but it shouldn't
