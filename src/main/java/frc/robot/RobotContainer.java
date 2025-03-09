@@ -263,8 +263,6 @@ public class RobotContainer {
                                 DriveCommands.autoAlignToLocation(
                                                 drive, DriveCommands.autoAlignLocations.reef)
                                         .withTimeout(5)));
-
-        NamedCommands.registerCommand("IntakeForAuto", IntakeCommands.intakeCoralForAuto(intake, manipulator));
     }
 
     /**

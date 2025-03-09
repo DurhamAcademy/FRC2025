@@ -28,18 +28,6 @@ public class IntakeCommands {
                         ManipulatorCommands.runManipulator(manipulator, 0));
     }
 
-    public static Command intakeCoralForAuto(Intake intake, Manipulator manipulator) {
-        return parallel(
-                IntakeCommands.runIntake(intake, 3.0)
-                        .repeatedly()
-                        .until(manipulator::beamBroken)
-                        .andThen(IntakeCommands.stopIntake(intake)),
-                ManipulatorCommands.intakeCoral(manipulator).withTimeout(3))
-                .andThen(
-                        IntakeCommands.stopIntake(intake),
-                        ManipulatorCommands.runManipulator(manipulator, 0).withTimeout(.5));
-    }
-
     public static Command runIntake(Intake intake, double voltage) {
         return Commands.runOnce(() -> intake.setVoltage(voltage), intake);
     }
