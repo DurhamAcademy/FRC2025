@@ -18,8 +18,7 @@ public class IntakeIOSparkMax implements IntakeIO {
         intakeEncoder = intakeMotor.getEncoder();
 
         intakeResetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        intakeResetConfig.smartCurrentLimit(80);
-        intakeResetConfig.voltageCompensation(12.0);
+        intakeResetConfig.smartCurrentLimit(50);
         intakeResetConfig.inverted(true);
 
         intakeMotor.configure(intakeResetConfig, SparkBase.ResetMode.kResetSafeParameters, null);

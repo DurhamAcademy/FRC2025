@@ -234,11 +234,13 @@ public class RobotContainer {
 
         // TODO auto with intake untested
         NamedCommands.registerCommand(
-                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator).withTimeout(6));
+                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator));
 
         NamedCommands.registerCommand(
                 "Eject Coral",
-                ManipulatorCommands.eject(manipulator, 1).repeatedly().withTimeout(.75));
+                ManipulatorCommands.eject(manipulator, 1)
+                        .withTimeout(.75)
+                        .andThen(ManipulatorCommands.eject(manipulator, 0).withTimeout(.1)));
 
         // todo change align timeouts
         NamedCommands.registerCommand(

@@ -19,6 +19,14 @@ public class ManipulatorCommands {
                 manipulator);
     }
 
+    public static Command stopManipulator(Manipulator manipulator) {
+        return Commands.runOnce(
+                () -> {
+                    manipulator.setVoltage(0);
+                },
+                manipulator);
+    }
+
     public static Command eject(Manipulator manipulator) {
         return runManipulator(manipulator, 1);
     }

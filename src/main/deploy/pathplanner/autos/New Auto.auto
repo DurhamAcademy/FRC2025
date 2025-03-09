@@ -9,15 +9,15 @@
           "data": {
             "commands": [
               {
-                "type": "path",
-                "data": {
-                  "pathName": "Middle L4 Path"
-                }
-              },
-              {
                 "type": "named",
                 "data": {
                   "name": "Elevator L4"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Middle L4 Path"
                 }
               }
             ]

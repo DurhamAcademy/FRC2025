@@ -4,7 +4,6 @@ import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.manipulator.Manipulator;
 
@@ -34,7 +33,7 @@ public class IntakeCommands {
     }
 
     public static Command stopIntake(Intake intake) {
-        return new RunCommand(
+        return Commands.runOnce(
                 () -> {
                     intake.setVoltage(0.0);
                 },

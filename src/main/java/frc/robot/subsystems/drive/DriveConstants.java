@@ -28,7 +28,7 @@ public class DriveConstants {
     // update max speed meters per sec
     public static final double maxSpeedLimitMetersPerSec = 4.1;
     // TODO TUNE MIN SPEED
-    public static final double levelFourSpeedLimit = 2.0;
+    public static final double levelFourSpeedLimit = 1.0;
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = Units.inchesToMeters(22.75);
     public static final double wheelBase = Units.inchesToMeters(22.75);
