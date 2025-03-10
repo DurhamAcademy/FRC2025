@@ -414,7 +414,9 @@ public class RobotContainer {
 
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
 
-        operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator, elevator));
+        operatorController
+                .a()
+                .onTrue(IntakeCommands.retryStuckIntake(intake, manipulator, elevator));
 
         driverController
                 .rightBumper()

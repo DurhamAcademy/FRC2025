@@ -158,7 +158,7 @@ public class Elevator extends SubsystemBase {
         elevatorIO.setTargetHeightInches(heightInches);
     }
 
-    public ElevatorLevel getTargetLevel(){
+    public ElevatorLevel getTargetLevel() {
         return elevatorLevel;
     }
 

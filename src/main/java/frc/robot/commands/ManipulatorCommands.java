@@ -37,12 +37,16 @@ public class ManipulatorCommands {
 
     public static Command intakeCoral(Manipulator manipulator) {
         return sequence(
-                runManipulator(manipulator, 1.5).repeatedly()
+                runManipulator(manipulator, 1.5)
+                        .repeatedly()
                         .until(manipulator::beamBroken), // run until coral starts to enter
-                runManipulator(manipulator, 0.75).repeatedly()
+                runManipulator(manipulator, 0.75)
+                        .repeatedly()
                         .until(() -> !manipulator.beamBroken()), // continue until too far
                 runManipulator(manipulator, -0.6).repeatedly().until(manipulator::beamBroken),
-                runManipulator(manipulator, 0.3).repeatedly().until(() -> !manipulator.beamBroken()),
+                runManipulator(manipulator, 0.3)
+                        .repeatedly()
+                        .until(() -> !manipulator.beamBroken()),
                 stopManipulator(manipulator));
     }
 }
