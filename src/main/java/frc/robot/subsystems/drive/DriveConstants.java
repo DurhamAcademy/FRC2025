@@ -118,8 +118,8 @@ public class DriveConstants {
     public static final double tippingThresholdDegrees = 8.0;
 
     // PathPlanner configuration
-    public static final double robotMassKg = 74.088;
-    public static final double robotMOI = 6.883;
+    public static final double robotMassKg = 57.070;
+    public static final double robotMOI = 4.805;
     public static final double wheelCOF = 1.2;
     public static final RobotConfig ppConfig =
             new RobotConfig(
