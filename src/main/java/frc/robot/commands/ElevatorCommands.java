@@ -10,8 +10,7 @@ public class ElevatorCommands {
     public static Command setElevatorLevel(Elevator elevator, ElevatorLevel level) {
         return Commands.runOnce(
                 () -> {
-                    elevator.setElevatorTargetHeight(level.heightInches);
-                    elevator.setWristTargetAngle(level.angleRadians);
+                    elevator.setElevatorLevel(level);
                 },
                 elevator);
     }

@@ -26,6 +26,8 @@ public class Elevator extends SubsystemBase {
     private boolean wristRestricted = false;
     private double savedWristTargetAngle = 0.0;
 
+    private ElevatorLevel elevatorLevel;
+
     private static final LoggedMechanism2d loggedMechanism = new LoggedMechanism2d(3, 3);
     public LoggedMechanismRoot2d loggedMechanismRoot;
     public LoggedMechanismLigament2d wristLigament;
@@ -63,6 +65,8 @@ public class Elevator extends SubsystemBase {
         this.elevatorIO = elevatorIO;
         this.wristIO = wristIO;
         this.drive = drive;
+
+        elevatorLevel = ElevatorLevel.ZERO;
 
         elevatorSysIDRoutine =
                 new SysIdRoutine(
@@ -144,8 +148,18 @@ public class Elevator extends SubsystemBase {
         wristIO.updateStates();
     }
 
+    public void setElevatorLevel(ElevatorLevel level) {
+        setElevatorTargetHeight(level.heightInches);
+        setWristTargetAngle(level.angleRadians);
+        elevatorLevel = level;
+    }
+
     public void setElevatorTargetHeight(double heightInches) {
         elevatorIO.setTargetHeightInches(heightInches);
+    }
+
+    public ElevatorLevel getTargetLevel(){
+        return elevatorLevel;
     }
 
     public void updateDriveMaxVelocity() {

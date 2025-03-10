@@ -234,7 +234,7 @@ public class RobotContainer {
 
         // TODO auto with intake untested
         NamedCommands.registerCommand(
-                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator));
+                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator, elevator));
 
         NamedCommands.registerCommand(
                 "Eject Coral",
@@ -299,7 +299,7 @@ public class RobotContainer {
                         // driverController.getLeftY()),
                         //                                () -> (xDirect *
                         // driverController.getLeftX())),
-                        IntakeCommands.intakeCoral(intake, manipulator),
+                        IntakeCommands.intakeCoral(intake, manipulator, elevator),
                         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));
 
         Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
@@ -414,7 +414,7 @@ public class RobotContainer {
 
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
 
-        operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
+        operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator, elevator));
 
         driverController
                 .rightBumper()
