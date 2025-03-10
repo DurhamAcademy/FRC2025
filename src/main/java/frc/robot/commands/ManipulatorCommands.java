@@ -7,12 +7,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.manipulator.Manipulator;
 
 public class ManipulatorCommands {
-    public double secondForwardVolts = 0.75;
-    public double backVolts = -0.6;
-    public double thirdForwardVolts = 0.3;
-
     public static Command runManipulator(Manipulator manipulator, double volts) {
-        return Commands.run(
+        return Commands.runOnce(
                 () -> {
                     manipulator.setVoltage(volts);
                 },
@@ -28,29 +24,25 @@ public class ManipulatorCommands {
     }
 
     public static Command eject(Manipulator manipulator) {
-        return runManipulator(manipulator, 1);
+        return runManipulator(manipulator, 1).repeatedly();
     }
 
     public static Command eject(Manipulator manipulator, double volts) {
-        return runManipulator(manipulator, volts);
+        return runManipulator(manipulator, volts).repeatedly();
     }
 
     public static Command algaeIntake(Manipulator manipulator) {
-        return runManipulator(manipulator, -2.0);
-    }
-
-    public static Command forceIntake(Manipulator manipulator) {
-        return runManipulator(manipulator, 9);
+        return runManipulator(manipulator, -2.0).repeatedly();
     }
 
     public static Command intakeCoral(Manipulator manipulator) {
         return sequence(
-                runManipulator(manipulator, 1.5)
+                runManipulator(manipulator, 1.5).repeatedly()
                         .until(manipulator::beamBroken), // run until coral starts to enter
-                runManipulator(manipulator, 0.75)
+                runManipulator(manipulator, 0.75).repeatedly()
                         .until(() -> !manipulator.beamBroken()), // continue until too far
-                runManipulator(manipulator, -0.6).until(manipulator::beamBroken),
-                runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
-                runManipulator(manipulator, 0));
+                runManipulator(manipulator, -0.6).repeatedly().until(manipulator::beamBroken),
+                runManipulator(manipulator, 0.3).repeatedly().until(() -> !manipulator.beamBroken()),
+                stopManipulator(manipulator));
     }
 }

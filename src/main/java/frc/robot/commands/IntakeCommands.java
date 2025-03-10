@@ -10,7 +10,7 @@ import frc.robot.subsystems.manipulator.Manipulator;
 public class IntakeCommands {
     public static Command retryStuckIntake(Intake intake, Manipulator manipulator) {
         return parallel(
-                        ManipulatorCommands.runManipulator(manipulator, 0.0),
+                        ManipulatorCommands.stopManipulator(manipulator),
                         runIntake(intake, -2.0))
                 .withTimeout(0.1)
                 .andThen(intakeCoral(intake, manipulator));
@@ -25,7 +25,7 @@ public class IntakeCommands {
                         ManipulatorCommands.intakeCoral(manipulator))
                 .andThen(
                         IntakeCommands.stopIntake(intake),
-                        ManipulatorCommands.runManipulator(manipulator, 0));
+                        ManipulatorCommands.stopManipulator(manipulator));
     }
 
     public static Command runIntake(Intake intake, double voltage) {

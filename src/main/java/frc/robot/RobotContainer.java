@@ -240,7 +240,7 @@ public class RobotContainer {
                 "Eject Coral",
                 ManipulatorCommands.eject(manipulator, 1)
                         .withTimeout(.75)
-                        .andThen(ManipulatorCommands.eject(manipulator, 0).withTimeout(.1)));
+                        .andThen(ManipulatorCommands.stopManipulator(manipulator)));
 
         // todo change align timeouts
         NamedCommands.registerCommand(
@@ -319,7 +319,7 @@ public class RobotContainer {
         Command setAlignRight =
                 Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT));
 
-        Command stopManipulator = ManipulatorCommands.runManipulator(manipulator, 0);
+        Command stopManipulator = ManipulatorCommands.stopManipulator(manipulator);
 
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -418,8 +418,8 @@ public class RobotContainer {
 
         driverController
                 .rightBumper()
-                .whileTrue(ManipulatorCommands.eject(manipulator))
-                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
+                .whileTrue(ManipulatorCommands.eject(manipulator).repeatedly())
+                .onFalse(ManipulatorCommands.stopManipulator(manipulator));
 
         operatorController
                 .povLeft()
