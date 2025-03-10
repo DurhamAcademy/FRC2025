@@ -198,25 +198,25 @@ public class RobotContainer {
     private void registerNamedCommands() {
         NamedCommands.registerCommand(
                 "Elevator L1",
-                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator, ElevatorLevel.L1)
+                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.L1)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(3));
 
         NamedCommands.registerCommand(
                 "Elevator L2",
-                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator, ElevatorLevel.L2)
+                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.L2)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(3.5));
 
         NamedCommands.registerCommand(
                 "Elevator L3",
-                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator,ElevatorLevel.L3)
+                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.L3)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(4));
 
         NamedCommands.registerCommand(
                 "Elevator L4",
-                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator,ElevatorLevel.L4)
+                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.L4)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(4.5));
 
@@ -228,7 +228,8 @@ public class RobotContainer {
 
         NamedCommands.registerCommand(
                 "Elevator Intake",
-                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator,ElevatorLevel.INTAKE)
+                ElevatorCommands.setElevatorLevel(
+                                elevator, intake, manipulator, ElevatorLevel.INTAKE)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(4.5));
 
@@ -284,7 +285,7 @@ public class RobotContainer {
         // if not, zero the elevator for the first time
         // todo untested
         elevator.setDefaultCommand(
-                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator, ElevatorLevel.ZERO)
+                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
         // DRIVER CONTROLLER
@@ -300,7 +301,8 @@ public class RobotContainer {
                         //                                () -> (xDirect *
                         // driverController.getLeftX())),
                         IntakeCommands.intakeCoral(intake, manipulator),
-                        ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator,ElevatorLevel.INTAKE));
+                        ElevatorCommands.setElevatorLevel(
+                                elevator, intake, manipulator, ElevatorLevel.INTAKE));
 
         Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
@@ -412,7 +414,9 @@ public class RobotContainer {
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
-        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator,  intake, manipulator));
+        operatorController
+                .start()
+                .onTrue(ElevatorCommands.zeroElevator(elevator, intake, manipulator));
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
@@ -425,8 +429,10 @@ public class RobotContainer {
                 .povLeft()
                 .onTrue(
                         new ConditionalCommand(
-                                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator,ElevatorLevel.NET),
-                                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator,ElevatorLevel.L1),
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, intake, manipulator, ElevatorLevel.NET),
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, intake, manipulator, ElevatorLevel.L1),
                                 () -> algaeMode));
 
         operatorController
@@ -434,8 +440,12 @@ public class RobotContainer {
                 .onTrue(
                         new ConditionalCommand(
                                 ElevatorCommands.setElevatorLevel(
-                                        elevator,  intake, manipulator,ElevatorLevel.LOWER_ALGAE_REMOVAL),
-                                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator,ElevatorLevel.L2),
+                                        elevator,
+                                        intake,
+                                        manipulator,
+                                        ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, intake, manipulator, ElevatorLevel.L2),
                                 () -> algaeMode));
 
         operatorController
@@ -443,8 +453,9 @@ public class RobotContainer {
                 .onTrue(
                         new ConditionalCommand(
                                 ElevatorCommands.setElevatorLevel(
-                                        elevator,  intake, manipulator,ElevatorLevel.PROCESSOR),
-                                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator,ElevatorLevel.L3),
+                                        elevator, intake, manipulator, ElevatorLevel.PROCESSOR),
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, intake, manipulator, ElevatorLevel.L3),
                                 () -> algaeMode));
 
         operatorController
@@ -452,8 +463,12 @@ public class RobotContainer {
                 .onTrue(
                         new ConditionalCommand(
                                 ElevatorCommands.setElevatorLevel(
-                                        elevator,  intake, manipulator,ElevatorLevel.UPPER_ALGAE_REMOVAL),
-                                ElevatorCommands.setElevatorLevel(elevator,  intake, manipulator,ElevatorLevel.L4),
+                                        elevator,
+                                        intake,
+                                        manipulator,
+                                        ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                ElevatorCommands.setElevatorLevel(
+                                        elevator, intake, manipulator, ElevatorLevel.L4),
                                 () -> algaeMode));
     }
 

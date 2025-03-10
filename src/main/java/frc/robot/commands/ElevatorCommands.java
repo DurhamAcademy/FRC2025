@@ -9,12 +9,13 @@ import frc.robot.subsystems.manipulator.Manipulator;
 
 public class ElevatorCommands {
     // command to set the target height of the elevator subsystem
-    public static Command setElevatorLevel(Elevator elevator, Intake intake, Manipulator manipulator, ElevatorLevel level) {
+    public static Command setElevatorLevel(
+            Elevator elevator, Intake intake, Manipulator manipulator, ElevatorLevel level) {
         return Commands.runOnce(
                 () -> {
                     // only runs if the coral isn't still in the intake or manipulator beam breaks
                     // this avoids elevator the coral getting stuck in the middle of the elevator
-                    if(!intake.getBeamBroken() && !manipulator.beamBroken()){
+                    if (!intake.getBeamBroken() && !manipulator.beamBroken()) {
                         elevator.setElevatorTargetHeight(level.heightInches);
                         elevator.setWristTargetAngle(level.angleRadians);
                     }
