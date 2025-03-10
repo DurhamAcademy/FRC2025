@@ -24,9 +24,7 @@ public class ElevatorCommands {
     // command to run the elevator until it hits the limit switch
     public static Command zeroElevator(Elevator elevator) {
         return setElevatorLevel(elevator, ElevatorLevel.ZERO)
-                .andThen(
-                        Commands.waitUntil(() -> elevator.getElevatorHeight() < 1)
-                                .withTimeout(5))
+                .andThen(Commands.waitUntil(() -> elevator.getElevatorHeight() < 1).withTimeout(5))
                 .andThen(setElevatorVoltage(elevator, -.5).until(elevator::isZeroed));
     }
 }

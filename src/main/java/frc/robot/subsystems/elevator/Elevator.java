@@ -7,9 +7,7 @@ import static frc.robot.subsystems.drive.DriveConstants.maxSpeedLimitMetersPerSe
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Drive;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
@@ -71,9 +69,11 @@ public class Elevator extends SubsystemBase {
         //                                null,
         //                                null,
         //                                null,
-        //                                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
+        //                                (state) -> Logger.recordOutput("SysIdTestState",
+        // state.toString())),
         //                        new SysIdRoutine.Mechanism(
-        //                                (voltage) -> elevatorIO.setVoltage(voltage.in(Volts)), null, this));
+        //                                (voltage) -> elevatorIO.setVoltage(voltage.in(Volts)),
+        // null, this));
         //
         //        wristSysIDRoutine =
         //                new SysIdRoutine(
@@ -81,9 +81,11 @@ public class Elevator extends SubsystemBase {
         //                                Volts.per(Second).of(.5),
         //                                Volts.of(2),
         //                                Seconds.of(5),
-        //                                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
+        //                                (state) -> Logger.recordOutput("SysIdTestState",
+        // state.toString())),
         //                        new SysIdRoutine.Mechanism(
-        //                                (voltage) -> wristIO.setVoltage(voltage.in(Volts)), null, this));
+        //                                (voltage) -> wristIO.setVoltage(voltage.in(Volts)), null,
+        // this));
 
         loggedMechanismRoot =
                 loggedMechanism.getRoot(
@@ -145,7 +147,10 @@ public class Elevator extends SubsystemBase {
         elevatorIO.setTargetHeightInches(heightInches);
     }
 
-    /** Updates the max velocity of the drivetrain based on the height of the elevator in a linear relationship. */
+    /**
+     * Updates the max velocity of the drivetrain based on the height of the elevator in a linear
+     * relationship.
+     */
     public void updateDriveMaxVelocity() {
         double slope =
                 (levelFourSpeedLimit - maxSpeedLimitMetersPerSec) / ElevatorConstants.maxHeight;

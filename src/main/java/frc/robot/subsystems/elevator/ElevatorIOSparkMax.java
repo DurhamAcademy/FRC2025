@@ -13,7 +13,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
-import org.littletonrobotics.junction.Logger;
 
 public class ElevatorIOSparkMax implements ElevatorIO {
     // some credit to https://chiefdelphi.com/t/elevator-subsystem-example-code/482648
