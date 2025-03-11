@@ -287,7 +287,7 @@ public class RobotContainer {
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
-        // DRIVER CONTROLLER
+        // TODO: Move/cleanup these commands for their respective subsystems
 
         // Automatically angle to HP & run intake
         Command intakeCoral =
@@ -320,6 +320,8 @@ public class RobotContainer {
                 Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT));
 
         Command stopManipulator = ManipulatorCommands.runManipulator(manipulator, 0);
+
+        // DRIVER CONTROLLER BINDINGS
 
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -406,20 +408,17 @@ public class RobotContainer {
                                         drive, DriveCommands.autoAlignLocations.reef),
                                 () -> algaeMode));
 
-        // OPERATOR CONTROLLER
-        // Elevator
+        // OPERATOR CONTROLLER BINDINGS
 
+        // algae/coral mode
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
+        // zero elevator
         operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
 
+        // retry intake
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
-
-        driverController
-                .rightBumper()
-                .whileTrue(ManipulatorCommands.eject(manipulator))
-                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
 
         operatorController
                 .povLeft()
