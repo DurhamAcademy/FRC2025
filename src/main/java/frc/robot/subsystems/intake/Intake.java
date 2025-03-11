@@ -1,6 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -13,7 +12,7 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean getBeamBroken() {
-        return inputs.isBeamBroken; // if this becomes noisy we can add a debouncer
+        return inputs.isBeamBroken;
     }
 
     public void setVoltage(double voltage) {
