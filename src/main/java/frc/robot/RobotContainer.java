@@ -78,6 +78,8 @@ public class RobotContainer {
 
     public boolean algaeMode = false;
 
+    private boolean overrideElevatorSafetyLimiting = false;
+
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
@@ -198,7 +200,7 @@ public class RobotContainer {
      */
     private void registerNamedCommands() {
         Trigger coralNotStuck =
-                new Trigger(() -> !intake.getBeamBroken() && !manipulator.getBeamBroken());
+                new Trigger(() -> (!intake.getBeamBroken() && !manipulator.getBeamBroken()) || overrideElevatorSafetyLimiting);
         NamedCommands.registerCommand(
                 "Elevator L1",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)
@@ -282,7 +284,7 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         Trigger coralNotStuck =
-                new Trigger(() -> !intake.getBeamBroken() && !manipulator.getBeamBroken());
+                new Trigger(() -> (!intake.getBeamBroken() && !manipulator.getBeamBroken()) || overrideElevatorSafetyLimiting);
 
         // Default command, normal field-relative drive
         drive.setDefaultCommand(
@@ -577,6 +579,10 @@ public class RobotContainer {
                             "Anti-Tip",
                             () -> drive.overrideTipProtection,
                             val -> drive.overrideTipProtection = val);
+                    builder.addBooleanProperty(
+                            "Intake Elevator Limiting",
+                            () -> overrideElevatorSafetyLimiting,
+                            val -> overrideElevatorSafetyLimiting = val);
                 });
         SmartDashboard.putData(
                 "INVERT AXES",
