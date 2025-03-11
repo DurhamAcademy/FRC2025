@@ -23,12 +23,14 @@ public class IntakeCommands {
                         stopIntake(intake)
                                 .repeatedly()
                                 .until(
-                                        () -> intake.overrideIntakeSafetyLimit ||
-                                                (elevator.isAtSetpoint()
-                                                        && elevator.getTargetLevel()
-                                                                .equals(
-                                                                        Elevator.ElevatorLevel
-                                                                                .INTAKE))))
+                                        () ->
+                                                intake.overrideIntakeSafetyLimit
+                                                        || (elevator.isAtSetpoint()
+                                                                && elevator.getTargetLevel()
+                                                                        .equals(
+                                                                                Elevator
+                                                                                        .ElevatorLevel
+                                                                                        .INTAKE))))
                 .andThen(
                         parallel(
                                 IntakeCommands.runIntake(intake, 3.0)
