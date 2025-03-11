@@ -20,7 +20,7 @@ public class IntakeCommands {
         return parallel(
                         IntakeCommands.runIntake(intake, 3.0)
                                 .repeatedly()
-                                .until(manipulator::beamBroken)
+                                .until(manipulator::getBeamBroken)
                                 .andThen(IntakeCommands.stopIntake(intake)),
                         ManipulatorCommands.intakeCoral(manipulator))
                 .andThen(

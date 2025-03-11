@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.IntakeCommands;
@@ -196,42 +197,49 @@ public class RobotContainer {
      * Method that registers all the named commands to be used by pathplanner for autos and whatnot.
      */
     private void registerNamedCommands() {
+        Trigger coralNotStuck =
+                new Trigger(() -> !intake.getBeamBroken() && !manipulator.getBeamBroken());
         NamedCommands.registerCommand(
                 "Elevator L1",
-                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.L1)
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
-                        .withTimeout(3));
+                        .withTimeout(3)
+                        .onlyIf(coralNotStuck));
 
         NamedCommands.registerCommand(
                 "Elevator L2",
-                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.L2)
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
-                        .withTimeout(3.5));
+                        .withTimeout(3.5)
+                        .onlyIf(coralNotStuck));
 
         NamedCommands.registerCommand(
                 "Elevator L3",
-                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.L3)
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
-                        .withTimeout(4));
+                        .withTimeout(4)
+                        .onlyIf(coralNotStuck));
 
         NamedCommands.registerCommand(
                 "Elevator L4",
-                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.L4)
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
-                        .withTimeout(4.5));
+                        .withTimeout(4.5)
+                        .onlyIf(coralNotStuck));
 
         NamedCommands.registerCommand(
                 "Elevator Zero",
-                ElevatorCommands.zeroElevator(elevator, intake, manipulator)
+                ElevatorCommands.zeroElevator(elevator)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
-                        .withTimeout(4.5));
+                        .withTimeout(4.5)
+                        .onlyIf(coralNotStuck));
 
         NamedCommands.registerCommand(
                 "Elevator Intake",
-                ElevatorCommands.setElevatorLevel(
-                                elevator, intake, manipulator, ElevatorLevel.INTAKE)
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
-                        .withTimeout(4.5));
+                        .withTimeout(4.5)
+                        .onlyIf(coralNotStuck));
 
         // TODO auto with intake untested
         NamedCommands.registerCommand(
@@ -273,6 +281,9 @@ public class RobotContainer {
      * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
     private void configureButtonBindings() {
+        Trigger coralNotStuck =
+                new Trigger(() -> !intake.getBeamBroken() && !manipulator.getBeamBroken());
+
         // Default command, normal field-relative drive
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
@@ -285,8 +296,9 @@ public class RobotContainer {
         // if not, zero the elevator for the first time
         // todo untested
         elevator.setDefaultCommand(
-                ElevatorCommands.setElevatorLevel(elevator, intake, manipulator, ElevatorLevel.ZERO)
-                        .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
+                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
+                        .onlyIf(drive::isTipping) // assuming that the robot has been zeroed
+                        .onlyIf(coralNotStuck));
 
         // DRIVER CONTROLLER
 
@@ -301,8 +313,8 @@ public class RobotContainer {
                         //                                () -> (xDirect *
                         // driverController.getLeftX())),
                         IntakeCommands.intakeCoral(intake, manipulator),
-                        ElevatorCommands.setElevatorLevel(
-                                elevator, intake, manipulator, ElevatorLevel.INTAKE));
+                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE)
+                                .onlyIf(coralNotStuck));
 
         Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
@@ -416,7 +428,7 @@ public class RobotContainer {
 
         operatorController
                 .start()
-                .onTrue(ElevatorCommands.zeroElevator(elevator, intake, manipulator));
+                .onTrue(ElevatorCommands.zeroElevator(elevator).onlyIf(coralNotStuck));
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
@@ -429,47 +441,45 @@ public class RobotContainer {
                 .povLeft()
                 .onTrue(
                         new ConditionalCommand(
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, intake, manipulator, ElevatorLevel.NET),
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, intake, manipulator, ElevatorLevel.L1),
-                                () -> algaeMode));
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.NET),
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.L1),
+                                        () -> algaeMode)
+                                .onlyIf(coralNotStuck));
 
         operatorController
                 .povDown()
                 .onTrue(
                         new ConditionalCommand(
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator,
-                                        intake,
-                                        manipulator,
-                                        ElevatorLevel.LOWER_ALGAE_REMOVAL),
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, intake, manipulator, ElevatorLevel.L2),
-                                () -> algaeMode));
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.L2),
+                                        () -> algaeMode)
+                                .onlyIf(coralNotStuck));
 
         operatorController
                 .povRight()
                 .onTrue(
                         new ConditionalCommand(
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, intake, manipulator, ElevatorLevel.PROCESSOR),
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, intake, manipulator, ElevatorLevel.L3),
-                                () -> algaeMode));
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.PROCESSOR),
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.L3),
+                                        () -> algaeMode)
+                                .onlyIf(coralNotStuck));
 
         operatorController
                 .povUp()
                 .onTrue(
                         new ConditionalCommand(
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator,
-                                        intake,
-                                        manipulator,
-                                        ElevatorLevel.UPPER_ALGAE_REMOVAL),
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, intake, manipulator, ElevatorLevel.L4),
-                                () -> algaeMode));
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.L4),
+                                        () -> algaeMode)
+                                .onlyIf(coralNotStuck));
     }
 
     /**

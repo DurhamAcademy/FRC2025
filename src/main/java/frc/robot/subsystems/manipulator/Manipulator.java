@@ -15,7 +15,7 @@ public class Manipulator extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Manipulator", inputs);
-        Logger.recordOutput("Manipulator/beamBroken", beamBroken());
+        Logger.recordOutput("Manipulator/beamBroken", getBeamBroken());
     }
 
     public void setVoltage(double voltage) {
@@ -35,7 +35,7 @@ public class Manipulator extends SubsystemBase {
         return () -> inputs.beamObstructed;
     }*/
 
-    public boolean beamBroken() {
+    public boolean getBeamBroken() {
         return inputs.sensorDistance
                 > ManipulatorConstants.maxCoralSensorDistance
                         - ManipulatorConstants.sensorDistanceTolerance; // sensor is inverted

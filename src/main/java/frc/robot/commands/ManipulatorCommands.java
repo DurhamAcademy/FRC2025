@@ -46,11 +46,11 @@ public class ManipulatorCommands {
     public static Command intakeCoral(Manipulator manipulator) {
         return sequence(
                 runManipulator(manipulator, 1.5)
-                        .until(manipulator::beamBroken), // run until coral starts to enter
+                        .until(manipulator::getBeamBroken), // run until coral starts to enter
                 runManipulator(manipulator, 0.75)
-                        .until(() -> !manipulator.beamBroken()), // continue until too far
-                runManipulator(manipulator, -0.6).until(manipulator::beamBroken),
-                runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
+                        .until(() -> !manipulator.getBeamBroken()), // continue until too far
+                runManipulator(manipulator, -0.6).until(manipulator::getBeamBroken),
+                runManipulator(manipulator, 0.3).until(() -> !manipulator.getBeamBroken()),
                 runManipulator(manipulator, 0));
     }
 }
