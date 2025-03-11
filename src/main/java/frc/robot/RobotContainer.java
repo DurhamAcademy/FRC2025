@@ -253,7 +253,8 @@ public class RobotContainer {
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
-        // TODO: Move/cleanup these commands for their respective subsystems when new control scheme is done
+        // TODO: Move/cleanup these commands for their respective subsystems when new control scheme
+        // is done
 
         // Automatically angle to HP & run intake
         Command intakeCoral =
