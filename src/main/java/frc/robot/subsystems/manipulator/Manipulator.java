@@ -40,4 +40,8 @@ public class Manipulator extends SubsystemBase {
                 > ManipulatorConstants.maxCoralSensorDistance
                         - ManipulatorConstants.sensorDistanceTolerance; // sensor is inverted
     }
+
+    public double getLeftVelocity() {
+        return inputs.rollerLVelocityRadPerSec;
+    }
 }

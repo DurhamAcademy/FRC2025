@@ -10,7 +10,9 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.ManipulatorCommands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.manipulator.Manipulator;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
@@ -152,6 +154,15 @@ public class Elevator extends SubsystemBase {
         double slope =
                 (levelFourSpeedLimit - maxSpeedLimitMetersPerSec) / ElevatorConstants.maxHeight;
         drive.setMaxVelocity(slope * elevatorInputs.leftHeightInches + maxSpeedLimitMetersPerSec);
+    }
+
+    public double calculateScoringHeightOffset(Manipulator manipulator){
+        // radius * angular velocity
+        double velocity = 2.98 / 2 * manipulator.getLeftVelocity();
+        // delta_x / coral velocity
+        double time = 0.0 / velocity;
+        // negative sin as this calculates a positive increase in height
+        return -Math.sin(wristInputs.angle) * velocity * time + .5 * 9.81 * time * time;
     }
 
     /**

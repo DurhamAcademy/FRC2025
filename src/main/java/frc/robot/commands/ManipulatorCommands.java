@@ -7,9 +7,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.manipulator.Manipulator;
 
 public class ManipulatorCommands {
-    public double secondForwardVolts = 0.75;
-    public double backVolts = -0.6;
-    public double thirdForwardVolts = 0.3;
+    public static double ejectVoltage = 1;
 
     public static Command runManipulator(Manipulator manipulator, double volts) {
         return Commands.run(
@@ -28,7 +26,7 @@ public class ManipulatorCommands {
     }
 
     public static Command eject(Manipulator manipulator) {
-        return runManipulator(manipulator, 1);
+        return runManipulator(manipulator, ejectVoltage);
     }
 
     public static Command eject(Manipulator manipulator, double volts) {
