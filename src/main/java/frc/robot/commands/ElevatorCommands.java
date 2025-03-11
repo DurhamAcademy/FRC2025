@@ -20,8 +20,15 @@ public class ElevatorCommands {
         return Commands.run(() -> elevator.setVoltage(voltage), elevator);
     }
 
-    public static Command zeroElevator(Elevator elevator) {
-        return setElevatorLevel(elevator, ElevatorLevel.ZERO)
+    public static Command zeroElevator(Elevator elevator, boolean mode) {
+        if (mode) {
+            return setElevatorLevel(elevator, ElevatorLevel.ZERO)
+                    .andThen(
+                            Commands.waitUntil(() -> Math.abs(0 - elevator.getElevatorHeight()) < 1)
+                                    .withTimeout(5))
+                    .andThen(setElevatorVoltage(elevator, -.5).until(elevator::isZeroed));
+        }
+        return setElevatorLevel(elevator, ElevatorLevel.INTAKE)
                 .andThen(
                         Commands.waitUntil(() -> Math.abs(0 - elevator.getElevatorHeight()) < 1)
                                 .withTimeout(5))

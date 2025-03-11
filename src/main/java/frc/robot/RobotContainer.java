@@ -75,7 +75,7 @@ public class RobotContainer {
     private double xDirect = 1;
     private double yDirect = 1;
 
-    public boolean algaeMode = false;
+    public boolean algaeMode = true;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -222,7 +222,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand(
                 "Elevator Zero",
-                ElevatorCommands.zeroElevator(elevator)
+                ElevatorCommands.zeroElevator(elevator, algaeMode)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(4.5));
 
@@ -290,17 +290,17 @@ public class RobotContainer {
         // DRIVER CONTROLLER
 
         // Automatically angle to HP & run intake
-        Command intakeCoral =
-                Commands.parallel(
-                        // fixme bugging the whole match
-                        //                        DriveCommands.autoAlignToHumanPlayerStation(
-                        //                                drive,
-                        //                                () -> (yDirect *
-                        // driverController.getLeftY()),
-                        //                                () -> (xDirect *
-                        // driverController.getLeftX())),
-                        IntakeCommands.intakeCoral(intake, manipulator),
-                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));
+        Command intakeCoral = IntakeCommands.intakeCoral(intake, manipulator);
+        /*Commands.parallel(
+        // fixme bugging the whole match
+        //                        DriveCommands.autoAlignToHumanPlayerStation(
+        //                                drive,
+        //                                () -> (yDirect *
+        // driverController.getLeftY()),
+        //                                () -> (xDirect *
+        // driverController.getLeftX())),
+        IntakeCommands.intakeCoral(intake, manipulator),
+        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));*/
 
         Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
@@ -412,7 +412,14 @@ public class RobotContainer {
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
-        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
+        operatorController
+                .start()
+                .onTrue(
+                        Commands.either(
+                                ElevatorCommands.zeroElevator(elevator, algaeMode),
+                                ElevatorCommands.zeroElevator(elevator, algaeMode)
+                                        .andThen(intakeCoral),
+                                () -> algaeMode));
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
