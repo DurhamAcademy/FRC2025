@@ -21,9 +21,6 @@ public interface WristIO {
     public default void updateInputs(WristIOInputs inputs) {}
 
     /** Sets the motors' power */
-    public default void setSpeed(double speed) {}
-
-    /** Sets the motors' power */
     public default void setVoltage(double voltage) {}
 
     /** Sets the target angle */
@@ -31,9 +28,6 @@ public interface WristIO {
 
     /** Stop motors */
     public default void stopMotors() {}
-
-    /** Resets encoder */
-    public default void setEncoder(double position) {}
 
     /** Updating trapezoid profiler and reference height using the profiler */
     public default void updateStates() {}
