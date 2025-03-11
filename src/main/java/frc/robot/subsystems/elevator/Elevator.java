@@ -44,8 +44,6 @@ public class Elevator extends SubsystemBase {
         L3(ElevatorConstants.L3, WristConstants.L3),
         L4(ElevatorConstants.L4, WristConstants.L4),
         NET(ElevatorConstants.L4, WristConstants.NET),
-        ZEROED_ALGAE(ElevatorConstants.ZERO, WristConstants.LOWER_ALGAE_REMOVAL),
-        ZEROED_CORAL(ElevatorConstants.ZERO, WristConstants.INTAKE),
         PROCESSOR(ElevatorConstants.ZERO, WristConstants.PROCESSOR),
         LOWER_ALGAE_REMOVAL(
                 ElevatorConstants.LOWER_ALGAE_REMOVAL, WristConstants.LOWER_ALGAE_REMOVAL),
