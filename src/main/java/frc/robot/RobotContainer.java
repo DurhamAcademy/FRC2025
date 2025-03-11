@@ -116,18 +116,7 @@ public class RobotContainer {
                                 this);
                 manipulator = new Manipulator(new ManipulatorIOSim());
                 intake = new Intake(new IntakeIOSim(driveSimulation));
-                // TODO: Elevator SIM
                 elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
-
-                // TODO: Vision SIM
-                //        vision = new Vision(
-                //                drive,
-                //                new VisionIOPhotonVisionSim(
-                //                        camera0Name, robotToCamera0,
-                // driveSimulation::getSimulatedDriveTrainPose),
-                //                new VisionIOPhotonVisionSim(
-                //                        camera1Name, robotToCamera1,
-                // driveSimulation::getSimulatedDriveTrainPose));
                 break;
 
             default:
@@ -241,28 +230,6 @@ public class RobotContainer {
                 ManipulatorCommands.eject(manipulator, 1)
                         .withTimeout(.75)
                         .andThen(ManipulatorCommands.eject(manipulator, 0).withTimeout(.1)));
-
-        // todo change align timeouts
-        NamedCommands.registerCommand(
-                "Align Reef Left",
-                Commands.runOnce(
-                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT), drive)
-                        .andThen(
-                                DriveCommands.autoAlignToLocation(
-                                                drive, DriveCommands.autoAlignLocations.reef)
-                                        .repeatedly()
-                                        .until(drive::isAlignedToReef)
-                                        .withTimeout(5)));
-
-        NamedCommands.registerCommand(
-                "Align Reef Right",
-                Commands.runOnce(
-                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT),
-                                drive)
-                        .andThen(
-                                DriveCommands.autoAlignToLocation(
-                                                drive, DriveCommands.autoAlignLocations.reef)
-                                        .withTimeout(5)));
     }
 
     /**
@@ -282,23 +249,15 @@ public class RobotContainer {
 
         // if elevator has zeroed, run tipping prevention code
         // if not, zero the elevator for the first time
-        // todo untested
         elevator.setDefaultCommand(
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
-        // TODO: Move/cleanup these commands for their respective subsystems
+        // TODO: Move/cleanup these commands for their respective subsystems when new control scheme is done
 
         // Automatically angle to HP & run intake
         Command intakeCoral =
                 Commands.parallel(
-                        // fixme bugging the whole match
-                        //                        DriveCommands.autoAlignToHumanPlayerStation(
-                        //                                drive,
-                        //                                () -> (yDirect *
-                        // driverController.getLeftY()),
-                        //                                () -> (xDirect *
-                        // driverController.getLeftX())),
                         IntakeCommands.intakeCoral(intake, manipulator),
                         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));
 
@@ -343,48 +302,7 @@ public class RobotContainer {
                                 () -> algaeMode))
                 .onFalse(stopManipulator);
 
-        // Auto align & Shoot
-        // fixme not going to be competition ready
-        //        driverController
-        //                .leftTrigger()
-        //                .and(driverController.rightBumper())
-        //                .and(() -> !algaeMode) // Only when NOT in algaeMode
-        //                .onTrue(setAlignLeft)
-        //                .whileTrue(
-        //                        new ConditionalCommand(
-        //                                ManipulatorCommands.eject(
-        //                                        manipulator), // Command if condition is true
-        //                                DriveCommands.autoAlignToLocation(
-        //                                        drive,
-        //                                        DriveCommands.autoAlignLocations
-        //                                                .reef), // Command if condition is false
-        //                                () ->
-        //                                        drive.isAlignedToReef()
-        //                                                && elevator.isAtSetpoint()
-        //                                                && elevator.getElevatorHeight()
-        //                                                        > ElevatorConstants.L1 - 4));
-        //        driverController
-        //                .rightTrigger()
-        //                .and(driverController.rightBumper())
-        //                .and(() -> !algaeMode) // Only when NOT in algaeMode
-        //                .onTrue(setAlignRight)
-        //                .whileTrue(
-        //                        new ConditionalCommand(
-        //                                ManipulatorCommands.eject(
-        //                                        manipulator), // Command if condition is true
-        //                                DriveCommands.autoAlignToLocation(
-        //                                        drive,
-        //                                        DriveCommands.autoAlignLocations
-        //                                                .reef), // Command if condition is false
-        //                                () ->
-        //                                        drive.isAlignedToReef()
-        //                                                && elevator.isAtSetpoint()
-        //                                                && elevator.getElevatorHeight()
-        //                                                        > ElevatorConstants.L1 - 4));
-
         // Auto align
-        // TODO its probably not great to set reef to left if in algae mode, but it shouldn't
-        // conflict with anything
         driverController
                 .leftTrigger()
                 .and(driverController.rightBumper().negate())
