@@ -554,6 +554,10 @@ public class RobotContainer {
                             "Anti-Tip",
                             () -> drive.overrideTipProtection,
                             val -> drive.overrideTipProtection = val);
+                    builder.addBooleanProperty(
+                            "Intake Safety Limit",
+                            () -> intake.overrideIntakeSafetyLimit,
+                            val -> intake.overrideIntakeSafetyLimit = val);
                 });
         SmartDashboard.putData(
                 "INVERT AXES",

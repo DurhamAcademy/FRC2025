@@ -11,6 +11,8 @@ public class Intake extends SubsystemBase {
     IntakeIO io;
     IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
+    public boolean overrideIntakeSafetyLimit = false;
+
     public Intake(IntakeIO io) {
         this.io = io;
     }
