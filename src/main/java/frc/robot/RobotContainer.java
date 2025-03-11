@@ -568,6 +568,14 @@ public class RobotContainer {
                             });
                 });
         SmartDashboard.putData(
+                "Elevator",
+                builder -> {
+                    builder.setSmartDashboardType("boolean");
+                    builder.addBooleanProperty("Zero", elevator::isZeroed, null);
+                    builder.addBooleanProperty("E+W Setpoint", elevator::isAtSetpoint, null);
+                }
+        );
+        SmartDashboard.putData(
                 "MAX SPEED",
                 builder -> {
                     builder.setSmartDashboardType("double");
