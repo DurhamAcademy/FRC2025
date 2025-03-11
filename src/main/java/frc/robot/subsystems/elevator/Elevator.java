@@ -134,9 +134,9 @@ public class Elevator extends SubsystemBase {
         wristIO.updateStates();
     }
 
-
     /**
      * Sets the target height of the elevator in inches
+     *
      * @param heightInches
      */
     public void setElevatorTargetHeight(double heightInches) {
@@ -163,6 +163,7 @@ public class Elevator extends SubsystemBase {
 
     /**
      * If the wrist is safe to move
+     *
      * @return boolean
      */
     public boolean isWristHeightRestricted() {
@@ -179,6 +180,7 @@ public class Elevator extends SubsystemBase {
 
     /**
      * If the elevator & wrist are at their target values
+     *
      * @return boolean
      */
     public boolean isAtSetpoint() {
@@ -230,7 +232,7 @@ public class Elevator extends SubsystemBase {
         drive.setMaxVelocity(slope * elevatorInputs.leftHeightInches + maxSpeedLimitMetersPerSec);
     }
 
-    private void updateLigamentSimulation(){
+    private void updateLigamentSimulation() {
         elevatorLigament.setLength(
                 Units.inchesToMeters(
                         elevatorInputs.leftHeightInches + WristConstants.WRIST_AXLE_HEIGHT));
