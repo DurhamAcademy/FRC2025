@@ -75,7 +75,7 @@ public class RobotContainer {
     private double xDirect = 1;
     private double yDirect = 1;
 
-    public boolean algaeMode = false;
+    public boolean algaeMode = true;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -222,7 +222,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand(
                 "Elevator Zero",
-                ElevatorCommands.zeroElevator(elevator)
+                ElevatorCommands.zeroElevator(elevator, algaeMode)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(4.5));
 
@@ -412,7 +412,13 @@ public class RobotContainer {
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
-        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
+        operatorController
+                .start()
+                .onTrue(
+                        new ConditionalCommand(
+                                ElevatorCommands.zeroElevator(elevator, algaeMode),
+                                ElevatorCommands.zeroElevator(elevator, algaeMode),
+                                () -> algaeMode));
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 

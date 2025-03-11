@@ -16,12 +16,20 @@ public class ElevatorCommands {
                 elevator);
     }
 
+
     public static Command setElevatorVoltage(Elevator elevator, double voltage) {
         return Commands.run(() -> elevator.setVoltage(voltage), elevator);
     }
 
-    public static Command zeroElevator(Elevator elevator) {
-        return setElevatorLevel(elevator, ElevatorLevel.ZERO)
+    public static Command zeroElevator(Elevator elevator, boolean mode) {
+        if (mode) {
+            return setElevatorLevel(elevator, ElevatorLevel.ZEROED_ALGAE)
+                    .andThen(
+                            Commands.waitUntil(() -> Math.abs(0 - elevator.getElevatorHeight()) < 1)
+                                    .withTimeout(5))
+                    .andThen(setElevatorVoltage(elevator, -.5).until(elevator::isZeroed));
+        }
+        return setElevatorLevel(elevator, ElevatorLevel.ZEROED_CORAL)
                 .andThen(
                         Commands.waitUntil(() -> Math.abs(0 - elevator.getElevatorHeight()) < 1)
                                 .withTimeout(5))
