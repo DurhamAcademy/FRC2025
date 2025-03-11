@@ -416,7 +416,7 @@ public class RobotContainer {
         operatorController
                 .start()
                 .onTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 ElevatorCommands.zeroElevator(elevator, algaeMode),
                                 ElevatorCommands.zeroElevator(elevator, algaeMode).andThen(intakeCoral),
                                 () -> algaeMode));
