@@ -16,7 +16,6 @@ public class ElevatorCommands {
                 elevator);
     }
 
-
     public static Command setElevatorVoltage(Elevator elevator, double voltage) {
         return Commands.run(() -> elevator.setVoltage(voltage), elevator);
     }

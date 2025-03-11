@@ -290,18 +290,17 @@ public class RobotContainer {
         // DRIVER CONTROLLER
 
         // Automatically angle to HP & run intake
-        Command intakeCoral =
-                IntakeCommands.intakeCoral(intake, manipulator);
-                /*Commands.parallel(
-                        // fixme bugging the whole match
-                        //                        DriveCommands.autoAlignToHumanPlayerStation(
-                        //                                drive,
-                        //                                () -> (yDirect *
-                        // driverController.getLeftY()),
-                        //                                () -> (xDirect *
-                        // driverController.getLeftX())),
-                        IntakeCommands.intakeCoral(intake, manipulator),
-                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));*/
+        Command intakeCoral = IntakeCommands.intakeCoral(intake, manipulator);
+        /*Commands.parallel(
+        // fixme bugging the whole match
+        //                        DriveCommands.autoAlignToHumanPlayerStation(
+        //                                drive,
+        //                                () -> (yDirect *
+        // driverController.getLeftY()),
+        //                                () -> (xDirect *
+        // driverController.getLeftX())),
+        IntakeCommands.intakeCoral(intake, manipulator),
+        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));*/
 
         Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
@@ -418,7 +417,8 @@ public class RobotContainer {
                 .onTrue(
                         Commands.either(
                                 ElevatorCommands.zeroElevator(elevator, algaeMode),
-                                ElevatorCommands.zeroElevator(elevator, algaeMode).andThen(intakeCoral),
+                                ElevatorCommands.zeroElevator(elevator, algaeMode)
+                                        .andThen(intakeCoral),
                                 () -> algaeMode));
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
