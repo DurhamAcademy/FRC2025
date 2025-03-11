@@ -200,7 +200,10 @@ public class RobotContainer {
      */
     private void registerNamedCommands() {
         Trigger coralNotStuck =
-                new Trigger(() -> (!intake.getBeamBroken() && !manipulator.getBeamBroken()) || overrideElevatorSafetyLimiting);
+                new Trigger(
+                        () ->
+                                (!intake.getBeamBroken() && !manipulator.getBeamBroken())
+                                        || overrideElevatorSafetyLimiting);
         NamedCommands.registerCommand(
                 "Elevator L1",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)
@@ -284,7 +287,10 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         Trigger coralNotStuck =
-                new Trigger(() -> (!intake.getBeamBroken() && !manipulator.getBeamBroken()) || overrideElevatorSafetyLimiting);
+                new Trigger(
+                        () ->
+                                (!intake.getBeamBroken() && !manipulator.getBeamBroken())
+                                        || overrideElevatorSafetyLimiting);
 
         // Default command, normal field-relative drive
         drive.setDefaultCommand(
