@@ -419,6 +419,7 @@ public class RobotContainer {
                                 ElevatorCommands.zeroElevator(elevator, algaeMode),
                                 ElevatorCommands.zeroElevator(elevator, algaeMode)
                                         .andThen(intakeCoral),
+                                //todo do ryans idea and dont just automatically intake coral every time it is zeroed
                                 () -> algaeMode));
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
@@ -431,7 +432,7 @@ public class RobotContainer {
         operatorController
                 .povLeft()
                 .onTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.NET),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1),
                                 () -> algaeMode));
@@ -439,16 +440,17 @@ public class RobotContainer {
         operatorController
                 .povDown()
                 .onTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL)
+                                        .andThen(intakeAlgae),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
                                 () -> algaeMode));
 
         operatorController
                 .povRight()
                 .onTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.PROCESSOR),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3),
@@ -457,9 +459,10 @@ public class RobotContainer {
         operatorController
                 .povUp()
                 .onTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                        elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL)
+                                        .andThen(intakeAlgae),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4),
                                 () -> algaeMode));
     }
