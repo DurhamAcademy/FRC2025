@@ -304,6 +304,8 @@ public class RobotContainer {
 
         Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
+        Command slowRobot = DriveCommands.limitMaxVelocity(drive);
+
         Command manipulatorEject = ManipulatorCommands.eject(manipulator);
 
         Command autoAlignToReef =
@@ -325,9 +327,12 @@ public class RobotContainer {
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Intake from HP / Intake algae
+        //TODO actually do this and stop procrastinating
+        //(make it make robot super slow for alignment)
         driverController
                 .leftBumper()
-                .onTrue(Commands.either(intakeAlgae, intakeCoral, () -> algaeMode));
+                .whileTrue(
+                        slowRobot);
 
         // Shoot coral / algae
         driverController

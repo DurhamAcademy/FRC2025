@@ -30,9 +30,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import java.text.DecimalFormat;
@@ -412,6 +410,14 @@ public class DriveCommands {
      * @param drive subsystem
      * @return Command, command containing auto builder to goal location
      */
+
+    public static Command limitMaxVelocity(Drive drive) {
+        return new InstantCommand(() -> drive.setMaxVelocity(0.3), drive)
+                .andThen(new WaitUntilCommand(() -> false)) // Keeps it active until interrupted
+                .finallyDo(() -> drive.setMaxVelocity(DriveConstants.maxSpeedLimitMetersPerSec)); // Resets velocity when interrupted
+    }
+
+
     public static Command roughAlignToTarget(Drive drive, autoAlignLocations location) {
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
