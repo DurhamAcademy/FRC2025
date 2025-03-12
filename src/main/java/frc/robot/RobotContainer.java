@@ -327,12 +327,9 @@ public class RobotContainer {
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Intake from HP / Intake algae
-        //TODO actually do this and stop procrastinating
-        //(make it make robot super slow for alignment)
-        driverController
-                .leftBumper()
-                .whileTrue(
-                        slowRobot);
+        // TODO actually do this and stop procrastinating
+        // (make it make robot super slow for alignment)
+        driverController.leftBumper().whileTrue(slowRobot);
 
         // Shoot coral / algae
         driverController
@@ -585,8 +582,7 @@ public class RobotContainer {
                     builder.setSmartDashboardType("boolean");
                     builder.addBooleanProperty("Zero", elevator::isZeroed, null);
                     builder.addBooleanProperty("E+W Setpoint", elevator::isAtSetpoint, null);
-                }
-        );
+                });
         SmartDashboard.putData(
                 "MAX SPEED",
                 builder -> {

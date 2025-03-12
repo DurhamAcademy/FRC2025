@@ -410,13 +410,16 @@ public class DriveCommands {
      * @param drive subsystem
      * @return Command, command containing auto builder to goal location
      */
-
     public static Command limitMaxVelocity(Drive drive) {
         return new InstantCommand(() -> drive.setMaxVelocity(0.3), drive)
                 .andThen(new WaitUntilCommand(() -> false)) // Keeps it active until interrupted
-                .finallyDo(() -> drive.setMaxVelocity(DriveConstants.maxSpeedLimitMetersPerSec)); // Resets velocity when interrupted
+                .finallyDo(
+                        () ->
+                                drive.setMaxVelocity(
+                                        DriveConstants
+                                                .maxSpeedLimitMetersPerSec)); // Resets velocity
+        // when interrupted
     }
-
 
     public static Command roughAlignToTarget(Drive drive, autoAlignLocations location) {
         ProfiledPIDController angleController =
