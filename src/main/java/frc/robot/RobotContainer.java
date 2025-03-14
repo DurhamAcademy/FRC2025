@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -27,10 +28,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ElevatorCommands;
-import frc.robot.commands.IntakeCommands;
-import frc.robot.commands.ManipulatorCommands;
+import frc.robot.commands.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.elevator.Elevator;
@@ -42,6 +40,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.lights.LEDs;
 import frc.robot.subsystems.manipulator.*;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -61,6 +60,7 @@ public class RobotContainer {
     private final Intake intake;
     private final Elevator elevator;
     private SwerveDriveSimulation driveSimulation = null;
+    private final LEDs leds;
 
     // Controllers
     private final CommandXboxController driverController = new CommandXboxController(0);
@@ -95,6 +95,7 @@ public class RobotContainer {
                 manipulator = new Manipulator(new ManipulatorIOSparkFlex());
                 intake = new Intake(new IntakeIOSparkMax());
                 elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
+                leds = new LEDs();
                 break;
 
             case SIM:
@@ -118,6 +119,7 @@ public class RobotContainer {
                 intake = new Intake(new IntakeIOSim(driveSimulation));
                 // TODO: Elevator SIM
                 elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
+                leds = new LEDs();
 
                 // TODO: Vision SIM
                 //        vision = new Vision(
@@ -145,6 +147,7 @@ public class RobotContainer {
                 intake = new Intake(new IntakeIO() {});
                 manipulator = new Manipulator(new ManipulatorIO() {});
                 elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
+                leds = new LEDs();
                 break;
         }
 
@@ -286,6 +289,8 @@ public class RobotContainer {
         elevator.setDefaultCommand(
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
+        // 49 + 61 = 110
+        leds.setDefaultCommand(LEDCommands.hasAlgae(leds, 0.25));
 
         // DRIVER CONTROLLER
 
@@ -409,7 +414,21 @@ public class RobotContainer {
         // OPERATOR CONTROLLER
         // Elevator
 
-        operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
+        // editting this add parallel
+        operatorController
+                .rightBumper()
+                .onTrue(
+                        parallel(
+                                Commands.runOnce(() -> algaeMode = true),
+                                LEDCommands.ledsUp(leds)
+                                        .withTimeout(1.0)
+                                        .andThen(LEDCommands.ledsDown(leds).withTimeout(1.0))));
+
+        // dummy command just to see if it works
+        operatorController.povDown().and(operatorController.a()).whileTrue(LEDCommands.blink(leds));
+
+        // my playing ends here
+
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
         operatorController

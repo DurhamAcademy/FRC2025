@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LEDs extends SubsystemBase {
-    public static final int stripLength = 16;
+    public static final int stripLength = 110;
     public static final int candleLength = 8;
 
     public CANdle candle;
@@ -19,7 +19,7 @@ public class LEDs extends SubsystemBase {
             config.disableWhenLOS = true;
             config.statusLedOffWhenActive = true;
             config.stripType = CANdle.LEDStripType.GRB;
-            config.brightnessScalar = 1.0;
+            config.brightnessScalar = 0.5;
             config.v5Enabled = false;
             config.enableOptimizations = true;
             candle.configAllSettings(config);
@@ -27,10 +27,6 @@ public class LEDs extends SubsystemBase {
                 candle.clearAnimation(i);
             }
         }
-    }
-
-    public void periodic() {
-        // help i dont know what to put here
     }
 
     public CANdle getCandle() {
