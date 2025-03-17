@@ -290,7 +290,7 @@ public class RobotContainer {
         // DRIVER CONTROLLER
 
         // Automatically angle to HP & run intake
-        Command intakeCoral = IntakeCommands.intakeCoral(intake, manipulator);
+        // Command intakeCoral = IntakeCommands.intakeCoral(intake, manipulator);
         /*Commands.parallel(
         // fixme bugging the whole match
         //                        DriveCommands.autoAlignToHumanPlayerStation(
@@ -302,7 +302,7 @@ public class RobotContainer {
         IntakeCommands.intakeCoral(intake, manipulator),
         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));*/
 
-        Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
+        // Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
         Command manipulatorEject = ManipulatorCommands.eject(manipulator);
 
@@ -327,7 +327,11 @@ public class RobotContainer {
         // Intake from HP / Intake algae
         driverController
                 .leftBumper()
-                .onTrue(Commands.either(intakeAlgae, intakeCoral, () -> algaeMode));
+                .onTrue(
+                        Commands.either(
+                                ManipulatorCommands.algaeIntake(manipulator),
+                                IntakeCommands.intakeCoral(intake, manipulator),
+                                () -> algaeMode));
 
         // Shoot coral / algae
         driverController
@@ -418,7 +422,7 @@ public class RobotContainer {
                         Commands.either(
                                 ElevatorCommands.zeroElevator(elevator, algaeMode),
                                 ElevatorCommands.zeroElevator(elevator, algaeMode)
-                                        .andThen(intakeCoral),
+                                        .andThen(IntakeCommands.intakeCoral(intake, manipulator)),
                                 // todo do ryans idea and dont just automatically intake coral every
                                 // time it is zeroed
                                 () -> algaeMode));
@@ -444,7 +448,7 @@ public class RobotContainer {
                         Commands.either(
                                 ElevatorCommands.setElevatorLevel(
                                                 elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL)
-                                        .andThen(intakeAlgae),
+                                        .andThen(ManipulatorCommands.algaeIntake(manipulator)),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
                                 () -> algaeMode));
 
@@ -463,7 +467,7 @@ public class RobotContainer {
                         Commands.either(
                                 ElevatorCommands.setElevatorLevel(
                                                 elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL)
-                                        .andThen(intakeAlgae),
+                                        .andThen(ManipulatorCommands.algaeIntake(manipulator)),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4),
                                 () -> algaeMode));
     }
