@@ -415,20 +415,21 @@ public class RobotContainer {
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
-        operatorController.leftTrigger()
+        operatorController
+                .leftTrigger()
                 .onTrue(
                         Commands.either(
                                 IntakeCommands.intakeCoral(intake, manipulator),
                                 IntakeCommands.intakeCoral(intake, manipulator),
                                 () -> algaeMode));
 
-        operatorController.rightTrigger()
+        operatorController
+                .rightTrigger()
                 .onTrue(
                         Commands.either(
                                 IntakeCommands.intakeCoral(intake, manipulator),
                                 IntakeCommands.intakeCoral(intake, manipulator),
                                 () -> algaeMode));
-
 
         operatorController
                 .start()

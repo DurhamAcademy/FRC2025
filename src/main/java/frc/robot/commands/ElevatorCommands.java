@@ -29,7 +29,6 @@ public class ElevatorCommands {
                     .andThen(setElevatorVoltage(elevator, -.5).until(elevator::isZeroed));
         }
         return setElevatorLevel(elevator, ElevatorLevel.INTAKE)
-
                 .andThen(
                         Commands.waitUntil(() -> Math.abs(0 - elevator.getElevatorHeight()) < 1)
                                 .withTimeout(5))
