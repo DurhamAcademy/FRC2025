@@ -415,13 +415,27 @@ public class RobotContainer {
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
+        operatorController.leftTrigger()
+                .onTrue(
+                        Commands.either(
+                                IntakeCommands.intakeCoral(intake, manipulator),
+                                IntakeCommands.intakeCoral(intake, manipulator),
+                                () -> algaeMode));
+
+        operatorController.rightTrigger()
+                .onTrue(
+                        Commands.either(
+                                IntakeCommands.intakeCoral(intake, manipulator),
+                                IntakeCommands.intakeCoral(intake, manipulator),
+                                () -> algaeMode));
+
+
         operatorController
                 .start()
                 .onTrue(
                         Commands.either(
                                 ElevatorCommands.zeroElevator(elevator, algaeMode),
-                                ElevatorCommands.zeroElevator(elevator, algaeMode)
-                                        .andThen(IntakeCommands.intakeCoral(intake, manipulator)),
+                                ElevatorCommands.zeroElevator(elevator, algaeMode),
                                 // todo do ryans idea and dont just automatically intake coral every
                                 // time it is zeroed
                                 () -> algaeMode));
