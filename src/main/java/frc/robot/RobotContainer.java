@@ -70,8 +70,8 @@ public class RobotContainer {
     private final LoggedDashboardChooser<Command> autoChooser;
 
     // inverse axes
-    private boolean invertX = false;
-    private boolean invertY = false;
+    private boolean invertX = true;
+    private boolean invertY = true;
     private double xDirect = 1;
     private double yDirect = 1;
 
