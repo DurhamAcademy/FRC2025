@@ -289,7 +289,11 @@ public class RobotContainer {
         // Intake from HP / Intake algae
         driverController
                 .leftBumper()
-                .onTrue(Commands.either(intakeAlgae, intakeCoral, () -> algaeMode));
+                .onTrue(
+                        Commands.either(
+                                ManipulatorCommands.algaeIntake(manipulator),
+                                IntakeCommands.intakeCoral(intake, manipulator),
+                                () -> algaeMode));
 
         // Shoot coral / algae
         driverController
@@ -342,7 +346,7 @@ public class RobotContainer {
         operatorController
                 .povLeft()
                 .onTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.NET),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1),
                                 () -> algaeMode));
@@ -350,16 +354,17 @@ public class RobotContainer {
         operatorController
                 .povDown()
                 .onTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                                elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL)
+                                        .andThen(ManipulatorCommands.algaeIntake(manipulator)),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
                                 () -> algaeMode));
 
         operatorController
                 .povRight()
                 .onTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 ElevatorCommands.setElevatorLevel(
                                         elevator, ElevatorLevel.PROCESSOR),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3),
@@ -368,9 +373,10 @@ public class RobotContainer {
         operatorController
                 .povUp()
                 .onTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                                elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL)
+                                        .andThen(ManipulatorCommands.algaeIntake(manipulator)),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4),
                                 () -> algaeMode));
     }
@@ -484,6 +490,13 @@ public class RobotContainer {
                                 invertX = val;
                                 invertY = val;
                             });
+                });
+        SmartDashboard.putData(
+                "Elevator",
+                builder -> {
+                    builder.setSmartDashboardType("boolean");
+                    builder.addBooleanProperty("Zero", elevator::isZeroed, null);
+                    builder.addBooleanProperty("E+W Setpoint", elevator::isAtSetpoint, null);
                 });
         SmartDashboard.putData(
                 "MAX SPEED",
