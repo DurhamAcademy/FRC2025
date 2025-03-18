@@ -20,7 +20,8 @@ public class ManipulatorCommands {
                 manipulator);
     }
 
-    // stops the manipulator not sure about brake or idle, assume idle because that is the brake mode
+    // stops the manipulator not sure about brake or idle, assume idle because that is the brake
+    // mode
     public static Command stopManipulator(Manipulator manipulator) {
         return Commands.runOnce(
                 () -> {
