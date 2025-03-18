@@ -29,7 +29,7 @@ public class IntakeIOSim implements IntakeIO {
                         // The intake is mounted on the back side of the chassis
                         IntakeSimulation.IntakeSide.BACK,
                         // The intake can hold up to 1 coral
-                    1);
+                        1);
     }
 
     private boolean hasNewCoralFromCollector() {
