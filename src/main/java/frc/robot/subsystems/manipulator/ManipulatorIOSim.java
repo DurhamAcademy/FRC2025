@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class ManipulatorIOSim implements ManipulatorIO {
 
+    // just making a simple 2 motor vortex gearbox, simpler than it looks
     private final FlywheelSim rollerSim =
             new FlywheelSim(
                     LinearSystemId.createFlywheelSystem(
@@ -14,7 +15,6 @@ public class ManipulatorIOSim implements ManipulatorIO {
                             3,
                             1.0 / ManipulatorConstants.manipulatorGearRatio),
                     DCMotor.getNeoVortex(2));
-    // TODO: change the jKg meters squared in this once we get cad and everything
     private double rollerVoltage = 0.0;
     private Double timestamp = null;
 
