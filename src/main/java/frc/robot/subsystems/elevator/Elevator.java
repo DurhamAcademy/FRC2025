@@ -230,6 +230,10 @@ public class Elevator extends SubsystemBase {
         return elevatorInputs.isAtTargetLevel && wristInputs.isAtTargetAngle;
     }
 
+    public boolean elevatorIsAtSetpoint() {
+        return elevatorInputs.isAtTargetLevel;
+    }
+
     /**
      * Sets the speed of the wrist
      *
