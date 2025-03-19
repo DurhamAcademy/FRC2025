@@ -308,7 +308,7 @@ public class RobotContainer {
                 .whileTrue(
                         Commands.either(
                                 ManipulatorCommands.algaeEject(manipulator, elevator),
-                                ManipulatorCommands.coralEject(manipulator, elevator),
+                                ManipulatorCommands.coralEject(manipulator),
                                 () -> algaeMode))
                 .onFalse(stopManipulator);
 
@@ -323,9 +323,7 @@ public class RobotContainer {
                                         drive, DriveCommands.autoAlignLocations.algae),
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.reef),
-                                () -> algaeMode
-                        )
-                );
+                                () -> algaeMode));
         driverController
                 .rightTrigger()
                 .and(driverController.rightBumper().negate())
@@ -338,52 +336,35 @@ public class RobotContainer {
                                         drive, DriveCommands.autoAlignLocations.reef),
                                 () -> algaeMode));
 
-        // shoot
-        driverController
-                .rightBumper()
-                .whileTrue(ManipulatorCommands.eject(manipulator))
-                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
-
         // OPERATOR CONTROLLER
 
         // algae / coral mode
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
-
         // intake
-        operatorController.
-                leftTrigger()
+        operatorController
+                .leftTrigger()
                 .onTrue(
                         Commands.either(
                                 IntakeCommands.intakeCoral(intake, manipulator),
                                 ManipulatorCommands.algaeIntake(manipulator),
-                                () -> algaeMode)
-                );
-        operatorController.
-                rightTrigger()
+                                () -> algaeMode));
+        operatorController
+                .rightTrigger()
                 .onTrue(
-                        Commands.either(
-                                IntakeCommands.intakeCoral(intake, manipulator),
-                                ManipulatorCommands.algaeIntake(manipulator),
-                                () -> algaeMode)
-                );
+                        ManipulatorCommands.stopManipulator(manipulator)
+                                .andThen(IntakeCommands.stopIntake(intake)));
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
-        // This should be simplified, I do not know why there are two command structures bound to one button
-        driverController
-                .rightBumper()
-                .whileTrue(ManipulatorCommands.eject(manipulator, 1))
-                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
-
         // elevator
-        operatorController.start().onTrue(
-                Commands.either(
-                       ElevatorCommands.zeroElevatorForAlgae(elevator),
-                       ElevatorCommands.zeroElevatorForCoral(elevator),
-                        () -> algaeMode
-                )
-        );
+        operatorController
+                .start()
+                .onTrue(
+                        Commands.either(
+                                ElevatorCommands.zeroElevatorForAlgae(elevator),
+                                ElevatorCommands.zeroElevatorForCoral(elevator),
+                                () -> algaeMode));
         operatorController
                 .povLeft()
                 .onTrue(
@@ -485,12 +466,6 @@ public class RobotContainer {
     }
 
     public void sendDataToSmartDashboard() {
-        Logger.recordOutput(
-                "Algea reaf",
-                Constants.LocationConstants.PosesOfAllAlgaeLocations(0).toArray(new Pose2d[0]));
-        Logger.recordOutput(
-                "red alliance",
-                Constants.LocationConstants.PosesOfAllAlgaeLocations(1).toArray(new Pose2d[0]));
         SmartDashboard.putData(
                 "Vision",
                 builder -> {
@@ -544,51 +519,6 @@ public class RobotContainer {
                             "Max",
                             drive::getMaxVelocity,
                             val -> Drive.currentSpeedLimitMetersPerSec = val);
-                });
-
-        SmartDashboard.putData(
-                "Swerve Drive",
-                builder -> {
-                    builder.setSmartDashboardType("SwerveDrive");
-
-                    builder.addDoubleProperty(
-                            "Front Left Angle",
-                            () -> drive.getModule(0).getAngle().getRadians(),
-                            null);
-                    builder.addDoubleProperty(
-                            "Front Left Velocity",
-                            () -> drive.getModule(0).getVelocityMetersPerSec(),
-                            null);
-
-                    builder.addDoubleProperty(
-                            "Front Right Angle",
-                            () -> drive.getModule(1).getAngle().getRadians(),
-                            null);
-                    builder.addDoubleProperty(
-                            "Front Right Velocity",
-                            () -> drive.getModule(1).getVelocityMetersPerSec(),
-                            null);
-
-                    builder.addDoubleProperty(
-                            "Back Left Angle",
-                            () -> drive.getModule(2).getAngle().getRadians(),
-                            null);
-                    builder.addDoubleProperty(
-                            "Back Left Velocity",
-                            () -> drive.getModule(2).getVelocityMetersPerSec(),
-                            null);
-
-                    builder.addDoubleProperty(
-                            "Back Right Angle",
-                            () -> drive.getModule(3).getAngle().getRadians(),
-                            null);
-                    builder.addDoubleProperty(
-                            "Back Right Velocity",
-                            () -> drive.getModule(3).getVelocityMetersPerSec(),
-                            null);
-
-                    builder.addDoubleProperty(
-                            "Robot Angle", () -> drive.getPose().getRotation().getRadians(), null);
                 });
     }
 }
