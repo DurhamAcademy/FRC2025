@@ -232,7 +232,7 @@ public class RobotContainer {
 
         // TODO auto with intake untested
         NamedCommands.registerCommand(
-                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator));
+                "Run Intake", IntakeCommands.fullCoralIntakeSequence(intake, manipulator));
 
         NamedCommands.registerCommand(
                 "Eject Coral",
@@ -261,6 +261,15 @@ public class RobotContainer {
                                 DriveCommands.autoAlignToLocation(
                                                 drive, DriveCommands.autoAlignLocations.reef)
                                         .withTimeout(5)));
+
+        NamedCommands.registerCommand(
+                "Pull Coral into Intake",
+                IntakeCommands.pullCoralThroughIntake(intake, manipulator));
+        NamedCommands.registerCommand(
+                "Pull Coral into Manipulator",
+                ManipulatorCommands.pullCoralIntoManipulator(manipulator));
+        NamedCommands.registerCommand(
+                "Manipulator Coral Ripple", ManipulatorCommands.coralIntakeRipple(manipulator));
     }
 
     /**
@@ -347,7 +356,9 @@ public class RobotContainer {
                 .leftTrigger()
                 .onTrue(
                         Commands.either(
-                                IntakeCommands.intakeCoral(intake, manipulator),
+
+                                                IntakeCommands.fullCoralIntakeSequence(
+                                                        intake, manipulator),
                                 ManipulatorCommands.algaeIntake(manipulator),
                                 () -> algaeMode));
         operatorController
