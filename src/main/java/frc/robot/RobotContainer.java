@@ -27,7 +27,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
@@ -75,7 +77,7 @@ public class RobotContainer {
     private double xDirect = 1;
     private double yDirect = 1;
 
-    public boolean algaeMode = true;
+    public static boolean algaeMode = true;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -386,7 +388,7 @@ public class RobotContainer {
         //                                                        > ElevatorConstants.L1 - 4));
 
         // Auto align
-        // TODO its probably not great to set reef to left if in algae mode, but it shouldn't
+        // TODO its probably not great to set reef to left if in algae , but it shouldn't
         // conflict with anything
         driverController
                 .leftTrigger()
@@ -412,7 +414,50 @@ public class RobotContainer {
                                 () -> algaeMode));
 
         // OPERATOR CONTROLLER
+
+        final Trigger operatorRightRumbleTrigger = new Trigger(drive::isAlignedToReef);
+        operatorRightRumbleTrigger
+                .onTrue(
+                        new InstantCommand(
+                                () ->
+                                        operatorController.setRumble(
+                                                GenericHID.RumbleType.kRightRumble, 0.5)
+
+                                ).andThen(
+                                        LEDCommands.blink(leds, 0,128,0)
+                        ))
+                .onFalse(
+                        new InstantCommand(
+                                () ->
+                                        operatorController.setRumble(
+                                                GenericHID.RumbleType.kRightRumble, 0.0)));
+
+        final Trigger algaeAlign = new Trigger(drive::isAlignedToAlgae);
+        algaeAlign
+                .onTrue(
+                        new InstantCommand(
+                                () ->
+                                        LEDCommands.blink(leds, 0,0,128)
+                        )
+                );
+
+        final Trigger setForAlgae = new Trigger(RobotContainer::isAlgaeMode);
+        setForAlgae
+                .onTrue(
+                        new InstantCommand(
+                                ()->
+                                        LEDCommands.hasAlgae(leds, 0.25)
+                        )
+                );
+
+        final Trigger setForCoral = new Trigger(RobotContainer::isCoralMode);
         // Elevator
+        setForCoral
+                .onTrue(
+                        new InstantCommand(
+                                ()-> LEDCommands.hasCoral(leds, 0.25)
+                        )
+                );
 
         // editting this add parallel
         operatorController
@@ -425,7 +470,7 @@ public class RobotContainer {
                                         .andThen(LEDCommands.ledsDown(leds).withTimeout(1.0))));
 
         // dummy command just to see if it works
-        operatorController.povDown().and(operatorController.a()).whileTrue(LEDCommands.blink(leds));
+        operatorController.povDown().and(operatorController.a()).whileTrue(LEDCommands.blink(leds, 128,0,0));
 
         // my playing ends here
 
@@ -659,4 +704,6 @@ public class RobotContainer {
                             "Robot Angle", () -> drive.getPose().getRotation().getRadians(), null);
                 });
     }
+    public static boolean isAlgaeMode() {return algaeMode;}
+    public static boolean isCoralMode() {return !algaeMode;}
 }

@@ -134,7 +134,7 @@ public class LEDCommands {
                 .ignoringDisable(true);
     }
 
-    public static Command blink(LEDs leds) {
+    public static Command blink(LEDs leds, int r, int g, int b) {
         if (leds == null) return none();
         if (leds.getCandle() == null) return idle(leds);
         CANdle candle = leds.getCandle();
@@ -142,7 +142,7 @@ public class LEDCommands {
                         () -> {
                             boolean on = (System.currentTimeMillis() / 500) % 2 == 0;
                             if (on) {
-                                candle.setLEDs(0, 128, 0);
+                                candle.setLEDs(r, g, b);
                             } else {
                                 candle.setLEDs(0, 0, 0);
                             }
