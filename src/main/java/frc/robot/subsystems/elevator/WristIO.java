@@ -15,6 +15,7 @@ public interface WristIO {
         public double velocity;
         public double voltage;
         public boolean isAtTargetAngle;
+        public double wristTemperature = 0;
     }
 
     /** Update the set of loggable inputs. */
