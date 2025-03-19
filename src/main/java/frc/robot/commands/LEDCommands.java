@@ -250,7 +250,7 @@ public class LEDCommands {
         // can be leds.setLEDs()
         return runEnd(
                         () -> {
-                            candle.setLEDs(128, 64, 40);
+                            candle.setLEDs(128, 128, 128);
                         },
                         () -> {
                             for (int i = 0; candle.getMaxSimultaneousAnimationCount() > 0; i++) {

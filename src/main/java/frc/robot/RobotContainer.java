@@ -291,6 +291,8 @@ public class RobotContainer {
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
+        leds.setDefaultCommand(LEDCommands.hasAlgae(leds, 0.25));
+
         // DRIVER CONTROLLER
 
         // Automatically angle to HP & run intake
@@ -437,6 +439,7 @@ public class RobotContainer {
         setForAlgae.onTrue(new InstantCommand(() -> LEDCommands.hasAlgae(leds, 0.25)));
 
         final Trigger setForCoral = new Trigger(RobotContainer::isCoralMode);
+        setForCoral.onTrue(new InstantCommand(() -> LEDCommands.hasCoral(leds, 0.25)));
 
         // Elevator
 
@@ -446,9 +449,22 @@ public class RobotContainer {
                 .and(operatorController.a())
                 .whileTrue(LEDCommands.blink(leds, 128, 0, 0));
 
+        operatorController.x().whileTrue(LEDCommands.blink(leds, 0, 0, 128));
+
         // my playing ends here
 
-        operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
+        operatorController
+                .leftBumper()
+                .onTrue(
+                        Commands.runOnce(() -> algaeMode = false)
+                                .andThen(() -> LEDCommands.hasCoral(leds, 0.25)));
+        operatorController.leftBumper().onTrue(LEDCommands.hasCoral(leds, 0.50));
+        operatorController
+                .rightBumper()
+                .onTrue(
+                        Commands.runOnce(() -> algaeMode = true)
+                                .andThen(() -> LEDCommands.hasAlgae(leds, 0.25)));
+        operatorController.rightBumper().onTrue(LEDCommands.hasAlgae(leds, 0.25));
 
         operatorController
                 .start()
