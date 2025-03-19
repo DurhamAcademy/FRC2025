@@ -303,7 +303,7 @@ public class RobotContainer {
 
         // Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
-        Command manipulatorEject = ManipulatorCommands.eject(manipulator, elevator);
+        Command manipulatorEject = ManipulatorCommands.eject(manipulator, 1);
 
         Command autoAlignToReef =
                 DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef);
@@ -339,8 +339,8 @@ public class RobotContainer {
                 .and(driverController.rightTrigger().negate())
                 .whileTrue(
                         Commands.either(
-                                ManipulatorCommands.eject(manipulator, 4),
-                                manipulatorEject,
+                                ManipulatorCommands.algaeEject(manipulator, elevator),
+                                ManipulatorCommands.coralEject(manipulator, elevator),
                                 () -> algaeMode))
                 .onFalse(stopManipulator);
 
@@ -428,9 +428,10 @@ public class RobotContainer {
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
+        // This should be simplified, I do not know why there are two command structures bound to one button
         driverController
                 .rightBumper()
-                .whileTrue(ManipulatorCommands.eject(manipulator, elevator))
+                .whileTrue(ManipulatorCommands.eject(manipulator, 1))
                 .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
 
         operatorController
