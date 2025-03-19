@@ -419,13 +419,10 @@ public class RobotContainer {
         operatorRightRumbleTrigger
                 .onTrue(
                         new InstantCommand(
-                                () ->
-                                        operatorController.setRumble(
-                                                GenericHID.RumbleType.kRightRumble, 0.5)
-
-                                ).andThen(
-                                        LEDCommands.blink(leds, 0,128,0)
-                        ))
+                                        () ->
+                                                operatorController.setRumble(
+                                                        GenericHID.RumbleType.kRightRumble, 0.5))
+                                .andThen(LEDCommands.blink(leds, 0, 128, 0)))
                 .onFalse(
                         new InstantCommand(
                                 () ->
@@ -433,31 +430,14 @@ public class RobotContainer {
                                                 GenericHID.RumbleType.kRightRumble, 0.0)));
 
         final Trigger algaeAlign = new Trigger(drive::isAlignedToAlgae);
-        algaeAlign
-                .onTrue(
-                        new InstantCommand(
-                                () ->
-                                        LEDCommands.blink(leds, 0,0,128)
-                        )
-                );
+        algaeAlign.onTrue(new InstantCommand(() -> LEDCommands.blink(leds, 0, 0, 128)));
 
         final Trigger setForAlgae = new Trigger(RobotContainer::isAlgaeMode);
-        setForAlgae
-                .onTrue(
-                        new InstantCommand(
-                                ()->
-                                        LEDCommands.hasAlgae(leds, 0.25)
-                        )
-                );
+        setForAlgae.onTrue(new InstantCommand(() -> LEDCommands.hasAlgae(leds, 0.25)));
 
         final Trigger setForCoral = new Trigger(RobotContainer::isCoralMode);
         // Elevator
-        setForCoral
-                .onTrue(
-                        new InstantCommand(
-                                ()-> LEDCommands.hasCoral(leds, 0.25)
-                        )
-                );
+        setForCoral.onTrue(new InstantCommand(() -> LEDCommands.hasCoral(leds, 0.25)));
 
         // editting this add parallel
         operatorController
@@ -470,7 +450,10 @@ public class RobotContainer {
                                         .andThen(LEDCommands.ledsDown(leds).withTimeout(1.0))));
 
         // dummy command just to see if it works
-        operatorController.povDown().and(operatorController.a()).whileTrue(LEDCommands.blink(leds, 128,0,0));
+        operatorController
+                .povDown()
+                .and(operatorController.a())
+                .whileTrue(LEDCommands.blink(leds, 128, 0, 0));
 
         // my playing ends here
 
@@ -704,6 +687,12 @@ public class RobotContainer {
                             "Robot Angle", () -> drive.getPose().getRotation().getRadians(), null);
                 });
     }
-    public static boolean isAlgaeMode() {return algaeMode;}
-    public static boolean isCoralMode() {return !algaeMode;}
+
+    public static boolean isAlgaeMode() {
+        return algaeMode;
+    }
+
+    public static boolean isCoralMode() {
+        return !algaeMode;
+    }
 }
