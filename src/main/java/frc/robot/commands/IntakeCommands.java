@@ -13,19 +13,24 @@ public class IntakeCommands {
                         ManipulatorCommands.runManipulator(manipulator, 0.0),
                         runIntake(intake, -2.0))
                 .withTimeout(0.1)
-                .andThen(intakeCoral(intake, manipulator));
+                .andThen(fullCoralIntakeSequence(intake, manipulator));
     }
 
-    public static Command intakeCoral(Intake intake, Manipulator manipulator) {
+    public static Command pullCoralThroughIntake(Intake intake, Manipulator manipulator) {
         return parallel(
-                        IntakeCommands.runIntake(intake, 3.0)
-                                .repeatedly()
-                                .until(manipulator::beamBroken)
-                                .andThen(IntakeCommands.stopIntake(intake)),
-                        ManipulatorCommands.intakeCoral(manipulator))
+                        IntakeCommands.runIntake(intake, 3.0),
+                        ManipulatorCommands.runManipulator(manipulator, 1.5))
+                .until(manipulator::beamBroken)
+                .andThen(IntakeCommands.stopIntake(intake));
+    }
+
+    public static Command fullCoralIntakeSequence(Intake intake, Manipulator manipulator) {
+        return pullCoralThroughIntake(intake, manipulator)
+                .andThen(ManipulatorCommands.pullCoralIntoManipulator(manipulator))
+                .andThen(ManipulatorCommands.coralIntakeRipple(manipulator))
                 .andThen(
                         IntakeCommands.stopIntake(intake),
-                        ManipulatorCommands.runManipulator(manipulator, 0));
+                        ManipulatorCommands.stopManipulator(manipulator));
     }
 
     public static Command runIntake(Intake intake, double voltage) {

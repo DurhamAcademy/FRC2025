@@ -43,14 +43,14 @@ public class ManipulatorCommands {
         return runManipulator(manipulator, 9);
     }
 
-    public static Command intakeCoral(Manipulator manipulator) {
+    public static Command pullCoralIntoManipulator(Manipulator manipulator) {
+        return runManipulator(manipulator, 0.75).until(() -> !manipulator.beamBroken());
+    }
+
+    public static Command coralIntakeRipple(Manipulator manipulator) {
         return sequence(
-                runManipulator(manipulator, 1.5)
-                        .until(manipulator::beamBroken), // run until coral starts to enter
-                runManipulator(manipulator, 0.75)
-                        .until(() -> !manipulator.beamBroken()), // continue until too far
                 runManipulator(manipulator, -0.6).until(manipulator::beamBroken),
-                runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
-                runManipulator(manipulator, 0));
+                // runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
+                stopManipulator(manipulator));
     }
 }

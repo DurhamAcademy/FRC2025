@@ -233,7 +233,7 @@ public class RobotContainer {
 
         // TODO auto with intake untested
         NamedCommands.registerCommand(
-                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator));
+                "Run Intake", IntakeCommands.fullCoralIntakeSequence(intake, manipulator));
 
         NamedCommands.registerCommand(
                 "Eject Coral",
@@ -262,6 +262,15 @@ public class RobotContainer {
                                 DriveCommands.autoAlignToLocation(
                                                 drive, DriveCommands.autoAlignLocations.reef)
                                         .withTimeout(5)));
+
+        NamedCommands.registerCommand(
+                "Pull Coral into Intake",
+                IntakeCommands.pullCoralThroughIntake(intake, manipulator));
+        NamedCommands.registerCommand(
+                "Pull Coral into Manipulator",
+                ManipulatorCommands.pullCoralIntoManipulator(manipulator));
+        NamedCommands.registerCommand(
+                "Manipulator Coral Ripple", ManipulatorCommands.coralIntakeRipple(manipulator));
     }
 
     /**
@@ -329,7 +338,7 @@ public class RobotContainer {
                 .onTrue(
                         Commands.either(
                                 ManipulatorCommands.algaeIntake(manipulator),
-                                IntakeCommands.intakeCoral(intake, manipulator),
+                                IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
                                 () -> algaeMode));
 
         // Shoot coral / algae
@@ -421,7 +430,9 @@ public class RobotContainer {
                         Commands.either(
                                 ElevatorCommands.zeroElevator(elevator, algaeMode),
                                 ElevatorCommands.zeroElevator(elevator, algaeMode)
-                                        .andThen(IntakeCommands.intakeCoral(intake, manipulator)),
+                                        .andThen(
+                                                IntakeCommands.fullCoralIntakeSequence(
+                                                        intake, manipulator)),
                                 // todo do ryans idea and dont just automatically intake coral every
                                 // time it is zeroed
                                 () -> algaeMode));
