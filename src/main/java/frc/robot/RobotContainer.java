@@ -303,7 +303,7 @@ public class RobotContainer {
 
         // Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
-        Command manipulatorEject = ManipulatorCommands.eject(manipulator);
+        Command manipulatorEject = ManipulatorCommands.eject(manipulator, elevator);
 
         Command autoAlignToReef =
                 DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef);
@@ -430,7 +430,7 @@ public class RobotContainer {
 
         driverController
                 .rightBumper()
-                .whileTrue(ManipulatorCommands.eject(manipulator))
+                .whileTrue(ManipulatorCommands.eject(manipulator, elevator))
                 .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
 
         operatorController

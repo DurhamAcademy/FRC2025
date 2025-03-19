@@ -4,6 +4,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.manipulator.Manipulator;
 
 public class ManipulatorCommands {
@@ -27,7 +28,21 @@ public class ManipulatorCommands {
                 manipulator);
     }
 
-    public static Command eject(Manipulator manipulator) {
+    public static Command eject(Manipulator manipulator, Elevator elevator) {
+        double height = elevator.getElevatorHeight();
+        if (height >= Elevator.ElevatorLevel.PROCESSOR.heightInches - .5
+                && height <= Elevator.ElevatorLevel.PROCESSOR.heightInches + .5) {
+            return processorEject(manipulator);
+        } else {
+            return normalEject(manipulator);
+        }
+    }
+
+    public static Command processorEject(Manipulator manipulator) {
+        return runManipulator(manipulator, .3);
+    }
+
+    public static Command normalEject(Manipulator manipulator) {
         return runManipulator(manipulator, 1);
     }
 
