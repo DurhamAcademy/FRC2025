@@ -457,14 +457,14 @@ public class RobotContainer {
                 .leftBumper()
                 .onTrue(
                         Commands.runOnce(() -> algaeMode = false)
-                                .andThen(() -> LEDCommands.hasCoral(leds, 0.25)));
-        operatorController.leftBumper().onTrue(LEDCommands.hasCoral(leds, 0.50));
+                                .andThen(LEDCommands.hasCoral(leds, 0.25)));
+
         operatorController
                 .rightBumper()
                 .onTrue(
                         Commands.runOnce(() -> algaeMode = true)
-                                .andThen(() -> LEDCommands.hasAlgae(leds, 0.25)));
-        operatorController.rightBumper().onTrue(LEDCommands.hasAlgae(leds, 0.25));
+                                .andThen(LEDCommands.hasAlgae(leds, 0.25)));
+
 
         operatorController
                 .start()
