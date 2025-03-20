@@ -21,10 +21,17 @@ public class ElevatorCommands {
         return Commands.run(() -> elevator.setVoltage(voltage), elevator);
     }
 
-    // command to run the elevator until it hits the limit switch
-    public static Command zeroElevator(Elevator elevator) {
+    public static Command zeroElevatorForCoral(Elevator elevator){
+        return setElevatorLevel(elevator, ElevatorLevel.INTAKE)
+                .andThen(
+                        Commands.waitUntil(elevator::elevatorIsAtSetpoint).withTimeout(5))
+                .andThen(setElevatorVoltage(elevator, -.5).until(elevator::isZeroed));
+    }
+
+    public static Command zeroElevatorForAlgae(Elevator elevator) {
         return setElevatorLevel(elevator, ElevatorLevel.ZERO)
-                .andThen(Commands.waitUntil(() -> elevator.getElevatorHeight() < 1).withTimeout(5))
+                .andThen(
+                        Commands.waitUntil(elevator::elevatorIsAtSetpoint).withTimeout(5))
                 .andThen(setElevatorVoltage(elevator, -.5).until(elevator::isZeroed));
     }
 }

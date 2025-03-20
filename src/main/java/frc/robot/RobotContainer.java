@@ -10,7 +10,6 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-
 package frc.robot;
 
 import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
@@ -25,7 +24,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
@@ -70,12 +68,12 @@ public class RobotContainer {
     private final LoggedDashboardChooser<Command> autoChooser;
 
     // inverse axes
-    private boolean invertX = false;
-    private boolean invertY = false;
+    private boolean invertX = true;
+    private boolean invertY = true;
     private double xDirect = 1;
     private double yDirect = 1;
 
-    public boolean algaeMode = false;
+    public boolean algaeMode = true;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -188,30 +186,30 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "Elevator L1",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .andThen(Commands.waitUntil(elevator::elevatorIsAtSetpoint))
                         .withTimeout(3));
 
         NamedCommands.registerCommand(
                 "Elevator L2",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .andThen(Commands.waitUntil(elevator::elevatorIsAtSetpoint))
                         .withTimeout(3.5));
 
         NamedCommands.registerCommand(
                 "Elevator L3",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .andThen(Commands.waitUntil(elevator::elevatorIsAtSetpoint))
                         .withTimeout(4));
 
         NamedCommands.registerCommand(
                 "Elevator L4",
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4)
-                        .andThen(Commands.waitUntil(elevator::isAtSetpoint))
+                        .andThen(Commands.waitUntil(elevator::elevatorIsAtSetpoint))
                         .withTimeout(4.5));
 
         NamedCommands.registerCommand(
                 "Elevator Zero",
-                ElevatorCommands.zeroElevator(elevator)
+                ElevatorCommands.zeroElevatorForAlgae(elevator)
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(4.5));
 
@@ -266,13 +264,6 @@ public class RobotContainer {
 
         Command manipulatorEject = ManipulatorCommands.eject(manipulator);
 
-        Command autoAlignToReef =
-                DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef);
-
-        Command autoAlignToProcessor =
-                DriveCommands.autoAlignToLocation(
-                        drive, DriveCommands.autoAlignLocations.processor);
-
         Command setAlignLeft =
                 Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT));
 
@@ -285,15 +276,6 @@ public class RobotContainer {
 
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-        // Intake from HP / Intake algae
-        driverController
-                .leftBumper()
-                .onTrue(
-                        Commands.either(
-                                ManipulatorCommands.algaeIntake(manipulator),
-                                IntakeCommands.intakeCoral(intake, manipulator),
-                                () -> algaeMode));
 
         // Shoot coral / algae
         driverController
@@ -313,36 +295,66 @@ public class RobotContainer {
                 .and(driverController.rightBumper().negate())
                 .onTrue(setAlignLeft)
                 .whileTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.algae),
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.reef),
-                                () -> algaeMode));
+                                () -> algaeMode
+                        )
+                );
         driverController
                 .rightTrigger()
                 .and(driverController.rightBumper().negate())
                 .onTrue(setAlignRight)
                 .whileTrue(
-                        new ConditionalCommand(
+                        Commands.either(
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.processor),
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.reef),
                                 () -> algaeMode));
 
-        // OPERATOR CONTROLLER BINDINGS
+        // shoot
+        driverController
+                .rightBumper()
+                .whileTrue(ManipulatorCommands.eject(manipulator))
+                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
 
-        // algae/coral mode
+        // OPERATOR CONTROLLER
+
+        // algae / coral mode
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
-        // zero elevator
-        operatorController.start().onTrue(ElevatorCommands.zeroElevator(elevator));
 
-        // retry intake
+        // intake
+        operatorController.
+                leftTrigger()
+                .onTrue(
+                        Commands.either(
+                                IntakeCommands.intakeCoral(intake, manipulator),
+                                ManipulatorCommands.algaeIntake(manipulator),
+                                () -> algaeMode)
+                );
+        operatorController.
+                rightTrigger()
+                .onTrue(
+                        Commands.either(
+                                IntakeCommands.intakeCoral(intake, manipulator),
+                                ManipulatorCommands.algaeIntake(manipulator),
+                                () -> algaeMode)
+                );
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
+        // elevator
+        operatorController.start().onTrue(
+                Commands.either(
+                       ElevatorCommands.zeroElevatorForAlgae(elevator),
+                       ElevatorCommands.zeroElevatorForCoral(elevator),
+                        () -> algaeMode
+                )
+        );
         operatorController
                 .povLeft()
                 .onTrue(
@@ -350,7 +362,6 @@ public class RobotContainer {
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.NET),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1),
                                 () -> algaeMode));
-
         operatorController
                 .povDown()
                 .onTrue(
@@ -360,7 +371,6 @@ public class RobotContainer {
                                         .andThen(ManipulatorCommands.algaeIntake(manipulator)),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
                                 () -> algaeMode));
-
         operatorController
                 .povRight()
                 .onTrue(
@@ -369,7 +379,6 @@ public class RobotContainer {
                                         elevator, ElevatorLevel.PROCESSOR),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3),
                                 () -> algaeMode));
-
         operatorController
                 .povUp()
                 .onTrue(
