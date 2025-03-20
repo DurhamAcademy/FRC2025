@@ -70,6 +70,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
+
     // inverse axes
     private boolean invertX = false;
     private boolean invertY = false;
@@ -77,9 +78,11 @@ public class RobotContainer {
     private double yDirect = 1;
 
     public static boolean algaeMode = true;
+    private final ReactionObjects rxns;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
+
         switch (Constants.currentMode) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
@@ -156,6 +159,14 @@ public class RobotContainer {
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser());
+        // set up reactions
+        this.rxns = new ReactionObjects(
+                new Trigger(intake::getBeamBroken),
+                new Trigger(drive::isAlignedToAlgae),
+                new Trigger(drive::isAlignedToReef),
+                new Trigger(RobotContainer::isAlgaeMode),
+                new Trigger(RobotContainer::isCoralMode)
+        );
 
         // Set up SysId routines
         //        autoChooser.addOption(
@@ -180,6 +191,7 @@ public class RobotContainer {
         // Configure the button bindings
         sendDataToSmartDashboard();
         configureButtonBindings();
+        configureReactions();
     }
 
     public void getSwerveDirection() {
@@ -432,6 +444,8 @@ public class RobotContainer {
                                         operatorController.setRumble(
                                                 GenericHID.RumbleType.kRightRumble, 0.0)));
 
+
+        //redundant now hopefully
         final Trigger algaeAlign = new Trigger(drive::isAlignedToAlgae);
         algaeAlign.onTrue(new InstantCommand(() -> LEDCommands.blink(leds, 0, 0, 128)));
 
@@ -440,6 +454,11 @@ public class RobotContainer {
 
         final Trigger setForCoral = new Trigger(RobotContainer::isCoralMode);
         setForCoral.onTrue(new InstantCommand(() -> LEDCommands.hasCoral(leds, 0.25)));
+
+        final Trigger reefAlign = new Trigger(drive::isAlignedToReef);
+        reefAlign.onTrue(new InstantCommand(() -> LEDCommands.blink(leds,0,128,0)));
+        // up to here
+
 
         // Elevator
 
@@ -520,6 +539,39 @@ public class RobotContainer {
                                         .andThen(ManipulatorCommands.algaeIntake(manipulator)),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4),
                                 () -> algaeMode));
+    }
+
+    public void configureReactions() {
+        rxns.hasCoral
+                .whileTrue(
+                    new InstantCommand(
+                            () -> LEDCommands.blink(leds, 0, 0,128)
+                    )
+                );
+        rxns.reefAlign
+                .whileTrue(
+                        new InstantCommand(
+                                () -> LEDCommands.aligned(leds, 0.25)
+                        )
+                );
+        rxns.algaeMode
+                .whileTrue(
+                        new InstantCommand(
+                                ()-> LEDCommands.hasAlgae(leds, 0.25)
+                        )
+                );
+        rxns.coralMode
+                .whileTrue(
+                        new InstantCommand(
+                                () -> LEDCommands.hasCoral(leds, 0.25)
+                        )
+                );
+        rxns.algaeAlign
+                .whileTrue(
+                        new InstantCommand(
+                                () -> LEDCommands.aligned(leds, 0.25)
+                        )
+                );
     }
 
     /**
@@ -701,5 +753,21 @@ public class RobotContainer {
 
     public static boolean isCoralMode() {
         return !algaeMode;
+    }
+
+    private static class ReactionObjects {
+        Trigger hasCoral;
+        Trigger algaeAlign;
+        Trigger reefAlign;
+        Trigger algaeMode;
+        Trigger coralMode;
+        public ReactionObjects( Trigger hasCoral,  Trigger reefAlign, Trigger algaeAlign, Trigger algaeMode, Trigger coralMode ) {
+
+            this.hasCoral = hasCoral;
+            this.algaeAlign = algaeAlign;
+            this.reefAlign = reefAlign;
+            this.algaeMode = algaeMode;
+            this.coralMode = coralMode;
+        }
     }
 }
