@@ -312,8 +312,6 @@ public class RobotContainer {
         // Shoot coral / algae
         driverController
                 .rightBumper()
-                .and(driverController.leftTrigger().negate())
-                .and(driverController.rightTrigger().negate())
                 .whileTrue(
                         Commands.either(
                                 ManipulatorCommands.algaeEject(manipulator, elevator),
@@ -356,10 +354,8 @@ public class RobotContainer {
                 .leftTrigger()
                 .onTrue(
                         Commands.either(
-
-                                                IntakeCommands.fullCoralIntakeSequence(
-                                                        intake, manipulator),
                                 ManipulatorCommands.algaeIntake(manipulator),
+                                IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
                                 () -> algaeMode));
         operatorController
                 .rightTrigger()

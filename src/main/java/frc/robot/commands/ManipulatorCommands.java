@@ -33,13 +33,14 @@ public class ManipulatorCommands {
     }
 
     public static Command algaeEject(Manipulator manipulator, Elevator elevator) {
-        double height = elevator.getElevatorHeight();
-        if (height >= Elevator.ElevatorLevel.PROCESSOR.heightInches - .5
-                && height <= Elevator.ElevatorLevel.PROCESSOR.heightInches + .5) {
-            return processorEject(manipulator);
-        } else {
-            return netEject(manipulator);
-        }
+        return Commands.either(
+                processorEject(manipulator),
+                netEject(manipulator),
+                () ->
+                        elevator.getElevatorHeight()
+                                        >= Elevator.ElevatorLevel.PROCESSOR.heightInches - .5
+                                && elevator.getElevatorHeight()
+                                        <= Elevator.ElevatorLevel.PROCESSOR.heightInches + .5);
     }
 
     public static Command netEject(Manipulator manipulator) {
