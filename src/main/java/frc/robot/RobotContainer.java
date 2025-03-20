@@ -63,6 +63,7 @@ public class RobotContainer {
     // Controllers
     private final CommandXboxController driverController = new CommandXboxController(0);
     private final CommandXboxController operatorController = new CommandXboxController(1);
+    private final CommandXboxController workController = new CommandXboxController(2);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
@@ -232,7 +233,8 @@ public class RobotContainer {
 
         // TODO auto with intake untested
         NamedCommands.registerCommand(
-                "Run Intake", IntakeCommands.fullCoralIntakeSequence(intake, manipulator));
+                "Run Intake",
+                IntakeCommands.fullCoralIntakeSequence(intake, manipulator, elevator));
 
         NamedCommands.registerCommand(
                 "Eject Coral",
@@ -264,7 +266,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand(
                 "Pull Coral into Intake",
-                IntakeCommands.pullCoralThroughIntake(intake, manipulator));
+                IntakeCommands.pullCoralThroughIntake(intake, manipulator, elevator));
         NamedCommands.registerCommand(
                 "Pull Coral into Manipulator",
                 ManipulatorCommands.pullCoralIntoManipulator(manipulator));
@@ -355,14 +357,17 @@ public class RobotContainer {
                 .onTrue(
                         Commands.either(
                                 ManipulatorCommands.algaeIntake(manipulator),
-                                IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
+                                IntakeCommands.fullCoralIntakeSequence(
+                                        intake, manipulator, elevator),
                                 () -> algaeMode));
         operatorController
                 .rightTrigger()
                 .onTrue(
                         ManipulatorCommands.stopManipulator(manipulator)
                                 .andThen(IntakeCommands.stopIntake(intake)));
-        operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
+        operatorController
+                .a()
+                .onTrue(IntakeCommands.retryStuckIntake(intake, manipulator, elevator));
 
         // elevator
         operatorController
@@ -405,6 +410,19 @@ public class RobotContainer {
                                         .andThen(ManipulatorCommands.algaeIntake(manipulator)),
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4),
                                 () -> algaeMode));
+
+        workController
+                .a()
+                .onTrue(
+                        Commands.either(
+                                ManipulatorCommands.algaeIntake(manipulator),
+                                IntakeCommands.fullCoralIntakeSequence(
+                                        intake, manipulator, elevator),
+                                () -> algaeMode));
+
+        workController.b().onTrue(Commands.runOnce(() -> algaeMode = false));
+
+        workController.x().onTrue(Commands.runOnce(() -> algaeMode = true));
     }
 
     /**
