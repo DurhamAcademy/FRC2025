@@ -136,6 +136,7 @@ public class Elevator extends SubsystemBase {
 
     /**
      * Sets the target height of the elevator in inches
+     *
      * @param heightInches
      */
     public void setElevatorTargetHeight(double heightInches) {
@@ -188,6 +189,7 @@ public class Elevator extends SubsystemBase {
 
     /**
      * If the elevator is at it's target height
+     *
      * @return boolean
      */
     public boolean elevatorIsAtSetpoint() {

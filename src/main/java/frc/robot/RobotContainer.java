@@ -300,9 +300,7 @@ public class RobotContainer {
                                         drive, DriveCommands.autoAlignLocations.algae),
                                 DriveCommands.autoAlignToLocation(
                                         drive, DriveCommands.autoAlignLocations.reef),
-                                () -> algaeMode
-                        )
-                );
+                                () -> algaeMode));
         driverController
                 .rightTrigger()
                 .and(driverController.rightBumper().negate())
@@ -327,34 +325,31 @@ public class RobotContainer {
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
-
         // intake
-        operatorController.
-                leftTrigger()
+        operatorController
+                .leftTrigger()
                 .onTrue(
                         Commands.either(
                                 IntakeCommands.intakeCoral(intake, manipulator),
                                 ManipulatorCommands.algaeIntake(manipulator),
-                                () -> algaeMode)
-                );
-        operatorController.
-                rightTrigger()
+                                () -> algaeMode));
+        operatorController
+                .rightTrigger()
                 .onTrue(
                         Commands.either(
                                 IntakeCommands.intakeCoral(intake, manipulator),
                                 ManipulatorCommands.algaeIntake(manipulator),
-                                () -> algaeMode)
-                );
+                                () -> algaeMode));
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
         // elevator
-        operatorController.start().onTrue(
-                Commands.either(
-                       ElevatorCommands.zeroElevatorForAlgae(elevator),
-                       ElevatorCommands.zeroElevatorForCoral(elevator),
-                        () -> algaeMode
-                )
-        );
+        operatorController
+                .start()
+                .onTrue(
+                        Commands.either(
+                                ElevatorCommands.zeroElevatorForAlgae(elevator),
+                                ElevatorCommands.zeroElevatorForCoral(elevator),
+                                () -> algaeMode));
         operatorController
                 .povLeft()
                 .onTrue(
