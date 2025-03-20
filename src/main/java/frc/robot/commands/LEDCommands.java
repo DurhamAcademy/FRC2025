@@ -10,62 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.lights.LEDs;
 
 public class LEDCommands {
-    public static Command flameCommand(LEDs leds, double brightness) {
-        if (leds == null) return none();
-        CANdle candle = leds.getCandle();
-        if (candle == null) return idle(leds);
-        return run(() -> {
-                    // candle.animate(new RgbFadeAnimation(1.0, 0.5, candleLength, 0));
-                    candle.animate(
-                            new FireAnimation(
-                                    brightness,
-                                    0,
-                                    stripLength,
-                                    1,
-                                    0.5,
-                                    false,
-                                    candleLength), // candleLength -> 0
-                            0);
-                    /*
-                    candle.animate(
-                            new FireAnimation(
-                                    brightness,
-                                    0,
-                                    stripLength,
-                                    1,
-                                    0.5,
-                                    true,
-                                    candleLength + stripLength), //candleLength + striplength
-                            2);
-                    candle.animate(
-                            new FireAnimation(
-                                    brightness,
-                                    0,
-                                    stripLength,
-                                    1,
-                                    0.5,
-                                    false,
-                                    candleLength + stripLength * 2),
-                            3);
-                    candle.animate(
-                            new FireAnimation(
-                                    brightness,
-                                    0,
-                                    stripLength,
-                                    1,
-                                    0.5,
-                                    true,
-                                    candleLength + stripLength * 3),
-                            4); **/
-                })
-                .finallyDo(
-                        () -> {
-                            for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
-                                candle.clearAnimation(i);
-                            }
-                        })
-                .ignoringDisable(true);
-    }
+
 
     public static Command hasAlgae(LEDs leds, double brightness) {
         if (leds == null) return none();
