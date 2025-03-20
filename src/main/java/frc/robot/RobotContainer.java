@@ -10,7 +10,6 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-
 package frc.robot;
 
 import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
@@ -72,8 +71,8 @@ public class RobotContainer {
 
 
     // inverse axes
-    private boolean invertX = false;
-    private boolean invertY = false;
+    private boolean invertX = true;
+    private boolean invertY = true;
     private double xDirect = 1;
     private double yDirect = 1;
 
@@ -322,7 +321,7 @@ public class RobotContainer {
 
         // Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
 
-        Command manipulatorEject = ManipulatorCommands.eject(manipulator);
+        Command manipulatorEject = ManipulatorCommands.eject(manipulator, 1);
 
         Command autoAlignToReef =
                 DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef);
@@ -358,8 +357,8 @@ public class RobotContainer {
                 .and(driverController.rightTrigger().negate())
                 .whileTrue(
                         Commands.either(
-                                ManipulatorCommands.eject(manipulator, 4),
-                                manipulatorEject,
+                                ManipulatorCommands.algaeEject(manipulator, elevator),
+                                ManipulatorCommands.coralEject(manipulator, elevator),
                                 () -> algaeMode))
                 .onFalse(stopManipulator);
 
@@ -498,9 +497,10 @@ public class RobotContainer {
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
+        // This should be simplified, I do not know why there are two command structures bound to one button
         driverController
                 .rightBumper()
-                .whileTrue(ManipulatorCommands.eject(manipulator))
+                .whileTrue(ManipulatorCommands.eject(manipulator, 1))
                 .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
 
         operatorController

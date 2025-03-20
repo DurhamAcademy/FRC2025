@@ -420,14 +420,14 @@ public class DriveCommands {
                         ANGLE_KD,
                         new TrapezoidProfile.Constraints(
                                 // TODO change this max acceleration
-                                drive.getMaxVelocity() - 1, 4));
+                                MathUtil.clamp(drive.getMaxVelocity(), 0, 2), 1));
         angleController.enableContinuousInput(-Math.PI, Math.PI);
         PathConstraints constraints =
                 new PathConstraints(
-                        drive.getMaxVelocity(),
-                        4,
-                        drive.getMaxAngularSpeedRadPerSec(),
-                        4 / DriveConstants.driveBaseRadius);
+                        MathUtil.clamp(drive.getMaxVelocity(), 0, 2),
+                        1,
+                        drive.getMaxAngularSpeedRadPerSec() / 2,
+                        1 / DriveConstants.driveBaseRadius);
 
         return Commands.defer(
                         () -> {
@@ -482,7 +482,7 @@ public class DriveCommands {
                                                     - goalPose.getRotation().getDegrees());
 
                             // only run if not on target
-                            if (distance > 0.05 && rotationError > 2.0) {
+                            if (distance > 0.05 || rotationError > 2.0) {
                                 // get speeds to move to goal pose
                                 ChassisSpeeds speeds =
                                         holonomicDriveController.calculate(
