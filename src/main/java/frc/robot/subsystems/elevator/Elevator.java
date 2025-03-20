@@ -187,6 +187,14 @@ public class Elevator extends SubsystemBase {
     }
 
     /**
+     * If the elevator is at it's target height
+     * @return boolean
+     */
+    public boolean elevatorIsAtSetpoint() {
+        return elevatorInputs.isAtTargetLevel;
+    }
+
+    /**
      * Whether the elevator is currently zeroed
      *
      * @return boolean
