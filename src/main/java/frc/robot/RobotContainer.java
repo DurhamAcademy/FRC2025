@@ -114,18 +114,7 @@ public class RobotContainer {
                                 this);
                 manipulator = new Manipulator(new ManipulatorIOSim());
                 intake = new Intake(new IntakeIOSim(driveSimulation));
-                // TODO: Elevator SIM
                 elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
-
-                // TODO: Vision SIM
-                //        vision = new Vision(
-                //                drive,
-                //                new VisionIOPhotonVisionSim(
-                //                        camera0Name, robotToCamera0,
-                // driveSimulation::getSimulatedDriveTrainPose),
-                //                new VisionIOPhotonVisionSim(
-                //                        camera1Name, robotToCamera1,
-                // driveSimulation::getSimulatedDriveTrainPose));
                 break;
 
             default:
@@ -230,37 +219,11 @@ public class RobotContainer {
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(4.5));
 
-        // TODO auto with intake untested
-        NamedCommands.registerCommand(
-                "Run Intake", IntakeCommands.fullCoralIntakeSequence(intake, manipulator));
-
         NamedCommands.registerCommand(
                 "Eject Coral",
                 ManipulatorCommands.eject(manipulator, 1)
                         .withTimeout(.75)
                         .andThen(ManipulatorCommands.eject(manipulator, 0).withTimeout(.1)));
-
-        // todo change align timeouts
-        NamedCommands.registerCommand(
-                "Align Reef Left",
-                Commands.runOnce(
-                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT), drive)
-                        .andThen(
-                                DriveCommands.autoAlignToLocation(
-                                                drive, DriveCommands.autoAlignLocations.reef)
-                                        .repeatedly()
-                                        .until(drive::isAlignedToReef)
-                                        .withTimeout(5)));
-
-        NamedCommands.registerCommand(
-                "Align Reef Right",
-                Commands.runOnce(
-                                () -> drive.setTargetReefToClosest(Drive.ReefAlignSide.RIGHT),
-                                drive)
-                        .andThen(
-                                DriveCommands.autoAlignToLocation(
-                                                drive, DriveCommands.autoAlignLocations.reef)
-                                        .withTimeout(5)));
 
         NamedCommands.registerCommand(
                 "Pull Coral into Intake",
@@ -270,6 +233,7 @@ public class RobotContainer {
                 ManipulatorCommands.pullCoralIntoManipulator(manipulator));
         NamedCommands.registerCommand(
                 "Manipulator Coral Ripple", ManipulatorCommands.coralIntakeRipple(manipulator));
+
     }
 
     /**
@@ -289,7 +253,6 @@ public class RobotContainer {
 
         // if elevator has zeroed, run tipping prevention code
         // if not, zero the elevator for the first time
-        // todo untested
         elevator.setDefaultCommand(
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
@@ -304,7 +267,7 @@ public class RobotContainer {
 
         Command stopManipulator = ManipulatorCommands.runManipulator(manipulator, 0);
 
-        // DRIVER CONTROLLER
+        // DRIVER CONTROLLER BINDINGS
 
         // Switch to X pattern when X button is pressed
         driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -362,6 +325,7 @@ public class RobotContainer {
                 .onTrue(
                         ManipulatorCommands.stopManipulator(manipulator)
                                 .andThen(IntakeCommands.stopIntake(intake)));
+      
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
         // elevator
