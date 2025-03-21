@@ -10,27 +10,24 @@ public class ElevatorConstants {
     // Limit Switch DIO #
     public static final int limitSwitchPort = 0;
 
-    // Elevator PID Configuration
-    // Manually tune PID?
-    // TODO: FIGURE OUT
-    // .65 * (9 / 5)
     public static final double elevatorKp = .6;
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
-    // TODO: Elevator FF can be found through SysID
+
+    // Elevator FF constants
     public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 1.25;
-    public static final double elevatorKv = 0.14364;
+    public static final double elevatorKg = .5; // 1.25
+    public static final double elevatorKv = 0.155; // 0.14364
     public static final double elevatorKa = 0.0;
 
     // Elevator Levels in inches from master sketch
     public static final double ZERO = 0.0; // min height
-    public static final double L1 = 12;
+    public static final double L1 = 0.0;
     public static final double L2 = 21.75;
     public static final double L3 = 37.5;
     public static final double L4 = 66; // max height
 
-    // fixme these next two heights seem slightly off in sim
+    // elevator heights for algae removal
     public static final double LOWER_ALGAE_REMOVAL = 17;
     public static final double UPPER_ALGAE_REMOVAL = 33;
 
@@ -44,7 +41,7 @@ public class ElevatorConstants {
     public static final double maxHeight = L4;
 
     public static final double elevatorMotorReduction =
-            18.0; // Motor gear reduction 5:1 (NEO) and 2:1 (22t -> 44t)
+            18.0; // Motor gear reduction 9:1 (NEO) and 2:1 (22t -> 44t)
     public static final double elevatorEffectiveDrumRadius =
             0.955 * 3; // Drum radius in inches multiplied by 3 because 3-stage elevator
     public static final double elevatorEncoderPositionFactor =

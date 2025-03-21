@@ -10,10 +10,13 @@ public interface ElevatorIO {
         public double rightHeightInches;
         public double targetHeightInches;
         public double velocityInches;
-        public double voltage;
+        public double profilerHeightInches;
+        public double profilerVelocityInches;
         public boolean isAtTargetLevel;
         public double leftVoltage;
+        public double leftTemperature = 0;
         public double rightVoltage;
+        public double rightTemperature = 0;
         public double current;
     }
 

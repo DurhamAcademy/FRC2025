@@ -1,15 +1,12 @@
 package frc.robot.subsystems.elevator;
 
-import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.levelFourSpeedLimit;
 import static frc.robot.subsystems.drive.DriveConstants.maxSpeedLimitMetersPerSec;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Drive;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
@@ -18,23 +15,22 @@ import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 public class Elevator extends SubsystemBase {
     private final ElevatorIO elevatorIO;
-    private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
     private final WristIO wristIO;
-    private final WristIOInputsAutoLogged wristInputs = new WristIOInputsAutoLogged();
     private final Drive drive;
 
-    private boolean wristRestricted = false;
-    private double savedWristTargetAngle = 0.0;
+    private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
+    private final WristIOInputsAutoLogged wristInputs = new WristIOInputsAutoLogged();
 
     private static final LoggedMechanism2d loggedMechanism = new LoggedMechanism2d(3, 3);
     public LoggedMechanismRoot2d loggedMechanismRoot;
     public LoggedMechanismLigament2d wristLigament;
     public LoggedMechanismLigament2d elevatorLigament;
 
-    SysIdRoutine elevatorSysIDRoutine;
-    SysIdRoutine wristSysIDRoutine;
+    //    SysIdRoutine elevatorSysIDRoutine;
+    //    SysIdRoutine wristSysIDRoutine;
 
-    private boolean hasZeroed = false;
+    private boolean wristRestricted = false;
+    private double savedWristTargetAngle = 0.0;
 
     public enum ElevatorLevel {
         ZERO(ElevatorConstants.ZERO, WristConstants.ALGAE_IDLE),
@@ -64,25 +60,29 @@ public class Elevator extends SubsystemBase {
         this.wristIO = wristIO;
         this.drive = drive;
 
-        elevatorSysIDRoutine =
-                new SysIdRoutine(
-                        new SysIdRoutine.Config(
-                                null,
-                                null,
-                                null,
-                                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
-                        new SysIdRoutine.Mechanism(
-                                (voltage) -> elevatorIO.setVoltage(voltage.in(Volts)), null, this));
-
-        wristSysIDRoutine =
-                new SysIdRoutine(
-                        new SysIdRoutine.Config(
-                                Volts.per(Second).of(.5),
-                                Volts.of(2),
-                                Seconds.of(5),
-                                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
-                        new SysIdRoutine.Mechanism(
-                                (voltage) -> wristIO.setVoltage(voltage.in(Volts)), null, this));
+        //        elevatorSysIDRoutine =
+        //                new SysIdRoutine(
+        //                        new SysIdRoutine.Config(
+        //                                null,
+        //                                null,
+        //                                null,
+        //                                (state) -> Logger.recordOutput("SysIdTestState",
+        // state.toString())),
+        //                        new SysIdRoutine.Mechanism(
+        //                                (voltage) -> elevatorIO.setVoltage(voltage.in(Volts)),
+        // null, this));
+        //
+        //        wristSysIDRoutine =
+        //                new SysIdRoutine(
+        //                        new SysIdRoutine.Config(
+        //                                Volts.per(Second).of(.5),
+        //                                Volts.of(2),
+        //                                Seconds.of(5),
+        //                                (state) -> Logger.recordOutput("SysIdTestState",
+        // state.toString())),
+        //                        new SysIdRoutine.Mechanism(
+        //                                (voltage) -> wristIO.setVoltage(voltage.in(Volts)), null,
+        // this));
 
         loggedMechanismRoot =
                 loggedMechanism.getRoot(
@@ -124,34 +124,23 @@ public class Elevator extends SubsystemBase {
             wristIO.setTargetAngle(savedWristTargetAngle);
         }
 
-        if (elevatorInputs.isLimitSwitchPressed) {
-            elevatorIO.setEncoder(ElevatorConstants.minHeight);
-        }
-
         if (isZeroed()) {
             elevatorIO.setEncoder(ElevatorConstants.minHeight);
-            if (!hasZeroed) hasZeroed = true;
         }
 
-        elevatorLigament.setLength(
-                Units.inchesToMeters(
-                        elevatorInputs.leftHeightInches + WristConstants.WRIST_AXLE_HEIGHT));
-        // -90 because the '0' for the wrist is horizontal with the ground
-        wristLigament.setAngle(Units.radiansToDegrees(wristInputs.angle) - 90);
-        Logger.recordOutput("FieldSimulation/ElevatorMech2d", loggedMechanism);
+        updateLigamentSimulation();
 
         elevatorIO.updateStates();
         wristIO.updateStates();
     }
 
+    /**
+     * Sets the target height of the elevator in inches
+     *
+     * @param heightInches
+     */
     public void setElevatorTargetHeight(double heightInches) {
         elevatorIO.setTargetHeightInches(heightInches);
-    }
-
-    public void updateDriveMaxVelocity() {
-        double slope =
-                (levelFourSpeedLimit - maxSpeedLimitMetersPerSec) / ElevatorConstants.maxHeight;
-        drive.setMaxVelocity(slope * elevatorInputs.leftHeightInches + maxSpeedLimitMetersPerSec);
     }
 
     /**
@@ -161,83 +150,24 @@ public class Elevator extends SubsystemBase {
      */
     public void setWristTargetAngle(double targetAngle) {
         // if wrist could possibly hit the reef
-        if (isWristHeightRestricted()) {
+        if (isWristHeightRestricted() && targetAngle > WristConstants.NET) {
             // set vars to hold targetAngle until safe to move the wrist
             wristRestricted = true;
             savedWristTargetAngle = targetAngle;
 
-            targetAngle = wristInputs.angle;
-
-            //            // get the safe angles for the wrist when right next to the reef + extra
-            // room
-            //            double restrictedAngle =
-            //                    Math.acos(WristConstants.REEF_MIN_DISTANCE /
-            // WristConstants.WRIST_LENGTH) + .1;
-            //
-            //            // if the target angle is in the restricted area, set it to the closest
-            // angle it can get
-            //            // to safely
-            //            if (Math.abs(targetAngle) < restrictedAngle) {
-            //                targetAngle = wristInputs.angle > 0 ? restrictedAngle :
-            // -restrictedAngle;
-            //            }
-            //            // if the target angle is on the opposite side of the restricted area from
-            // the wrist's
-            //            // current angle,
-            //            // set it to the closest angle it can get to safely
-            //            else if (targetAngle > 0 && wristInputs.angle < 0) {
-            //                targetAngle = -restrictedAngle;
-            //            } else if (targetAngle < 0 && wristInputs.angle > 0) {
-            //                targetAngle = restrictedAngle;
-            //            }
+            targetAngle = WristConstants.NET;
         }
 
         wristIO.setTargetAngle(targetAngle);
     }
 
+    /**
+     * If the wrist is safe to move
+     *
+     * @return boolean
+     */
     public boolean isWristHeightRestricted() {
         return elevatorInputs.leftHeightInches > 50;
-    }
-
-    //    /**
-    //     * Determines if wrist should be restricted
-    //     *
-    //     * @return boolean
-    //     */
-    //    public boolean isWristRestricted() {
-    //        // if the robot isn't near the closest reef, allow normal wrist movement
-    //        if (drive.getPose()
-    //                        .getTranslation()
-    //
-    // .getDistance(drive.getReefPose(drive.getClosestReef()).getTranslation())
-    //                > 1) {
-    //            return false;
-    //        }
-    //
-    //        // if elevator height (off the ground) > than the reef height +
-    //        // the height of a triangle formed by the wrist and the robot's minimum distance to
-    // the reef
-    //        return elevatorInputs.leftHeightInches
-    //                        + ElevatorConstants.elevatorBaseHeight
-    //                        + WristConstants.WRIST_AXLE_HEIGHT
-    //                < WristConstants.REEF_PANEL_HEIGHT
-    //                        + Math.sqrt(
-    //                                Math.pow(WristConstants.WRIST_LENGTH, 2)
-    //                                        - Math.pow(WristConstants.REEF_MIN_DISTANCE, 2));
-    //    }
-
-    public boolean isAtSetpoint() {
-        return elevatorInputs.isAtTargetLevel && wristInputs.isAtTargetAngle;
-    }
-
-    /**
-     * Sets the speed of the wrist
-     *
-     * @param speed The desired speed level for the motor: -1.0 => full reverse, 1.0 => full
-     *     forward, 0.0 => no speed.
-     */
-    public void setWristSpeed(double speed) {
-        wristIO.setSpeed(speed);
     }
 
     public double getElevatorHeight() {
@@ -249,6 +179,33 @@ public class Elevator extends SubsystemBase {
     }
 
     /**
+     * If the elevator & wrist are at their target values
+     *
+     * @return boolean
+     */
+    public boolean isAtSetpoint() {
+        return elevatorInputs.isAtTargetLevel && wristInputs.isAtTargetAngle;
+    }
+
+    /**
+     * If the elevator is at it's target height
+     *
+     * @return boolean
+     */
+    public boolean elevatorIsAtSetpoint() {
+        return elevatorInputs.isAtTargetLevel;
+    }
+
+    /**
+     * Whether the elevator is currently zeroed
+     *
+     * @return boolean
+     */
+    public boolean isZeroed() {
+        return elevatorInputs.isLimitSwitchPressed;
+    }
+
+    /**
      * Sets the voltage of the wrist
      *
      * @param voltage in volts
@@ -257,10 +214,11 @@ public class Elevator extends SubsystemBase {
         wristIO.setVoltage(voltage);
     }
 
-    public void setElevatorPower(double power) {
-        elevatorIO.setPower(power);
-    }
-
+    /**
+     * Sets the voltage of the elevator
+     *
+     * @param voltage in volts
+     */
     public void setVoltage(double voltage) {
         elevatorIO.setVoltage(voltage);
     }
@@ -274,52 +232,37 @@ public class Elevator extends SubsystemBase {
     }
 
     /**
-     * Whether the elevator has found its zero at least once
-     *
-     * @return boolean
+     * Updates the max velocity of the drivetrain based on the height of the elevator in a linear
+     * relationship.
      */
-    public boolean hasZeroed() {
-        return hasZeroed;
+    public void updateDriveMaxVelocity() {
+        double slope =
+                (levelFourSpeedLimit - maxSpeedLimitMetersPerSec) / ElevatorConstants.maxHeight;
+        drive.setMaxVelocity(slope * elevatorInputs.leftHeightInches + maxSpeedLimitMetersPerSec);
     }
 
-    /**
-     * Whether the elevator is currently zeroed
-     *
-     * @return boolean
-     */
-    public boolean isZeroed() {
-        return elevatorInputs.isLimitSwitchPressed;
+    private void updateLigamentSimulation() {
+        elevatorLigament.setLength(
+                Units.inchesToMeters(
+                        elevatorInputs.leftHeightInches + WristConstants.WRIST_AXLE_HEIGHT));
+        // -90 because the '0' for the wrist is horizontal with the ground
+        wristLigament.setAngle(Units.radiansToDegrees(wristInputs.angle) - 90);
+        Logger.recordOutput("FieldSimulation/ElevatorMech2d", loggedMechanism);
     }
 
-    public Command wristSysIDQuasistatic(SysIdRoutine.Direction direction) {
-        return wristSysIDRoutine.quasistatic(direction);
-    }
-
-    public Command wristSysIDDynamic(SysIdRoutine.Direction direction) {
-        return wristSysIDRoutine.dynamic(direction);
-    }
-
-    public Command elevatorSysIDQuasistatic(SysIdRoutine.Direction direction) {
-        return elevatorSysIDRoutine.quasistatic(direction);
-    }
-
-    public Command elevatorSysIDDynamic(SysIdRoutine.Direction direction) {
-        return elevatorSysIDRoutine.dynamic(direction);
-    }
-
-    /*
-    TODO this is sys ID stuff to do later
-    operatorController
-                .povUp()
-                .whileTrue(elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        operatorController
-                .povDown()
-                .whileTrue(elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        operatorController
-                .povLeft()
-                .whileTrue(elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        operatorController
-                .povRight()
-                .whileTrue(elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-     */
+    //    public Command wristSysIDQuasistatic(SysIdRoutine.Direction direction) {
+    //        return wristSysIDRoutine.quasistatic(direction);
+    //    }
+    //
+    //    public Command wristSysIDDynamic(SysIdRoutine.Direction direction) {
+    //        return wristSysIDRoutine.dynamic(direction);
+    //    }
+    //
+    //    public Command elevatorSysIDQuasistatic(SysIdRoutine.Direction direction) {
+    //        return elevatorSysIDRoutine.quasistatic(direction);
+    //    }
+    //
+    //    public Command elevatorSysIDDynamic(SysIdRoutine.Direction direction) {
+    //        return elevatorSysIDRoutine.dynamic(direction);
+    //    }
 }

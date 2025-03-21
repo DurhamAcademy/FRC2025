@@ -15,13 +15,11 @@ public interface WristIO {
         public double velocity;
         public double voltage;
         public boolean isAtTargetAngle;
+        public double wristTemperature = 0;
     }
 
     /** Update the set of loggable inputs. */
     public default void updateInputs(WristIOInputs inputs) {}
-
-    /** Sets the motors' power */
-    public default void setSpeed(double speed) {}
 
     /** Sets the motors' power */
     public default void setVoltage(double voltage) {}
@@ -31,9 +29,6 @@ public interface WristIO {
 
     /** Stop motors */
     public default void stopMotors() {}
-
-    /** Resets encoder */
-    public default void setEncoder(double position) {}
 
     /** Updating trapezoid profiler and reference height using the profiler */
     public default void updateStates() {}

@@ -13,7 +13,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
-import org.littletonrobotics.junction.Logger;
 
 public class ElevatorIOSparkMax implements ElevatorIO {
     // some credit to https://chiefdelphi.com/t/elevator-subsystem-example-code/482648
@@ -116,12 +115,16 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
+        inputs.leftTemperature = primaryMotor.getMotorTemperature();
+        inputs.rightTemperature = followerMotor.getMotorTemperature();
         inputs.current = primaryMotor.getOutputCurrent();
         inputs.isLimitSwitchPressed = !limitSwitch.get(); // limit switch is inverted
         inputs.leftHeightInches = primaryEncoder.getPosition();
         inputs.rightHeightInches = followerEncoder.getPosition();
         inputs.targetHeightInches = targetHeightInches;
         inputs.velocityInches = primaryEncoder.getVelocity();
+        inputs.profilerHeightInches = currentState.position;
+        inputs.profilerVelocityInches = currentState.velocity;
         inputs.isAtTargetLevel =
                 Math.abs(inputs.leftHeightInches - targetHeightInches) < 0.5
                         && Math.abs(inputs.velocityInches) < 0.1;
@@ -153,10 +156,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         currentState = profile.calculate(0.02, currentState, goalState);
 
         double ffVolts = feedForward.calculate(currentState.velocity);
-
-        // Use the profiler's position as the target for the motor controller
-        Logger.recordOutput("Elevator/ProfilerVelocity", currentState.velocity);
-        Logger.recordOutput("Elevator/ProfilerPosition", currentState.position);
 
         // setting the motor controllers to the target positions and the controllers will do the PID
         // calculations

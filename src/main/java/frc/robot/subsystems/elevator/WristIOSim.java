@@ -32,17 +32,6 @@ public class WristIOSim implements WristIO {
     }
 
     @Override
-    public void setEncoder(double position) {
-        currentPositionRadians = position; // Set simulated encoder position for testing
-    }
-
-    @Override
-    public void setSpeed(double speed) {
-        // Simulate power control by scaling to a voltage range
-        appliedVoltage = speed * 12.0;
-    }
-
-    @Override
     public void setVoltage(double voltage) {
         appliedVoltage = voltage; // Directly set simulated applied voltage
     }
