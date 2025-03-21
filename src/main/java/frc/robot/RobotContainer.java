@@ -69,7 +69,6 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
-
     // inverse axes
     private boolean invertX = true;
     private boolean invertY = true;
@@ -159,13 +158,13 @@ public class RobotContainer {
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser());
         // set up reactions
-        this.rxns = new ReactionObjects(
-                new Trigger(intake::getBeamBroken),
-                new Trigger(drive::isAlignedToAlgae),
-                new Trigger(drive::isAlignedToReef),
-                new Trigger(RobotContainer::isAlgaeMode),
-                new Trigger(RobotContainer::isCoralMode)
-        );
+        this.rxns =
+                new ReactionObjects(
+                        new Trigger(intake::getBeamBroken),
+                        new Trigger(drive::isAlignedToAlgae),
+                        new Trigger(drive::isAlignedToReef),
+                        new Trigger(RobotContainer::isAlgaeMode),
+                        new Trigger(RobotContainer::isCoralMode));
 
         // Set up SysId routines
         //        autoChooser.addOption(
@@ -302,7 +301,7 @@ public class RobotContainer {
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
-        leds.setDefaultCommand(LEDCommands.hasAlgae(leds, 0.25));
+        leds.setDefaultCommand(LEDCommands.normal(leds));
 
         // DRIVER CONTROLLER
 
@@ -444,45 +443,25 @@ public class RobotContainer {
                                                 GenericHID.RumbleType.kRightRumble, 0.0)));
 
 
-        //redundant now hopefully
-        final Trigger algaeAlign = new Trigger(drive::isAlignedToAlgae);
-        algaeAlign.onTrue(new InstantCommand(() -> LEDCommands.blink(leds, 0, 0, 128)));
-
-        final Trigger setForAlgae = new Trigger(RobotContainer::isAlgaeMode);
-        setForAlgae.onTrue(new InstantCommand(() -> LEDCommands.hasAlgae(leds, 0.25)));
-
-        final Trigger setForCoral = new Trigger(RobotContainer::isCoralMode);
-        setForCoral.onTrue(new InstantCommand(() -> LEDCommands.hasCoral(leds, 0.25)));
-
-        final Trigger reefAlign = new Trigger(drive::isAlignedToReef);
-        reefAlign.onTrue(new InstantCommand(() -> LEDCommands.blink(leds,0,128,0)));
-        // up to here
-
 
         // Elevator
-
-        // dummy command just to see if it works
-        operatorController
-                .povDown()
-                .and(operatorController.a())
-                .whileTrue(LEDCommands.blink(leds, 128, 0, 0));
+        // natalie can do what she wants with this command honestly
 
         operatorController.x().whileTrue(LEDCommands.blink(leds, 0, 0, 128));
 
-        // my playing ends here
+        operatorController.leftBumper().onTrue(
+                Commands.sequence(
+                        Commands.runOnce(() -> algaeMode = false),
+                        LEDCommands.hasCoral(leds, 0.25).until(RobotContainer::isAlgaeMode)
+                )
+        );
 
-        operatorController
-                .leftBumper()
-                .onTrue(
-                        Commands.runOnce(() -> algaeMode = false)
-                                .andThen(LEDCommands.hasCoral(leds, 0.25)));
-
-        operatorController
-                .rightBumper()
-                .onTrue(
-                        Commands.runOnce(() -> algaeMode = true)
-                                .andThen(LEDCommands.hasAlgae(leds, 0.25)));
-
+        operatorController.rightBumper().onTrue(
+                Commands.sequence(
+                        Commands.runOnce(() -> algaeMode = true),
+                        LEDCommands.hasAlgae(leds, 0.25).until(RobotContainer::isCoralMode)
+                )
+        );
 
         operatorController
                 .start()
@@ -497,7 +476,8 @@ public class RobotContainer {
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
-        // This should be simplified, I do not know why there are two command structures bound to one button
+        // This should be simplified, I do not know why there are two command structures bound to
+        // one button
         driverController
                 .rightBumper()
                 .whileTrue(ManipulatorCommands.eject(manipulator, 1))
@@ -542,36 +522,16 @@ public class RobotContainer {
     }
 
     public void configureReactions() {
-        rxns.hasCoral
-                .whileTrue(
-                    new InstantCommand(
-                            () -> LEDCommands.blink(leds, 0, 0,128)
-                    )
-                );
-        rxns.reefAlign
-                .whileTrue(
-                        new InstantCommand(
-                                () -> LEDCommands.aligned(leds, 0.25)
-                        )
-                );
-        rxns.algaeMode
-                .whileTrue(
-                        new InstantCommand(
-                                ()-> LEDCommands.hasAlgae(leds, 0.25)
-                        )
-                );
-        rxns.coralMode
-                .whileTrue(
-                        new InstantCommand(
-                                () -> LEDCommands.hasCoral(leds, 0.25)
-                        )
-                );
-        rxns.algaeAlign
-                .whileTrue(
-                        new InstantCommand(
-                                () -> LEDCommands.aligned(leds, 0.25)
-                        )
-                );
+        rxns.hasCoral.whileTrue(
+                new InstantCommand(() -> LEDCommands.blink(leds, 0, 0, 128)).ignoringDisable(true));
+        rxns.reefAlign.whileTrue(
+                new InstantCommand(() -> LEDCommands.aligned(leds, 0.25)).ignoringDisable(true));
+        rxns.algaeMode.whileTrue(
+                new InstantCommand(() -> LEDCommands.hasAlgae(leds, 0.25)).ignoringDisable(true));
+        rxns.coralMode.whileTrue(
+                new InstantCommand(() -> LEDCommands.hasCoral(leds, 0.25)).ignoringDisable(true));
+        rxns.algaeAlign.whileTrue(
+                new InstantCommand(() -> LEDCommands.aligned(leds, 0.25)).ignoringDisable(true));
     }
 
     /**
@@ -761,7 +721,13 @@ public class RobotContainer {
         Trigger reefAlign;
         Trigger algaeMode;
         Trigger coralMode;
-        public ReactionObjects( Trigger hasCoral,  Trigger reefAlign, Trigger algaeAlign, Trigger algaeMode, Trigger coralMode ) {
+
+        public ReactionObjects(
+                Trigger hasCoral,
+                Trigger reefAlign,
+                Trigger algaeAlign,
+                Trigger algaeMode,
+                Trigger coralMode) {
 
             this.hasCoral = hasCoral;
             this.algaeAlign = algaeAlign;

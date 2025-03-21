@@ -11,7 +11,6 @@ import frc.robot.subsystems.lights.LEDs;
 
 public class LEDCommands {
 
-
     public static Command hasAlgae(LEDs leds, double brightness) {
         if (leds == null) return none();
         if (leds.getCandle() == null) return idle(leds);

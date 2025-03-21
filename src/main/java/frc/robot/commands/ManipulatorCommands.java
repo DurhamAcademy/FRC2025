@@ -30,16 +30,16 @@ public class ManipulatorCommands {
 
     public static Command coralEject(Manipulator manipulator, Elevator elevator) {
         return normalCoralEject(manipulator);
-        //double height = elevator.getElevatorHeight();
-        //if (height >= Elevator.ElevatorLevel.L1.heightInches - .5
+        // double height = elevator.getElevatorHeight();
+        // if (height >= Elevator.ElevatorLevel.L1.heightInches - .5
         //        && height <= Elevator.ElevatorLevel.L1.heightInches + .5) {
         //    return l1Eject(manipulator);
-        //} else {
+        // } else {
         //    return normalEject(manipulator);
-        //}
+        // }
     }
 
-    public static Command algaeEject(Manipulator manipulator, Elevator elevator){
+    public static Command algaeEject(Manipulator manipulator, Elevator elevator) {
         double height = elevator.getElevatorHeight();
         if (height >= Elevator.ElevatorLevel.PROCESSOR.heightInches - .5
                 && height <= Elevator.ElevatorLevel.PROCESSOR.heightInches + .5) {
