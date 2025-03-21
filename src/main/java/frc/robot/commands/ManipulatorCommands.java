@@ -77,4 +77,12 @@ public class ManipulatorCommands {
                 // runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
                 stopManipulator(manipulator));
     }
+
+    public static Command manipulatorDefaultHoldCoral(Manipulator manipulator, Elevator elevator) {
+        return Commands.either(
+                runManipulator(manipulator,0.5),
+                runManipulator(manipulator,0.3),
+                () -> elevator.getWristAngle() > 0
+        ).andThen(stopManipulator(manipulator));
+    }
 }

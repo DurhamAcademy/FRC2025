@@ -11,8 +11,8 @@ public class IntakeCommands {
     public static Command retryStuckIntake(Intake intake, Manipulator manipulator) {
         return parallel(
                         ManipulatorCommands.runManipulator(manipulator, 0.0),
-                        runIntake(intake, -2.0))
-                .withTimeout(0.1)
+                        runIntake(intake, -1.0))
+                .withTimeout(0.3)
                 .andThen(fullCoralIntakeSequence(intake, manipulator));
     }
 

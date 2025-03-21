@@ -287,6 +287,10 @@ public class RobotContainer {
                         () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
+        manipulator.setDefaultCommand(
+                ManipulatorCommands.manipulatorDefaultHoldCoral(manipulator, elevator).onlyIf(manipulator::beamBroken)
+        );
+
         // if elevator has zeroed, run tipping prevention code
         // if not, zero the elevator for the first time
         // todo untested
