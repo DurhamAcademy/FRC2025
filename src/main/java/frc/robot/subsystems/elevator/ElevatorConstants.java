@@ -10,20 +10,19 @@ public class ElevatorConstants {
     // Limit Switch DIO #
     public static final int limitSwitchPort = 0;
 
-    // Elevator PID constants
     public static final double elevatorKp = .6;
     public static final double elevatorKi = 0.0;
     public static final double elevatorKd = 0.0;
 
     // Elevator FF constants
     public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 1.25;
-    public static final double elevatorKv = 0.14364;
+    public static final double elevatorKg = .5; // 1.25
+    public static final double elevatorKv = 0.155; // 0.14364
     public static final double elevatorKa = 0.0;
 
     // Elevator Levels in inches from master sketch
     public static final double ZERO = 0.0; // min height
-    public static final double L1 = 12;
+    public static final double L1 = 0.0;
     public static final double L2 = 21.75;
     public static final double L3 = 37.5;
     public static final double L4 = 66; // max height

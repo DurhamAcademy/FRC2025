@@ -597,18 +597,23 @@ public class Drive extends SubsystemBase {
         return alignedToReef;
     }
 
+    private int oldLocationIndex = -1;
+
     public void updateTargetDashboardVisualization(int locationIndex) {
-        for (int i = 1; i <= 6; i++) {
-            final int index = i;
-            SmartDashboard.putData(
-                    "Target Location",
-                    builder -> {
-                        builder.setSmartDashboardType("Boolean");
-                        builder.addBooleanProperty(
-                                String.valueOf(index),
-                                () -> (locationIndex + 4) % 6 == index,
-                                null);
-                    });
+        if (oldLocationIndex != locationIndex) {
+            for (int i = 1; i <= 6; i++) {
+                final int index = i;
+                SmartDashboard.putData(
+                        "Target Location",
+                        builder -> {
+                            builder.setSmartDashboardType("Boolean");
+                            builder.addBooleanProperty(
+                                    String.valueOf(index),
+                                    () -> (locationIndex + 4) % 6 == index,
+                                    null);
+                        });
+            }
+            oldLocationIndex = locationIndex;
         }
     }
 

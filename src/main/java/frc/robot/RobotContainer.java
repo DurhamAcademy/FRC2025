@@ -219,15 +219,20 @@ public class RobotContainer {
                         .andThen(Commands.waitUntil(elevator::isAtSetpoint))
                         .withTimeout(4.5));
 
-        // TODO auto with intake untested
-        NamedCommands.registerCommand(
-                "Run Intake", IntakeCommands.intakeCoral(intake, manipulator));
-
         NamedCommands.registerCommand(
                 "Eject Coral",
                 ManipulatorCommands.eject(manipulator, 1)
                         .withTimeout(.75)
                         .andThen(ManipulatorCommands.eject(manipulator, 0).withTimeout(.1)));
+
+        NamedCommands.registerCommand(
+                "Pull Coral into Intake",
+                IntakeCommands.pullCoralThroughIntake(intake, manipulator));
+        NamedCommands.registerCommand(
+                "Pull Coral into Manipulator",
+                ManipulatorCommands.pullCoralIntoManipulator(manipulator));
+        NamedCommands.registerCommand(
+                "Manipulator Coral Ripple", ManipulatorCommands.coralIntakeRipple(manipulator));
     }
 
     /**
@@ -251,18 +256,7 @@ public class RobotContainer {
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
-        // TODO: Move/cleanup these commands for their respective subsystems when new control scheme
-        // is done
-
-        // Automatically angle to HP & run intake
-        Command intakeCoral =
-                Commands.parallel(
-                        IntakeCommands.intakeCoral(intake, manipulator),
-                        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));
-
-        Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
-
-        Command manipulatorEject = ManipulatorCommands.eject(manipulator);
+        Command manipulatorEject = ManipulatorCommands.eject(manipulator, 1);
 
         Command setAlignLeft =
                 Commands.runOnce(() -> drive.setTargetReefToClosest(Drive.ReefAlignSide.LEFT));
@@ -280,12 +274,10 @@ public class RobotContainer {
         // Shoot coral / algae
         driverController
                 .rightBumper()
-                .and(driverController.leftTrigger().negate())
-                .and(driverController.rightTrigger().negate())
                 .whileTrue(
                         Commands.either(
-                                ManipulatorCommands.eject(manipulator, 4),
-                                manipulatorEject,
+                                ManipulatorCommands.algaeEject(manipulator, elevator),
+                                ManipulatorCommands.coralEject(manipulator),
                                 () -> algaeMode))
                 .onFalse(stopManipulator);
 
@@ -313,12 +305,6 @@ public class RobotContainer {
                                         drive, DriveCommands.autoAlignLocations.reef),
                                 () -> algaeMode));
 
-        // shoot
-        driverController
-                .rightBumper()
-                .whileTrue(ManipulatorCommands.eject(manipulator))
-                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
-
         // OPERATOR CONTROLLER
 
         // algae / coral mode
@@ -330,16 +316,15 @@ public class RobotContainer {
                 .leftTrigger()
                 .onTrue(
                         Commands.either(
-                                IntakeCommands.intakeCoral(intake, manipulator),
                                 ManipulatorCommands.algaeIntake(manipulator),
+                                IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
                                 () -> algaeMode));
         operatorController
                 .rightTrigger()
                 .onTrue(
-                        Commands.either(
-                                IntakeCommands.intakeCoral(intake, manipulator),
-                                ManipulatorCommands.algaeIntake(manipulator),
-                                () -> algaeMode));
+                        ManipulatorCommands.stopManipulator(manipulator)
+                                .andThen(IntakeCommands.stopIntake(intake)));
+
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
         // elevator
@@ -451,12 +436,6 @@ public class RobotContainer {
     }
 
     public void sendDataToSmartDashboard() {
-        Logger.recordOutput(
-                "Algea reaf",
-                Constants.LocationConstants.PosesOfAllAlgaeLocations(0).toArray(new Pose2d[0]));
-        Logger.recordOutput(
-                "red alliance",
-                Constants.LocationConstants.PosesOfAllAlgaeLocations(1).toArray(new Pose2d[0]));
         SmartDashboard.putData(
                 "Vision",
                 builder -> {
@@ -510,51 +489,6 @@ public class RobotContainer {
                             "Max",
                             drive::getMaxVelocity,
                             val -> Drive.currentSpeedLimitMetersPerSec = val);
-                });
-
-        SmartDashboard.putData(
-                "Swerve Drive",
-                builder -> {
-                    builder.setSmartDashboardType("SwerveDrive");
-
-                    builder.addDoubleProperty(
-                            "Front Left Angle",
-                            () -> drive.getModule(0).getAngle().getRadians(),
-                            null);
-                    builder.addDoubleProperty(
-                            "Front Left Velocity",
-                            () -> drive.getModule(0).getVelocityMetersPerSec(),
-                            null);
-
-                    builder.addDoubleProperty(
-                            "Front Right Angle",
-                            () -> drive.getModule(1).getAngle().getRadians(),
-                            null);
-                    builder.addDoubleProperty(
-                            "Front Right Velocity",
-                            () -> drive.getModule(1).getVelocityMetersPerSec(),
-                            null);
-
-                    builder.addDoubleProperty(
-                            "Back Left Angle",
-                            () -> drive.getModule(2).getAngle().getRadians(),
-                            null);
-                    builder.addDoubleProperty(
-                            "Back Left Velocity",
-                            () -> drive.getModule(2).getVelocityMetersPerSec(),
-                            null);
-
-                    builder.addDoubleProperty(
-                            "Back Right Angle",
-                            () -> drive.getModule(3).getAngle().getRadians(),
-                            null);
-                    builder.addDoubleProperty(
-                            "Back Right Velocity",
-                            () -> drive.getModule(3).getVelocityMetersPerSec(),
-                            null);
-
-                    builder.addDoubleProperty(
-                            "Robot Angle", () -> drive.getPose().getRotation().getRadians(), null);
                 });
     }
 }

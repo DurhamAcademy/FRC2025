@@ -4,6 +4,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.manipulator.Manipulator;
 
 public class ManipulatorCommands {
@@ -30,6 +31,29 @@ public class ManipulatorCommands {
                 manipulator);
     }
 
+    public static Command coralEject(Manipulator manipulator) {
+        return normalCoralEject(manipulator);
+    }
+
+    public static Command algaeEject(Manipulator manipulator, Elevator elevator) {
+        return Commands.either(
+                processorEject(manipulator),
+                netEject(manipulator),
+                () ->
+                        elevator.getElevatorHeight()
+                                        >= Elevator.ElevatorLevel.PROCESSOR.heightInches - .5
+                                && elevator.getElevatorHeight()
+                                        <= Elevator.ElevatorLevel.PROCESSOR.heightInches + .5);
+    }
+
+    public static Command netEject(Manipulator manipulator) {
+        return eject(manipulator, 4);
+    }
+
+    public static Command processorEject(Manipulator manipulator) {
+        return runManipulator(manipulator, 1);
+    }
+
     // eject at a low voltage
     public static Command eject(Manipulator manipulator) {
         return runManipulator(manipulator, 1);
@@ -50,15 +74,14 @@ public class ManipulatorCommands {
         return runManipulator(manipulator, 9);
     }
 
-    // puts the coral in the correct spot in the manipulator
-    public static Command intakeCoral(Manipulator manipulator) {
+    public static Command pullCoralIntoManipulator(Manipulator manipulator) {
+        return runManipulator(manipulator, 0.75).until(() -> !manipulator.beamBroken());
+    }
+
+    public static Command coralIntakeRipple(Manipulator manipulator) {
         return sequence(
-                runManipulator(manipulator, 1.5)
-                        .until(manipulator::beamBroken), // run until coral starts to enter
-                runManipulator(manipulator, 0.75)
-                        .until(() -> !manipulator.beamBroken()), // continue until too far
                 runManipulator(manipulator, -0.6).until(manipulator::beamBroken),
-                runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
-                runManipulator(manipulator, 0));
+                // runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
+                stopManipulator(manipulator));
     }
 }
