@@ -31,7 +31,6 @@ public class ManipulatorCommands {
                 manipulator);
     }
 
-
     public static Command coralEject(Manipulator manipulator) {
         return eject(manipulator);
     }
@@ -45,7 +44,6 @@ public class ManipulatorCommands {
                                         >= Elevator.ElevatorLevel.PROCESSOR.heightInches - .5
                                 && elevator.getElevatorHeight()
                                         <= Elevator.ElevatorLevel.PROCESSOR.heightInches + .5);
-
     }
 
     public static Command netEject(Manipulator manipulator) {

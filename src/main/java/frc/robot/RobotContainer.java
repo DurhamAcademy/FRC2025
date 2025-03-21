@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -284,7 +283,6 @@ public class RobotContainer {
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
-
         leds.setDefaultCommand(LEDCommands.normal(leds));
 
         // DRIVER CONTROLLER
@@ -303,7 +301,6 @@ public class RobotContainer {
         ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));*/
 
         // Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
-
 
         Command manipulatorEject = ManipulatorCommands.eject(manipulator, 1);
 
@@ -361,25 +358,25 @@ public class RobotContainer {
 
         operatorController.x().whileTrue(LEDCommands.blink(leds, 0, 0, 128));
 
-        operatorController.leftBumper().onTrue(
-                Commands.sequence(
-                        Commands.runOnce(() -> algaeMode = false),
-                        LEDCommands.hasCoral(leds, 0.25).until(RobotContainer::isAlgaeMode)
-                )
-        );
+        operatorController
+                .leftBumper()
+                .onTrue(
+                        Commands.sequence(
+                                Commands.runOnce(() -> algaeMode = false),
+                                LEDCommands.hasCoral(leds, 0.25)
+                                        .until(RobotContainer::isAlgaeMode)));
 
-        operatorController.rightBumper().onTrue(
-                Commands.sequence(
-                        Commands.runOnce(() -> algaeMode = true),
-                        LEDCommands.hasAlgae(leds, 0.25).until(RobotContainer::isCoralMode)
-                )
-        );
-
+        operatorController
+                .rightBumper()
+                .onTrue(
+                        Commands.sequence(
+                                Commands.runOnce(() -> algaeMode = true),
+                                LEDCommands.hasAlgae(leds, 0.25)
+                                        .until(RobotContainer::isCoralMode)));
 
         // algae / coral mode
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
-
 
         // intake
         operatorController
@@ -397,16 +394,13 @@ public class RobotContainer {
 
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
-
-  
-        // please do what you have to do with this, i just kept this here, i didn't know what it was 
+        // please do what you have to do with this, i just kept this here, i didn't know what it was
         // This should be simplified, I do not know why there are two command structures bound to
         // one button
         driverController
                 .rightBumper()
                 .whileTrue(ManipulatorCommands.eject(manipulator, 1))
                 .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
-
 
         // elevator
         operatorController
@@ -416,7 +410,7 @@ public class RobotContainer {
                                 ElevatorCommands.zeroElevatorForAlgae(elevator),
                                 ElevatorCommands.zeroElevatorForCoral(elevator),
                                 () -> algaeMode));
-      // up until here
+        // up until here
 
         operatorController
                 .povLeft()
