@@ -233,7 +233,6 @@ public class RobotContainer {
                 ManipulatorCommands.pullCoralIntoManipulator(manipulator));
         NamedCommands.registerCommand(
                 "Manipulator Coral Ripple", ManipulatorCommands.coralIntakeRipple(manipulator));
-
     }
 
     /**
@@ -325,7 +324,7 @@ public class RobotContainer {
                 .onTrue(
                         ManipulatorCommands.stopManipulator(manipulator)
                                 .andThen(IntakeCommands.stopIntake(intake)));
-      
+
         operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
 
         // elevator

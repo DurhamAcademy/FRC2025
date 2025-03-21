@@ -74,7 +74,7 @@ public class ManipulatorCommands {
         return runManipulator(manipulator, 9);
     }
 
-  public static Command pullCoralIntoManipulator(Manipulator manipulator) {
+    public static Command pullCoralIntoManipulator(Manipulator manipulator) {
         return runManipulator(manipulator, 0.75).until(() -> !manipulator.beamBroken());
     }
 
