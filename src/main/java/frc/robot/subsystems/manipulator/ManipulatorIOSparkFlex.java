@@ -30,8 +30,10 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         followerConfig = new SparkFlexConfig();
 
         // beam = new DigitalInput(ManipulatorConstants.MANIPULATOR_BEAM_ID);
-
+        // sets brake mode
         resetConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        // this is the amp limit, this is high at 80 because of net and how short eject
+        // is, but we should be careful about running this too long
         resetConfig.smartCurrentLimit(80);
         resetConfig
                 .closedLoop

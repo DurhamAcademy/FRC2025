@@ -103,17 +103,6 @@ public class WristIOSparkMax implements WristIO {
     }
 
     /**
-     * Sets the speed of the wrist motor.
-     *
-     * @param speed The desired speed level for the motor: -1.0 => full reverse, 1.0 => full
-     *     forward, 0.0 => no speed.
-     */
-    @Override
-    public void setSpeed(double speed) {
-        wristMotor.set(speed);
-    }
-
-    /**
      * Sets the voltage for the wrist motor.
      *
      * @param voltage The desired voltage to apply to the wrist motor (volts).
