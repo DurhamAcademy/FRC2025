@@ -14,7 +14,9 @@ public interface ElevatorIO {
         public double profilerVelocityInches;
         public boolean isAtTargetLevel;
         public double leftVoltage;
+        public double leftTemperature = 0;
         public double rightVoltage;
+        public double rightTemperature = 0;
         public double current;
     }
 

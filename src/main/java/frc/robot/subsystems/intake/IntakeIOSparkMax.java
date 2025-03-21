@@ -28,6 +28,7 @@ public class IntakeIOSparkMax implements IntakeIO {
 
     @Override
     public void updateInputs(IntakeIOInputsAutoLogged inputs) {
+        inputs.intakeTemperature = intakeMotor.getMotorTemperature();
         inputs.intakeVelocityRadPerSec =
                 intakeEncoder.getVelocity() * (2 * Math.PI / 60); // Convert RPM to rad/sec
         inputs.intakeAppliedVolts = intakeMotor.getBusVoltage() * intakeMotor.getAppliedOutput();

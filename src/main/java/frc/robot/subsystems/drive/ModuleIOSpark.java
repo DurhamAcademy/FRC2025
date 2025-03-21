@@ -238,6 +238,7 @@ public class ModuleIOSpark implements ModuleIO {
                 (values) -> inputs.driveAppliedVolts = values[0] * values[1]);
         ifOk(driveSpark, driveSpark::getOutputCurrent, (value) -> inputs.driveCurrentAmps = value);
         inputs.driveConnected = driveConnectedDebounce.calculate(!sparkStickyFault);
+        inputs.driveTemperature = driveSpark.getMotorTemperature();
 
         // Update turn inputs
         sparkStickyFault = false;
@@ -267,6 +268,7 @@ public class ModuleIOSpark implements ModuleIO {
                     inputs.turnCurrentAmps = value;
                 });
         inputs.turnConnected = turnConnectedDebounce.calculate(!sparkStickyFault);
+        inputs.turnTemperature = turnSpark.getMotorTemperature();
 
         // Update odometry inputs
         inputs.odometryTimestamps =

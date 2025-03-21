@@ -115,6 +115,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
+        inputs.leftTemperature = primaryMotor.getMotorTemperature();
+        inputs.rightTemperature = followerMotor.getMotorTemperature();
         inputs.current = primaryMotor.getOutputCurrent();
         inputs.isLimitSwitchPressed = !limitSwitch.get(); // limit switch is inverted
         inputs.leftHeightInches = primaryEncoder.getPosition();
