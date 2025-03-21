@@ -32,7 +32,7 @@ public class ManipulatorCommands {
     }
 
     public static Command coralEject(Manipulator manipulator) {
-        return normalCoralEject(manipulator);
+        return eject(manipulator);
     }
 
     public static Command algaeEject(Manipulator manipulator, Elevator elevator) {
