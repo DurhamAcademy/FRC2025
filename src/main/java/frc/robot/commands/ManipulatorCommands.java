@@ -75,13 +75,22 @@ public class ManipulatorCommands {
     }
 
     public static Command pullCoralIntoManipulator(Manipulator manipulator) {
-        return runManipulator(manipulator, 0.75).until(() -> !manipulator.beamBroken());
+        return runManipulator(manipulator, 0.4).until(() -> !manipulator.beamBroken());
     }
 
     public static Command coralIntakeRipple(Manipulator manipulator) {
         return sequence(
                 runManipulator(manipulator, -0.6).until(manipulator::beamBroken),
-                // runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
+                runManipulator(manipulator, 0.25).until(() -> !manipulator.beamBroken()),
                 stopManipulator(manipulator));
+    }
+
+    public static Command manipulatorDefaultHoldCoral(Manipulator manipulator, Elevator elevator) {
+        return Commands.either(
+                        runManipulator(manipulator, 0.5),
+                        runManipulator(manipulator, 0.32),
+                        () -> elevator.getWristAngle() > 0)
+                .until(() -> !manipulator.beamBroken())
+                .andThen(stopManipulator(manipulator));
     }
 }

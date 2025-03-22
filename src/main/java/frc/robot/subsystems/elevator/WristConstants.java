@@ -3,13 +3,13 @@ package frc.robot.subsystems.elevator;
 public class WristConstants {
     public static final int wristCanId = 12;
 
-    public static double wristKp = 2; // .4
+    public static double wristKp = 2; // (2)
     public static final double wristKi = 0.0;
     public static double wristKd = 0; // .3
 
     public static final double wristKs = 0.0;
     public static double wristKg = .4;
-    public static final double wristKv = 0.0;
+    public static final double wristKv = 0;
     public static final double wristKa = 0.0;
 
     // Wrist angles in radians
@@ -40,8 +40,8 @@ public class WristConstants {
 
     public static final double maxWristPosition = STARTING;
     public static final double minWristPosition = INTAKE;
-    public static final double wristMaxVelocity = 30;
-    public static final double wristMaxAcceleration = 30;
+    public static final double wristMaxVelocity = Math.PI;
+    public static final double wristMaxAcceleration = Math.PI;
 
     // Tolerance of the wrist subsystem
     // degrees, rad/s
@@ -54,8 +54,7 @@ public class WristConstants {
     public static final double wristAbsoluteEncoderVelocityFactor =
             2 * Math.PI / 60.0 / wristChainReduction; // RPM => Radians per second
 
-    public static final double wristMotorReduction =
-            3 * 4 * 9 * (50.0 / 52.0) * wristChainReduction;
+    public static final double wristMotorReduction = 4 * 9 * (50.0 / 52.0) * wristChainReduction;
     public static final double wristRelativeEncoderReduction = 2 * Math.PI / wristMotorReduction;
     public static final double wristRelativeEncoderVelocityFactor =
             2 * Math.PI / 60.0 / wristMotorReduction; // RPM => Radians per second
