@@ -6,9 +6,23 @@ import org.littletonrobotics.junction.Logger;
 public class Manipulator extends SubsystemBase {
     private final ManipulatorIO io;
     private final ManipulatorIOInputsAutoLogged inputs = new ManipulatorIOInputsAutoLogged();
+    public double rollerHoldPositionRad = 0.0;
 
     public Manipulator(ManipulatorIO io) {
         this.io = io;
+    }
+
+    public void setGoalState(double goalPosition, double goalVelocity) {
+        io.setGoalState(goalPosition, goalVelocity);
+    }
+
+    public void holdPosition() {
+        io.updateProfile();
+    }
+
+    public void lockToCurrentPosition() {
+        rollerHoldPositionRad = inputs.rollerRPosRad;
+        setGoalState(rollerHoldPositionRad, 0);
     }
 
     @Override

@@ -82,6 +82,11 @@ public class ManipulatorCommands {
         return sequence(
                 runManipulator(manipulator, -0.6).until(manipulator::beamBroken),
                 // runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
-                stopManipulator(manipulator));
+                stopManipulator(manipulator),
+                Commands.runOnce(manipulator::lockToCurrentPosition));
+    }
+
+    public static Command holdManipulator(Manipulator manipulator) {
+        return Commands.run(manipulator::holdPosition, manipulator);
     }
 }

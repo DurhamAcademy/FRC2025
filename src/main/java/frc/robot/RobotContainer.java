@@ -256,6 +256,10 @@ public class RobotContainer {
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
+        manipulator.setDefaultCommand(
+                ManipulatorCommands.holdManipulator(manipulator)
+        );
+
         Command manipulatorEject = ManipulatorCommands.eject(manipulator, 1);
 
         Command setAlignLeft =

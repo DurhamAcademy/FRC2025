@@ -4,8 +4,12 @@ import com.revrobotics.spark.*;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 public class ManipulatorIOSparkFlex implements ManipulatorIO {
     private final SparkFlex primaryRollerR =
@@ -20,6 +24,13 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
     private final SparkFlexConfig resetConfig = new SparkFlexConfig();
     private final SparkFlexConfig followerConfig;
 
+    private final SparkClosedLoopController primaryController;
+    private final TrapezoidProfile.Constraints constraints;
+    private final TrapezoidProfile profile;
+    private TrapezoidProfile.State currentState;
+    private TrapezoidProfile.State goalState;
+    private final ElevatorFeedforward feedForward;
+
     // private final DigitalInput beam;
     private final AnalogInput distanceSensor;
 
@@ -28,6 +39,8 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         followRollerL.setCANTimeout(250);
 
         followerConfig = new SparkFlexConfig();
+
+        primaryController = primaryRollerR.getClosedLoopController();
 
         // beam = new DigitalInput(ManipulatorConstants.MANIPULATOR_BEAM_ID);
         // sets brake mode
@@ -44,6 +57,20 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
                         ManipulatorConstants.manipulatorKd);
 
         configureMotors();
+
+        constraints =
+                new TrapezoidProfile.Constraints(
+                        ManipulatorConstants.maxVelocity, ManipulatorConstants.maxAcceleration);
+        currentState = new TrapezoidProfile.State(0, 0);
+        goalState = new TrapezoidProfile.State(0, 0);
+        profile = new TrapezoidProfile(constraints);
+
+        feedForward =
+                new ElevatorFeedforward(
+                        ManipulatorConstants.manipulatorKs,
+                        ManipulatorConstants.manipulatorKg,
+                        ManipulatorConstants.manipulatorKv,
+                        ManipulatorConstants.manipulatorKa);
 
         distanceSensor = new AnalogInput(ManipulatorConstants.manipulatorDistanceSensorPort);
     }
@@ -64,6 +91,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         inputs.rollerLVelocityRadPerSec =
                 Units.rotationsPerMinuteToRadiansPerSecond(
                         followRollerL.getExternalEncoder().getVelocity());
+        inputs.rollerLPosRad = followRollerL.getAbsoluteEncoder().getPosition();
 
         inputs.rollerRTemperature = primaryRollerR.getMotorTemperature();
         inputs.rollerRAppliedVolts =
@@ -72,6 +100,11 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         inputs.rollerRVelocityRadPerSec =
                 Units.rotationsPerMinuteToRadiansPerSecond(
                         primaryRollerR.getExternalEncoder().getVelocity());
+        inputs.rollerRPosRad = followRollerL.getAbsoluteEncoder().getPosition();
+
+        currentState.position = inputs.rollerRPosRad;
+        currentState.velocity = inputs.rollerRVelocityRadPerSec;
+
         // inputs.beamObstructed = beam.get();
         inputs.sensorDistance =
                 distanceSensor.getVoltage(); // todo: distance formula might not work
@@ -91,16 +124,20 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         primaryRollerR.set(0);
     }
 
+    public void setGoalState(double position, double velocity) {
+        goalState.position = position;
+        goalState.velocity = velocity;
+    }
+
     // only to be used if we at some point want to have speed such as something ike barge or
     // something similar, thus it is commented out, but should be easy to set up since pid and
     // FF are already initialized
-    /**
-     * public void updateProfile() { // Calculate the next state (position and velocity)
-     * currentState = profile.calculate(0.02, currentState, goalState); double ffVolts =
-     * feedForward.calculate(currentState.velocity);
-     *
-     * <p>// Use the profiler's position as the target for the motor controller
-     * primaryController.setReference( currentState.position, SparkBase.ControlType.kPosition,
-     * ClosedLoopSlot.kSlot0, ffVolts); <<<<<<< HEAD }
-     */
+    public void updateProfile() {
+        // Calculate the next state (position and velocity)
+        currentState = profile.calculate(0.02, currentState, goalState);
+        double ffVolts = feedForward.calculate(currentState.velocity);
+
+        // Use the profiler's position as the target for the motor controller
+        primaryController.setReference( currentState.position, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
+    }
 }
