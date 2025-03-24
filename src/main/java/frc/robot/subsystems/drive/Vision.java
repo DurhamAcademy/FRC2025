@@ -1,12 +1,19 @@
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.LimelightHelpers;
-import java.util.ArrayList;
-import org.littletonrobotics.junction.Logger;
+import java.util.*;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * Class to handle Limelight vision find docs at: <a
@@ -14,120 +21,117 @@ import org.littletonrobotics.junction.Logger;
  */
 public class Vision extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
-    GyroIO.GyroIOInputs gyro;
-    Drive drive;
 
-    Pose2d currentPosition = new Pose2d(0, 0, new Rotation2d(0));
+    Map<String, Transform3d> cameraTransforms = new HashMap<>(); // key: camera name, value: camera to robot transform
+    Map<PhotonCamera, PhotonPoseEstimator> cameraPoseEstimators = new HashMap<>(); // key: camera, value: pose estimator
 
-    ArrayList<CameraConfig> cameraConfigs =
-            new ArrayList<>(); // holds all the cameras (initialized in constructor)
+    private static final Matrix<N3, N1> kSingleTagStdDevs =
+            VecBuilder.fill(0.5, 0.5, Math.toRadians(10)); // single tag uncertainty: x and y can be off 50cm, rotation can be off 10 deg
+    private static final Matrix<N3, N1> kMultiTagStdDevs =
+            VecBuilder.fill(0.2, 0.2, Math.toRadians(3)); // multi tag uncertainty: more confident for multiple tags
 
-    public Vision(GyroIO.GyroIOInputs gyro, Drive drive) {
-        this.gyro = gyro;
-        this.drive = drive;
+    public Vision(SwerveDrivePoseEstimator poseEstimator) {
+        this.poseEstimator = poseEstimator;
+        cameraTransforms.put("front-camera", new Transform3d(0, 0, 0, new Rotation3d(0, 0, 0)));
 
-        // create two new cameras with different positions and offsets and store them to be used for
-        // position later
-        if (Constants.currentMode != Constants.Mode.SIM) {
-            cameraConfigs.add(
-                    new CameraConfig(
-                            "limelight-front", // camera name
-                            new Transform3d(
-                                    new Translation3d(0.306, 0.0, 0.240),
-                                    new Rotation3d(0.0, Math.toRadians(15), 0.0)), // Camera pose
-                            new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
-                            ));
-            /*cameraConfigs.add(
-            new CameraConfig(
-                    "limelight-back", // camera name
-                    new Transform3d(
-                            new Translation3d(-0.138, -0.252, 0.190),
-                            new Rotation3d(0.0, Math.toRadians(45), 0.0)), // Camera pose
-                    new Translation3d(0.0, 0.0, 0.0) // Fiducial offset
-                    ));*/
-        }
+        AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        for (String cameraName : cameraTransforms.keySet()) {
+            Transform3d robotToCam = cameraTransforms.get(cameraName);
+            try {
+                PhotonCamera camera = new PhotonCamera(cameraName);
 
-        // Initialize pose estimator
-        poseEstimator = drive.getPoseEstimator();
+                // Construct PhotonPoseEstimator
+                PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(
+                        aprilTagFieldLayout,
+                        PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
+                        robotToCam
+                );
+                photonPoseEstimator.setMultiTagFallbackStrategy(PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY);
 
-        initializeLimelightHelpers(); // sets up all the cameras in the cameraConfigs list
-    }
-
-    /** sets up limelight cameras from cameraConfig list */
-    private void initializeLimelightHelpers() {
-        // run for each camera in list
-        for (CameraConfig camera : cameraConfigs) {
-            // Change the camera pose relative to robot center (x forward, y left, z up, degrees)
-            LimelightHelpers.setCameraPose_RobotSpace(
-                    camera.name,
-                    camera.cameraPose.getTranslation().getX(),
-                    camera.cameraPose.getTranslation().getY(),
-                    camera.cameraPose.getTranslation().getZ(),
-                    Math.toDegrees(camera.cameraPose.getRotation().getX()),
-                    Math.toDegrees(camera.cameraPose.getRotation().getY()),
-                    Math.toDegrees(camera.cameraPose.getRotation().getZ()));
-
-            // Set AprilTag offset tracking point (meters)
-            // accounts for the physical position of the Limelight (or other camera) relative to
-            // your
-            // robot’s coordinate system or desired alignment point (e.g., the center of the robot
-            // or the
-            // shooter mechanism)
-            LimelightHelpers.setFiducial3DOffset(
-                    camera.name,
-                    camera.fiducialOffset.getX(),
-                    camera.fiducialOffset.getY(),
-                    camera.fiducialOffset.getZ());
+                cameraPoseEstimators.put(camera, photonPoseEstimator);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     /**
-     * Given any limelight camera on the robot, returns the estimated pose from that camera
+     * The latest estimated robot pose on the field from vision data. This may be empty. This should
+     * only be called once per loop.
+     * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
+     *     used for estimation.
+     */
+    public Optional<EstimatedRobotPose> getEstimatedGlobalPose(PhotonCamera camera, PhotonPoseEstimator photonEstimator) {
+        Optional<EstimatedRobotPose> visionEst = Optional.empty();
+        for (var change : camera.getAllUnreadResults()) {
+            visionEst = photonEstimator.update(change);
+            // updateEstimationStdDevs(visionEst, change.getTargets(), photonEstimator);
+        }
+        return visionEst;
+    }
+
+    /**
+     * Calculates new standard deviations This algorithm is a heuristic that creates dynamic standard
+     * deviations based on number of tags, estimation strategy, and distance from the tags.
+     * from <a href="https://github.com/PhotonVision/photonvision/blob/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java">this</a>
      *
-     * @param cameraName name of limelight camera
-     * @return the PoseEstimate obj from that camera, including estimated pose, timestamp, num tags,
-     *     etc
+     * @param estimatedPose The estimated pose to guess standard deviations for.
+     * @param targets All targets in this camera frame
      */
-    private LimelightHelpers.PoseEstimate getEstimatedPoseFromCamera(String cameraName) {
-        // Update Limelight robot orientation from pose estimator
-        LimelightHelpers.SetRobotOrientation(
-                cameraName,
-                poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
-                0,
-                0,
-                0,
-                0,
-                0);
-        return LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
-    }
+    private Matrix<N3, N1> calculateEstimationStdDevs(
+            Optional<EstimatedRobotPose> estimatedPose,
+            List<PhotonTrackedTarget> targets,
+            PhotonPoseEstimator photonEstimator) {
+        if (estimatedPose.isEmpty()) {
+            // No pose input. Default to single-tag std devs
+            return kSingleTagStdDevs;
+        } else {
+            // Pose present. Start running Heuristic
+            var estStdDevs = kSingleTagStdDevs;
+            int numTags = 0;
+            double avgDist = 0;
 
-    /**
-     * With all the cameras in the cameraConfigs array, updates the poseEstimator's estimated pose
-     * using AprilTag vision. read more: <a
-     * href="https://docs.limelightvision.io/docs/docs-limelight/tutorials/tutorial-swerve-pose-estimation">here</a>
-     */
-    private void updateEstimatedPose() {
-        for (CameraConfig camera : cameraConfigs) {
-            LimelightHelpers.PoseEstimate poseEstimate = getEstimatedPoseFromCamera(camera.name);
-
-            // Reject update if no tags are detected
-            if (poseEstimate == null || poseEstimate.tagCount == 0) {
-                continue; // skip to next camera if conditions are not met
+            // Precalculation - see how many tags we found, and calculate an average-distance metric
+            for (var tgt : targets) {
+                var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
+                if (tagPose.isEmpty()) continue;
+                numTags++;
+                avgDist +=
+                        tagPose
+                                .get()
+                                .toPose2d()
+                                .getTranslation()
+                                .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
             }
 
-            // reject update if rotating too fast
-            if (Math.abs(gyro.yawVelocityRadPerSec) > 4 * Math.PI) {
-                continue;
+            if (numTags == 0) {
+                // No tags visible. Default to single-tag std devs
+                return kSingleTagStdDevs;
+            } else {
+                // One or more tags visible, run the full heuristic.
+                avgDist /= numTags;
+                // Decrease std devs if multiple targets are visible
+                if (numTags > 1) estStdDevs = kMultiTagStdDevs;
+                // Increase std devs based on (average) distance
+                if (numTags == 1 && avgDist > 4)
+                    estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+                return estStdDevs;
             }
-
-            // adds the found position to our position estimator
-            poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
         }
     }
 
-    /** Logs current robot position */
-    private void logRobotPosition() {
-        Logger.recordOutput("RobotPosition", currentPosition);
+    private void updateEstimatedPose() {
+        for (PhotonCamera camera : cameraPoseEstimators.keySet()) {
+            PhotonPoseEstimator photonPoseEstimator = cameraPoseEstimators.get(camera);
+            Optional<EstimatedRobotPose> estimatedPose = getEstimatedGlobalPose(camera, photonPoseEstimator);
+            if (estimatedPose.isPresent()) {
+                Pose2d pose = estimatedPose.get().estimatedPose.toPose2d();
+                double timestamp = estimatedPose.get().timestampSeconds;
+                Matrix<N3, N1> stdDevs = calculateEstimationStdDevs(estimatedPose, estimatedPose.get().targetsUsed, photonPoseEstimator);
+                poseEstimator.addVisionMeasurement(pose, timestamp, stdDevs); // taking in curStdDevs to apply confidence
+            }
+        }
     }
 
     /**
@@ -139,9 +143,6 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // poseEstimator.update(gyro.yawPosition, modulePositions); // update rotation
         updateEstimatedPose(); // use camera data to estimate position
-        // currentPosition = getPosition();
-        // logRobotPosition(); // show field visualization in shuffleboard
     }
 }
