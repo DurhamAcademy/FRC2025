@@ -13,6 +13,7 @@
 package frc.robot;
 
 import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
+import static frc.robot.Constants.coralInnerWidth;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -20,16 +21,17 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ElevatorCommands;
-import frc.robot.commands.IntakeCommands;
-import frc.robot.commands.ManipulatorCommands;
+import frc.robot.commands.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.elevator.Elevator;
@@ -41,6 +43,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.lights.LEDs;
 import frc.robot.subsystems.manipulator.*;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -59,6 +62,7 @@ public class RobotContainer {
     private final Manipulator manipulator;
     private final Intake intake;
     private final Elevator elevator;
+    private final LEDs leds;
     private SwerveDriveSimulation driveSimulation = null;
 
     // Controllers
@@ -76,6 +80,7 @@ public class RobotContainer {
 
     public boolean algaeMode = true;
     public boolean overrideSafeElevator = false;
+    private final ReactionObjects rxns;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -95,6 +100,7 @@ public class RobotContainer {
                 manipulator = new Manipulator(new ManipulatorIOSparkFlex());
                 intake = new Intake(new IntakeIOSparkMax());
                 elevator = new Elevator(new ElevatorIOSparkMax(), new WristIOSparkMax(), drive);
+                leds = new LEDs();
                 break;
 
             case SIM:
@@ -117,6 +123,19 @@ public class RobotContainer {
                 manipulator = new Manipulator(new ManipulatorIOSim());
                 intake = new Intake(new IntakeIOSim(driveSimulation));
                 elevator = new Elevator(new ElevatorIOSim(), new WristIOSim(), drive);
+
+                leds = new LEDs();
+
+                // TODO: Vision SIM
+                //        vision = new Vision(
+                //                drive,
+                //                new VisionIOPhotonVisionSim(
+                //                        camera0Name, robotToCamera0,
+                // driveSimulation::getSimulatedDriveTrainPose),
+                //                new VisionIOPhotonVisionSim(
+                //                        camera1Name, robotToCamera1,
+                // driveSimulation::getSimulatedDriveTrainPose));
+
                 break;
 
             default:
@@ -134,6 +153,7 @@ public class RobotContainer {
                 intake = new Intake(new IntakeIO() {});
                 manipulator = new Manipulator(new ManipulatorIO() {});
                 elevator = new Elevator(new ElevatorIO() {}, new WristIO() {}, drive);
+                leds = new LEDs();
                 break;
         }
 
@@ -141,6 +161,15 @@ public class RobotContainer {
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser());
+        // set up reactions
+        this.reactions =
+                new ReactionObjects(
+                        new Trigger(drive::isAlignedToAlgae),
+                        new Trigger(drive::isAlignedToReef),
+                        new Trigger(RobotState::isTeleop),
+                        new Trigger(RobotState::isEnabled)
+
+                );
 
         // Set up SysId routines
         //        autoChooser.addOption(
@@ -165,6 +194,7 @@ public class RobotContainer {
         // Configure the button bindings
         sendDataToSmartDashboard();
         configureButtonBindings();
+        configureReactions();
     }
 
     public void getSwerveDirection() {
@@ -266,6 +296,26 @@ public class RobotContainer {
                         .onlyIf(drive::isTipping)
                         .onlyIf(safeToMoveElevator)); // assuming that the robot has been zeroed
 
+        leds.setDefaultCommand(
+                Commands.either(LEDCommands.enabled(leds, () -> algaeMode), LEDCommands.disabled(leds), RobotState::isEnabled).ignoringDisable(true));
+
+        // DRIVER CONTROLLER
+
+        // Automatically angle to HP & run intake
+        // Command intakeCoral = IntakeCommands.intakeCoral(intake, manipulator);
+        /*Commands.parallel(
+        // fixme bugging the whole match
+        //                        DriveCommands.autoAlignToHumanPlayerStation(
+        //                                drive,
+        //                                () -> (yDirect *
+        // driverController.getLeftY()),
+        //                                () -> (xDirect *
+        // driverController.getLeftX())),
+        IntakeCommands.intakeCoral(intake, manipulator),
+        ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.INTAKE));*/
+
+        // Command intakeAlgae = ManipulatorCommands.algaeIntake(manipulator);
+
         Command manipulatorEject = ManipulatorCommands.eject(manipulator, 1);
 
         Command setAlignLeft =
@@ -317,6 +367,16 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
 
+        operatorController
+                .leftBumper()
+                .onTrue(
+                        Commands.runOnce(() -> algaeMode = false));
+
+        operatorController
+                .rightBumper()
+                .onTrue(
+                        Commands.runOnce(() -> algaeMode = true));
+
         // algae / coral mode
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
@@ -328,19 +388,30 @@ public class RobotContainer {
                         Commands.either(
                                 ManipulatorCommands.algaeIntake(manipulator),
                                 IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
-                                () -> algaeMode));
+                                () -> algaeMode)
+                                .andThen(LEDCommands.blink(leds, 0, 128, 128)));
         operatorController
                 .rightTrigger()
                 .onTrue(
                         ManipulatorCommands.stopManipulator(manipulator)
-                                .andThen(IntakeCommands.stopIntake(intake)));
+                                .andThen(IntakeCommands.stopIntake(intake))
+                                .andThen(LEDCommands.blink(leds, 248, 131, 121).onlyIf(manipulator::beamBroken)));
 
         operatorController
                 .a()
                 .onTrue(
                         IntakeCommands.stopIntake(intake)
                                 .alongWith(ManipulatorCommands.stopManipulator(manipulator))
-                                .andThen(IntakeCommands.retryStuckIntake(intake, manipulator)));
+                                .andThen(IntakeCommands.retryStuckIntake(intake, manipulator))
+                                .andThen(LEDCommands.blink(leds, 248, 131, 121).onlyIf(manipulator::beamBroken)));
+
+        // please do what you have to do with this, i just kept this here, i didn't know what it was
+        // This should be simplified, I do not know why there are two command structures bound to
+        // one button
+        driverController
+                .rightBumper()
+                .whileTrue(ManipulatorCommands.eject(manipulator, 1))
+                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
 
         // elevator
         operatorController
@@ -369,7 +440,8 @@ public class RobotContainer {
                                                         elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL)
                                                 .andThen(
                                                         ManipulatorCommands.algaeIntake(
-                                                                manipulator)),
+                                                                manipulator))
+                                                .andThen(LEDCommands.blink(leds, 0, 128, 128)),
                                         ElevatorCommands.setElevatorLevel(
                                                 elevator, ElevatorLevel.L2),
                                         () -> algaeMode)
@@ -392,11 +464,21 @@ public class RobotContainer {
                                                         elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL)
                                                 .andThen(
                                                         ManipulatorCommands.algaeIntake(
-                                                                manipulator)),
+                                                                manipulator))
+                                                .andThen(LEDCommands.blink(leds, 0, 128, 128)),
                                         ElevatorCommands.setElevatorLevel(
                                                 elevator, ElevatorLevel.L4),
                                         () -> algaeMode)
                                 .onlyIf(safeToMoveElevator));
+    }
+
+    public void configureReactions() {
+        reactions
+                .isTeleop
+                .and(reactions.isEnabled)
+                .whileTrue(LEDCommands.enabled(leds, () -> algaeMode).ignoringDisable(true));
+        reactions.algaeAligned.whileTrue(LEDCommands.aligned(leds).ignoringDisable(true));
+        reactions.reefAligned.whileTrue(LEDCommands.aligned(leds).ignoringDisable(true));
     }
 
     /**
@@ -523,5 +605,25 @@ public class RobotContainer {
                             drive::getMaxVelocity,
                             val -> Drive.currentSpeedLimitMetersPerSec = val);
                 });
+    }
+
+    private static class ReactionObjects {
+        Trigger algaeAligned;
+        Trigger reefAligned;
+        Trigger algaeMode;
+        Trigger coralMode;
+        Trigger isTeleop;
+        Trigger isEnabled;
+
+
+        public ReactionObjects(
+                Trigger algaeAligned,
+                Trigger reefAligned,
+                Trigger isTeleop,
+                Trigger isEnabled) {
+
+            this.algaeAligned = algaeAligned;
+            this.reefAligned = reefAligned;
+        }
     }
 }
