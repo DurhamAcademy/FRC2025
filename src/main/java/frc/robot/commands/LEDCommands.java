@@ -22,7 +22,7 @@ public class LEDCommands {
         CANdle candle = leds.getCandle();
         return startEnd(
                         () -> {
-                            candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, 1, 0), 0);
+                            candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, stripLength, 0), 0);
                         },
                         () -> {
                             for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
@@ -38,7 +38,7 @@ public class LEDCommands {
         CANdle candle = leds.getCandle();
         return startEnd(
                 () -> {
-                    candle.animate(new StrobeAnimation(r, g, b, 0, 0, 1, 0), 0);
+                    candle.animate(new StrobeAnimation(r, g, b, 0, 0, stripLength, 0), 0);
                 },
                 () -> {
                     for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
