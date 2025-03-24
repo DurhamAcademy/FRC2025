@@ -166,6 +166,7 @@ public class RobotContainer {
                 new ReactionObjects(
                         new Trigger(drive::isAlignedToAlgae),
                         new Trigger(drive::isAlignedToReef),
+                        new Trigger(RobotState::isAutonomous),
                         new Trigger(RobotState::isTeleop),
                         new Trigger(RobotState::isEnabled)
 
@@ -474,6 +475,10 @@ public class RobotContainer {
 
     public void configureReactions() {
         reactions
+                .isAutonomous
+                .and(reactions.isEnabled)
+                .whileTrue(LEDCommands.flameCommand(leds).ignoringDisable(true));
+        reactions
                 .isTeleop
                 .and(reactions.isEnabled)
                 .whileTrue(LEDCommands.enabled(leds, () -> algaeMode).ignoringDisable(true));
@@ -610,6 +615,7 @@ public class RobotContainer {
     private static class ReactionObjects {
         Trigger algaeAligned;
         Trigger reefAligned;
+        Trigger isAutonomous;
         Trigger isTeleop;
         Trigger isEnabled;
 
@@ -617,11 +623,13 @@ public class RobotContainer {
         public ReactionObjects(
                 Trigger algaeAligned,
                 Trigger reefAligned,
+                Trigger isAutonomous,
                 Trigger isTeleop,
                 Trigger isEnabled) {
 
             this.algaeAligned = algaeAligned;
             this.reefAligned = reefAligned;
+            this.isAutonomous = isAutonomous;
             this.isTeleop = isTeleop;
             this.isEnabled = isEnabled;
         }
