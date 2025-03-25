@@ -257,7 +257,7 @@ public class RobotContainer {
                         .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
 
         manipulator.setDefaultCommand(
-                ManipulatorCommands.holdManipulator(manipulator)
+                ManipulatorCommands.runManipulatorPid(manipulator)
         );
 
         Command manipulatorEject = ManipulatorCommands.eject(manipulator, 1);

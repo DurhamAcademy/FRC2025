@@ -91,7 +91,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         inputs.rollerLVelocityRadPerSec =
                 Units.rotationsPerMinuteToRadiansPerSecond(
                         followRollerL.getExternalEncoder().getVelocity());
-        inputs.rollerLPosRad = followRollerL.getAbsoluteEncoder().getPosition();
+        inputs.rollerLPosRad = followRollerL.getExternalEncoder().getPosition();
 
         inputs.rollerRTemperature = primaryRollerR.getMotorTemperature();
         inputs.rollerRAppliedVolts =
@@ -100,14 +100,16 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         inputs.rollerRVelocityRadPerSec =
                 Units.rotationsPerMinuteToRadiansPerSecond(
                         primaryRollerR.getExternalEncoder().getVelocity());
-        inputs.rollerRPosRad = followRollerL.getAbsoluteEncoder().getPosition();
+        inputs.rollerRPosRad = followRollerL.getExternalEncoder().getPosition();
+        inputs.isAtSetpoint = Math.abs(inputs.rollerRPosRad - goalState.position) < 0.1
+                && Math.abs(inputs.rollerRVelocityRadPerSec) < 0.1;
 
         currentState.position = inputs.rollerRPosRad;
         currentState.velocity = inputs.rollerRVelocityRadPerSec;
 
         // inputs.beamObstructed = beam.get();
         inputs.sensorDistance =
-                distanceSensor.getVoltage(); // todo: distance formula might not work
+                distanceSensor.getVoltage();
     }
 
     /** Set intake wheel percent -1 to 1 */
@@ -129,9 +131,6 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         goalState.velocity = velocity;
     }
 
-    // only to be used if we at some point want to have speed such as something ike barge or
-    // something similar, thus it is commented out, but should be easy to set up since pid and
-    // FF are already initialized
     public void updateProfile() {
         // Calculate the next state (position and velocity)
         currentState = profile.calculate(0.02, currentState, goalState);

@@ -17,6 +17,8 @@ public interface ManipulatorIO {
         public double rollerRTemperature = 0.0;
         public double rollerRPosRad;
 
+        public boolean isAtSetpoint = false;
+
         public double sensorDistance = 0.0;
     }
 

@@ -7,6 +7,7 @@ public class Manipulator extends SubsystemBase {
     private final ManipulatorIO io;
     private final ManipulatorIOInputsAutoLogged inputs = new ManipulatorIOInputsAutoLogged();
     public double rollerHoldPositionRad = 0.0;
+    private final double INTAKE_NUM_ROTATIONS = 5.0;
 
     public Manipulator(ManipulatorIO io) {
         this.io = io;
@@ -16,13 +17,22 @@ public class Manipulator extends SubsystemBase {
         io.setGoalState(goalPosition, goalVelocity);
     }
 
-    public void holdPosition() {
+    public void updateProfile() {
         io.updateProfile();
     }
 
     public void lockToCurrentPosition() {
         rollerHoldPositionRad = inputs.rollerRPosRad;
         setGoalState(rollerHoldPositionRad, 0);
+    }
+
+    public void setIntakingRollerPosition() {
+        rollerHoldPositionRad = inputs.rollerRPosRad + INTAKE_NUM_ROTATIONS;
+        setGoalState(rollerHoldPositionRad, 0);
+    }
+
+    public boolean isAtSetpoint() {
+        return inputs.isAtSetpoint;
     }
 
     @Override

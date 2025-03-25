@@ -86,7 +86,16 @@ public class ManipulatorCommands {
                 Commands.runOnce(manipulator::lockToCurrentPosition));
     }
 
-    public static Command holdManipulator(Manipulator manipulator) {
-        return Commands.run(manipulator::holdPosition, manipulator);
+    public static Command pidPullCoralIntoManipulator(Manipulator manipulator) {
+        return sequence(
+                Commands.runOnce(manipulator::setIntakingRollerPosition),
+                Commands.run(manipulator::updateProfile, manipulator)
+                        .until(manipulator::isAtSetpoint),
+                Commands.runOnce(manipulator::lockToCurrentPosition)
+        );
+    }
+
+    public static Command runManipulatorPid(Manipulator manipulator) {
+        return Commands.run(manipulator::updateProfile, manipulator);
     }
 }
