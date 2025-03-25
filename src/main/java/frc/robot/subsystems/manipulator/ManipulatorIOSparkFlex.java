@@ -6,6 +6,7 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogInput;
@@ -29,7 +30,7 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
     private final TrapezoidProfile profile;
     private TrapezoidProfile.State currentState;
     private TrapezoidProfile.State goalState;
-    private final ElevatorFeedforward feedForward;
+    private final SimpleMotorFeedforward feedForward;
 
     // private final DigitalInput beam;
     private final AnalogInput distanceSensor;
@@ -66,9 +67,8 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         profile = new TrapezoidProfile(constraints);
 
         feedForward =
-                new ElevatorFeedforward(
+                new SimpleMotorFeedforward(
                         ManipulatorConstants.manipulatorKs,
-                        ManipulatorConstants.manipulatorKg,
                         ManipulatorConstants.manipulatorKv,
                         ManipulatorConstants.manipulatorKa);
 
