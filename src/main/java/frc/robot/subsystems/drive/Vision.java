@@ -25,6 +25,8 @@ public class Vision extends SubsystemBase {
     Map<String, Transform3d> cameraTransforms = new HashMap<>(); // key: camera name, value: camera to robot transform
     Map<PhotonCamera, PhotonPoseEstimator> cameraPoseEstimators = new HashMap<>(); // key: camera, value: pose estimator
 
+    boolean useOnlyFrontCameras = false;
+
     private static final Matrix<N3, N1> kSingleTagStdDevs =
             VecBuilder.fill(0.5, 0.5, Math.toRadians(10)); // single tag uncertainty: x and y can be off 50cm, rotation can be off 10 deg
     private static final Matrix<N3, N1> kMultiTagStdDevs =
@@ -32,6 +34,8 @@ public class Vision extends SubsystemBase {
 
     public Vision(SwerveDrivePoseEstimator poseEstimator) {
         this.poseEstimator = poseEstimator;
+
+        // cameras on the front should start with "front"
         cameraTransforms.put("front-camera", new Transform3d(0, 0, 0, new Rotation3d(0, 0, 0)));
 
         AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
@@ -123,6 +127,10 @@ public class Vision extends SubsystemBase {
 
     private void updateEstimatedPose() {
         for (PhotonCamera camera : cameraPoseEstimators.keySet()) {
+            if (useOnlyFrontCameras && !camera.getName().contains("front")) {
+                // skip camera because it's not on the front
+                continue;
+            }
             PhotonPoseEstimator photonPoseEstimator = cameraPoseEstimators.get(camera);
             Optional<EstimatedRobotPose> estimatedPose = getEstimatedGlobalPose(camera, photonPoseEstimator);
             if (estimatedPose.isPresent()) {
