@@ -13,7 +13,6 @@
 package frc.robot;
 
 import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
-import static frc.robot.Constants.coralInnerWidth;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -28,8 +27,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
 import frc.robot.subsystems.drive.*;
@@ -168,9 +165,7 @@ public class RobotContainer {
                         new Trigger(drive::isAlignedToReef),
                         new Trigger(RobotState::isAutonomous),
                         new Trigger(RobotState::isTeleop),
-                        new Trigger(RobotState::isEnabled)
-
-                );
+                        new Trigger(RobotState::isEnabled));
 
         // Set up SysId routines
         //        autoChooser.addOption(
@@ -298,7 +293,11 @@ public class RobotContainer {
                         .onlyIf(safeToMoveElevator)); // assuming that the robot has been zeroed
 
         leds.setDefaultCommand(
-                Commands.either(LEDCommands.enabled(leds, () -> algaeMode), LEDCommands.disabled(leds), RobotState::isEnabled).ignoringDisable(true));
+                Commands.either(
+                                LEDCommands.enabled(leds, () -> algaeMode),
+                                LEDCommands.disabled(leds),
+                                RobotState::isEnabled)
+                        .ignoringDisable(true));
 
         // DRIVER CONTROLLER
 
@@ -368,15 +367,9 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
 
-        operatorController
-                .leftBumper()
-                .onTrue(
-                        Commands.runOnce(() -> algaeMode = false));
+        operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
-        operatorController
-                .rightBumper()
-                .onTrue(
-                        Commands.runOnce(() -> algaeMode = true));
+        operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
 
         // algae / coral mode
         operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
@@ -387,16 +380,19 @@ public class RobotContainer {
                 .leftTrigger()
                 .onTrue(
                         Commands.either(
-                                ManipulatorCommands.algaeIntake(manipulator),
-                                IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
-                                () -> algaeMode)
+                                        ManipulatorCommands.algaeIntake(manipulator),
+                                        IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
+                                        () -> algaeMode)
                                 .andThen(LEDCommands.blink(leds, 0, 128, 128).withTimeout(1)));
         operatorController
                 .rightTrigger()
                 .onTrue(
                         ManipulatorCommands.stopManipulator(manipulator)
                                 .andThen(IntakeCommands.stopIntake(intake))
-                                .andThen(LEDCommands.blink(leds, 248, 131, 121).onlyIf(manipulator::beamBroken).withTimeout(1)));
+                                .andThen(
+                                        LEDCommands.blink(leds, 248, 131, 121)
+                                                .onlyIf(manipulator::beamBroken)
+                                                .withTimeout(1)));
 
         operatorController
                 .a()
@@ -404,7 +400,10 @@ public class RobotContainer {
                         IntakeCommands.stopIntake(intake)
                                 .alongWith(ManipulatorCommands.stopManipulator(manipulator))
                                 .andThen(IntakeCommands.retryStuckIntake(intake, manipulator))
-                                .andThen(LEDCommands.blink(leds, 248, 131, 121).onlyIf(manipulator::beamBroken).withTimeout(1)));
+                                .andThen(
+                                        LEDCommands.blink(leds, 248, 131, 121)
+                                                .onlyIf(manipulator::beamBroken)
+                                                .withTimeout(1)));
 
         // please do what you have to do with this, i just kept this here, i didn't know what it was
         // This should be simplified, I do not know why there are two command structures bound to
@@ -442,7 +441,9 @@ public class RobotContainer {
                                                 .andThen(
                                                         ManipulatorCommands.algaeIntake(
                                                                 manipulator))
-                                                .andThen(LEDCommands.blink(leds, 0, 128, 128).withTimeout(1)),
+                                                .andThen(
+                                                        LEDCommands.blink(leds, 0, 128, 128)
+                                                                .withTimeout(1)),
                                         ElevatorCommands.setElevatorLevel(
                                                 elevator, ElevatorLevel.L2),
                                         () -> algaeMode)
@@ -466,7 +467,9 @@ public class RobotContainer {
                                                 .andThen(
                                                         ManipulatorCommands.algaeIntake(
                                                                 manipulator))
-                                                .andThen(LEDCommands.blink(leds, 0, 128, 128).withTimeout(1)),
+                                                .andThen(
+                                                        LEDCommands.blink(leds, 0, 128, 128)
+                                                                .withTimeout(1)),
                                         ElevatorCommands.setElevatorLevel(
                                                 elevator, ElevatorLevel.L4),
                                         () -> algaeMode)
@@ -477,13 +480,21 @@ public class RobotContainer {
         reactions
                 .isAutonomous
                 .and(reactions.isEnabled)
-                .whileTrue(LEDCommands.flameCommand(leds).ignoringDisable(true));
+                .whileTrue(
+                        new InstantCommand(
+                                () -> LEDCommands.flameCommand(leds).ignoringDisable(true)));
         reactions
                 .isTeleop
                 .and(reactions.isEnabled)
-                .whileTrue(LEDCommands.enabled(leds, () -> algaeMode).ignoringDisable(true));
-        reactions.algaeAligned.whileTrue(LEDCommands.aligned(leds).ignoringDisable(true));
-        reactions.reefAligned.whileTrue(LEDCommands.aligned(leds).ignoringDisable(true));
+                .whileTrue(
+                        new InstantCommand(
+                                () ->
+                                        LEDCommands.enabled(leds, () -> algaeMode)
+                                                .ignoringDisable(true)));
+        reactions.algaeAligned.whileTrue(
+                new InstantCommand(() -> LEDCommands.aligned(leds).ignoringDisable(true)));
+        reactions.reefAligned.whileTrue(
+                new InstantCommand(() -> LEDCommands.aligned(leds).ignoringDisable(true)));
     }
 
     /**
@@ -618,7 +629,6 @@ public class RobotContainer {
         Trigger isAutonomous;
         Trigger isTeleop;
         Trigger isEnabled;
-
 
         public ReactionObjects(
                 Trigger algaeAligned,

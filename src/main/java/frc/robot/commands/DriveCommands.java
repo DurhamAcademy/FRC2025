@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-
-import frc.robot.subsystems.lights.LEDs;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
@@ -535,7 +533,8 @@ public class DriveCommands {
                                     // true if distance > threshold distance (m)
                                     return distance > .5;
                                 }))
-                .until(drive::isAlignedToLocation).andThen();
+                .until(drive::isAlignedToLocation)
+                .andThen();
     }
 
     /**
