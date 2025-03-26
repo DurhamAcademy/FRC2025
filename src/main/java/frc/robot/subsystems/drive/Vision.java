@@ -84,7 +84,6 @@ public class Vision extends SubsystemBase {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         for (var change : camera.getAllUnreadResults()) {
             visionEst = photonEstimator.update(change);
-            // updateEstimationStdDevs(visionEst, change.getTargets(), photonEstimator);
         }
         return visionEst;
     }
