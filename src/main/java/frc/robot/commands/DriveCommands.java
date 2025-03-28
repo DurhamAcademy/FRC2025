@@ -378,7 +378,7 @@ public class DriveCommands {
             locationPose = drive.getProcessor();
         }
 
-        double shiftDistance = DriveConstants.robotWidth - .28;
+        double shiftDistance = DriveConstants.robotWidth - .24;
         Rotation2d shiftRotation =
                 Rotation2d.fromDegrees(
                         locationPose.getRotation().getDegrees()
