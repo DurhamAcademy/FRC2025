@@ -68,14 +68,18 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
 
-    // inverse axes
+    // overrides
     private boolean invertX = true;
     private boolean invertY = true;
     private double xDirect = 1;
     private double yDirect = 1;
-
-    public boolean algaeMode = true;
     public boolean overrideSafeElevator = false;
+
+    // states
+    public boolean algaeMode = true;
+    public ElevatorLevel coralElevatorLevel = ElevatorLevel.INTAKE;
+    public ElevatorLevel algaeElevatorLevel = ElevatorLevel.ZERO;
+
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -351,29 +355,28 @@ public class RobotContainer {
                                         ElevatorCommands.zeroElevatorForCoral(elevator),
                                         () -> algaeMode)
                                 .onlyIf(safeToMoveElevator));
+
         operatorController
                 .povLeft()
                 .onTrue(
-                        Commands.either(
-                                        ElevatorCommands.setElevatorLevel(
-                                                elevator, ElevatorLevel.NET),
-                                        ElevatorCommands.setElevatorLevel(
-                                                elevator, ElevatorLevel.L1),
-                                        () -> algaeMode)
-                                .onlyIf(safeToMoveElevator));
+                        Commands.parallel(
+                                Commands.runOnce(() -> algaeElevatorLevel = ElevatorLevel.NET),
+                                Commands.runOnce(() -> coralElevatorLevel = ElevatorLevel.L1)
+                        )
+                );
+
+        // todo ask about how we want to handle algae (position based like lynk? operator control?, left bumper + operator setpoint?)
+        // todo also ask about algae sensor on manipulator
         operatorController
                 .povDown()
                 .onTrue(
-                        Commands.either(
-                                        ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL)
-                                                .andThen(
-                                                        ManipulatorCommands.algaeIntake(
-                                                                manipulator)),
-                                        ElevatorCommands.setElevatorLevel(
-                                                elevator, ElevatorLevel.L2),
-                                        () -> algaeMode)
-                                .onlyIf(safeToMoveElevator));
+                        Commands.parallel(
+                                Commands.runOnce(() -> algaeElevatorLevel = ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                Commands.runOnce(() -> coralElevatorLevel = ElevatorLevel.L2)
+                        )
+                );
+
+
         operatorController
                 .povRight()
                 .onTrue(
