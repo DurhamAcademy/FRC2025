@@ -47,7 +47,14 @@ public class Vision extends SubsystemBase {
         this.poseEstimator = poseEstimator;
 
         // cameras on the front should start with "front"
-        cameraTransforms.put("front-camera", new Transform3d(0, 0, 0, new Rotation3d(0, 0, 0)));
+        cameraTransforms.put(
+                "front-left-camera", new Transform3d(0, 0, 0, new Rotation3d(0, 0.0, 0)));
+        //                new Transform3d(
+        //                        0.212725, 0.29845, 0.2413, new Rotation3d(0, 102.5 - 90, 90 -
+        // 26.247)));
+        /*cameraTransforms.put(
+        "front-right-camera",
+        new Transform3d(-0.29845, 0.212725, 0.2413, new Rotation3d(0, 102.5, 26.247)));*/
 
         AprilTagFieldLayout aprilTagFieldLayout =
                 AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
@@ -158,6 +165,7 @@ public class Vision extends SubsystemBase {
             if (estimatedPose.isPresent()) {
                 //                Logger.recordOutput("Vision/cameraOutput", true);
                 Pose2d pose = estimatedPose.get().estimatedPose.toPose2d();
+                Logger.recordOutput("Vision/pose3d", estimatedPose.get().estimatedPose);
                 Logger.recordOutput("Vision/cameraOutput", pose);
                 double timestamp = estimatedPose.get().timestampSeconds;
                 Matrix<N3, N1> stdDevs =
