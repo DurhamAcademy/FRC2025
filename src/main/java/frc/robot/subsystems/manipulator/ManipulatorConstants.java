@@ -10,7 +10,7 @@ public class ManipulatorConstants {
     public static final double manipulatorGearRatio = 1;
 
     // Manipulator PID Configuration
-    public static final double manipulatorKp = 1;
+    public static final double manipulatorKp = 0.1;
     public static final double manipulatorKi = 0.0;
     public static final double manipulatorKd = 0.0;
 

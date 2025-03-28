@@ -32,7 +32,8 @@ public class ManipulatorCommands {
     }
 
     public static Command coralEject(Manipulator manipulator) {
-        return normalCoralEject(manipulator);
+        // return normalCoralEject(manipulator);
+        return Commands.none();
     }
 
     public static Command algaeEject(Manipulator manipulator, Elevator elevator) {
@@ -82,20 +83,21 @@ public class ManipulatorCommands {
         return sequence(
                 runManipulator(manipulator, -0.6).until(manipulator::beamBroken),
                 // runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
-                stopManipulator(manipulator),
-                Commands.runOnce(manipulator::lockToCurrentPosition));
+                stopManipulator(manipulator)
+                /*Commands.runOnce(manipulator::lockToCurrentPosition)*/ );
     }
 
     public static Command pidPullCoralIntoManipulator(Manipulator manipulator) {
         return sequence(
                 Commands.runOnce(manipulator::setIntakingRollerPosition),
                 Commands.run(manipulator::updateProfile, manipulator)
-                        .until(manipulator::isAtSetpoint),
-                Commands.runOnce(manipulator::lockToCurrentPosition)
-        );
+                        .until(manipulator::isAtSetpoint)
+                /*Commands.runOnce(manipulator::lockToCurrentPosition)*/ );
     }
 
     public static Command runManipulatorPid(Manipulator manipulator) {
-        return Commands.run(manipulator::updateProfile, manipulator);
+        return Commands.waitUntil((() -> manipulator.getVelocity() == 0.0))
+                .andThen(Commands.runOnce(manipulator::lockToCurrentPosition))
+                .andThen(Commands.run(manipulator::updateProfile, manipulator).repeatedly());
     }
 }

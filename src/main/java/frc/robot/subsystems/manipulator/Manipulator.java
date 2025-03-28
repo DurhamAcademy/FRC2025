@@ -22,13 +22,16 @@ public class Manipulator extends SubsystemBase {
     }
 
     public void lockToCurrentPosition() {
-        rollerHoldPositionRad = inputs.rollerRPosRad;
-        setGoalState(rollerHoldPositionRad, 0);
+        io.setGoalStateToCurrentPosition();
     }
 
     public void setIntakingRollerPosition() {
         rollerHoldPositionRad = inputs.rollerRPosRad + INTAKE_NUM_ROTATIONS;
         setGoalState(rollerHoldPositionRad, 0);
+    }
+
+    public double getVelocity() {
+        return inputs.rollerRVelocityRadPerSec;
     }
 
     public boolean isAtSetpoint() {

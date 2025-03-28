@@ -4,13 +4,10 @@ import com.revrobotics.spark.*;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.DigitalInput;
+import org.littletonrobotics.junction.Logger;
 
 public class ManipulatorIOSparkFlex implements ManipulatorIO {
     private final SparkFlex primaryRollerR =
@@ -56,6 +53,15 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
                         ManipulatorConstants.manipulatorKp,
                         ManipulatorConstants.manipulatorKi,
                         ManipulatorConstants.manipulatorKd);
+        resetConfig
+                .encoder
+                .positionConversionFactor(2 * Math.PI)
+                .velocityConversionFactor(2 * Math.PI / 60);
+        followerConfig
+                .encoder
+                .positionConversionFactor(2 * Math.PI)
+                .velocityConversionFactor(2 * Math.PI / 60);
+        followerConfig.follow(primaryRollerR, true);
 
         configureMotors();
 
@@ -77,9 +83,6 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
 
     private void configureMotors() {
         primaryRollerR.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
-        followRollerL.configure(resetConfig, SparkBase.ResetMode.kResetSafeParameters, null);
-
-        followerConfig.follow(primaryRollerR, true);
         followRollerL.configure(followerConfig, null, null);
     }
 
@@ -88,28 +91,21 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         inputs.rollerLAppliedVolts =
                 followRollerL.getAppliedOutput() * followRollerL.getBusVoltage();
         inputs.rollerLCurrentAmps = followRollerL.getOutputCurrent();
-        inputs.rollerLVelocityRadPerSec =
-                Units.rotationsPerMinuteToRadiansPerSecond(
-                        followRollerL.getExternalEncoder().getVelocity());
-        inputs.rollerLPosRad = followRollerL.getExternalEncoder().getPosition();
+        inputs.rollerLVelocityRadPerSec = followRollerL.getEncoder().getVelocity();
+        inputs.rollerLPosRad = followRollerL.getEncoder().getPosition();
 
         inputs.rollerRTemperature = primaryRollerR.getMotorTemperature();
         inputs.rollerRAppliedVolts =
                 primaryRollerR.getAppliedOutput() * primaryRollerR.getBusVoltage();
         inputs.rollerRCurrentAmps = primaryRollerR.getOutputCurrent();
-        inputs.rollerRVelocityRadPerSec =
-                Units.rotationsPerMinuteToRadiansPerSecond(
-                        primaryRollerR.getExternalEncoder().getVelocity());
-        inputs.rollerRPosRad = followRollerL.getExternalEncoder().getPosition();
-        inputs.isAtSetpoint = Math.abs(inputs.rollerRPosRad - goalState.position) < 0.1
-                && Math.abs(inputs.rollerRVelocityRadPerSec) < 0.1;
-
-        currentState.position = inputs.rollerRPosRad;
-        currentState.velocity = inputs.rollerRVelocityRadPerSec;
+        inputs.rollerRVelocityRadPerSec = primaryRollerR.getEncoder().getVelocity();
+        inputs.rollerRPosRad = followRollerL.getEncoder().getPosition();
+        inputs.isAtSetpoint =
+                Math.abs(inputs.rollerRPosRad - goalState.position) < 0.1
+                        && Math.abs(inputs.rollerRVelocityRadPerSec) < 0.1;
 
         // inputs.beamObstructed = beam.get();
-        inputs.sensorDistance =
-                distanceSensor.getVoltage();
+        inputs.sensorDistance = distanceSensor.getVoltage();
     }
 
     /** Set intake wheel percent -1 to 1 */
@@ -126,17 +122,34 @@ public class ManipulatorIOSparkFlex implements ManipulatorIO {
         primaryRollerR.set(0);
     }
 
+    public void setGoalStateToCurrentPosition() {
+        goalState.position = primaryRollerR.getEncoder().getPosition();
+        goalState.velocity = 0;
+
+        currentState.position = primaryRollerR.getEncoder().getPosition();
+        currentState.velocity = primaryRollerR.getEncoder().getVelocity();
+    }
+
     public void setGoalState(double position, double velocity) {
         goalState.position = position;
         goalState.velocity = velocity;
     }
 
     public void updateProfile() {
-        // Calculate the next state (position and velocity)
-        currentState = profile.calculate(0.02, currentState, goalState);
-        double ffVolts = feedForward.calculate(currentState.velocity);
-
-        // Use the profiler's position as the target for the motor controller
-        primaryController.setReference( currentState.position, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVolts);
+        primaryController.setReference(goalState.position, SparkBase.ControlType.kPosition);
     }
+    //        // Calculate the next state (position and velocity)
+    //        currentState = profile.calculate(0.02, currentState, goalState);
+    //        double ffVolts = feedForward.calculate(currentState.velocity);
+    //        ffVolts = 0.0;
+    //        Logger.recordOutput("Manipulator/currentStatePosition", currentState.position);
+    //        Logger.recordOutput("Manipulator/goalStatePosition", goalState.position);
+    //
+    //        // Use the profiler's position as the target for the motor controller
+    //        primaryController.setReference(
+    //                currentState.position,
+    //                SparkBase.ControlType.kPosition,
+    //                ClosedLoopSlot.kSlot0,
+    //                ffVolts);
+    //    }
 }

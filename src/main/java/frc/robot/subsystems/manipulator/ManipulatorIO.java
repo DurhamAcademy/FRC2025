@@ -29,6 +29,8 @@ public interface ManipulatorIO {
 
     public default void setRollerVoltage(double volts) {}
 
+    public default void setGoalStateToCurrentPosition() {}
+
     public default void setGoalState(double position, double velocity) {}
 
     public default void updateProfile() {}
