@@ -8,6 +8,7 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.*;
 import org.littletonrobotics.junction.Logger;
@@ -48,13 +49,32 @@ public class Vision extends SubsystemBase {
 
         // cameras on the front should start with "front"
         cameraTransforms.put(
-                "front-left-camera", new Transform3d(0, 0, 0, new Rotation3d(0, 0.0, 0)));
+                "front-left-camera",
+                new Transform3d(
+                        0.212725,
+                        0.29845,
+                        0.2413,
+                        new Rotation3d(
+                                0,
+                                Units.degreesToRadians(-(102.5 - 90)),
+                                Units.degreesToRadians(-26.247))));
         //                new Transform3d(
         //                        0.212725, 0.29845, 0.2413, new Rotation3d(0, 102.5 - 90, 90 -
         // 26.247)));
         /*cameraTransforms.put(
         "front-right-camera",
         new Transform3d(-0.29845, 0.212725, 0.2413, new Rotation3d(0, 102.5, 26.247)));*/
+
+        cameraTransforms.put(
+                "front-right-camera",
+                new Transform3d(
+                        0.29845,
+                        -0.212725,
+                        0.2413,
+                        new Rotation3d(
+                                0,
+                                Units.degreesToRadians(-(102.5 - 90)),
+                                Units.degreesToRadians(26.247))));
 
         AprilTagFieldLayout aprilTagFieldLayout =
                 AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
@@ -191,5 +211,36 @@ public class Vision extends SubsystemBase {
     @Override
     public void periodic() {
         updateEstimatedPose(); // use camera data to estimate position
+        Rotation3d rotation = new Rotation3d();
+
+        Pose3d pose =
+                new Pose3d(
+                        poseEstimator.getEstimatedPosition().getX(),
+                        poseEstimator.getEstimatedPosition().getY(),
+                        0.0,
+                        rotation);
+
+        Transform3d cameraTransformL =
+                new Transform3d(
+                        0.29845,
+                        0.212725,
+                        0.2413,
+                        new Rotation3d(
+                                0,
+                                Units.degreesToRadians(-(102.5 - 90)),
+                                Units.degreesToRadians(-26.247)));
+
+        Transform3d cameraTransformR =
+                new Transform3d(
+                        0.29845,
+                        -0.212725,
+                        0.2413,
+                        new Rotation3d(
+                                0,
+                                Units.degreesToRadians(-(102.5 - 90)),
+                                Units.degreesToRadians(26.247)));
+
+        Logger.recordOutput("Vision/cameraTransformLeft", pose.transformBy(cameraTransformL));
+        Logger.recordOutput("Vision/cameraTransformRight", pose.transformBy(cameraTransformR));
     }
 }
