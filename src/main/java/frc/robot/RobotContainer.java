@@ -294,7 +294,7 @@ public class RobotContainer {
 
         leds.setDefaultCommand(
                 Commands.either(
-                                LEDCommands.enabled(leds, () -> algaeMode),
+                                LEDCommands.enabled(leds, algaeMode),
                                 LEDCommands.disabled(leds),
                                 RobotState::isEnabled)
                         .ignoringDisable(true));

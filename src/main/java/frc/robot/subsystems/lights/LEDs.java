@@ -26,6 +26,7 @@ public class LEDs extends SubsystemBase {
             for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
                 candle.clearAnimation(i);
             }
+            candle.setLEDs(0, 0, 255); // Blue to confirm initialization
         }
     }
 
