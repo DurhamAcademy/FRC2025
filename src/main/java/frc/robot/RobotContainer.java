@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
@@ -294,7 +293,7 @@ public class RobotContainer {
 
         leds.setDefaultCommand(
                 Commands.either(
-                                LEDCommands.enabled(leds, algaeMode),
+                                LEDCommands.enabled(leds, () -> algaeMode),
                                 LEDCommands.disabled(leds),
                                 RobotState::isEnabled)
                         .ignoringDisable(true));
@@ -480,21 +479,13 @@ public class RobotContainer {
         reactions
                 .isAutonomous
                 .and(reactions.isEnabled)
-                .whileTrue(
-                        new InstantCommand(
-                                () -> LEDCommands.flameCommand(leds).ignoringDisable(true)));
+                .whileTrue(LEDCommands.flameCommand(leds).ignoringDisable(true));
         reactions
                 .isTeleop
                 .and(reactions.isEnabled)
-                .whileTrue(
-                        new InstantCommand(
-                                () ->
-                                        LEDCommands.enabled(leds, () -> algaeMode)
-                                                .ignoringDisable(true)));
-        reactions.algaeAligned.whileTrue(
-                new InstantCommand(() -> LEDCommands.aligned(leds).ignoringDisable(true)));
-        reactions.reefAligned.whileTrue(
-                new InstantCommand(() -> LEDCommands.aligned(leds).ignoringDisable(true)));
+                .whileTrue(LEDCommands.enabled(leds, () -> algaeMode).ignoringDisable(true));
+        reactions.algaeAligned.whileTrue(LEDCommands.aligned(leds).ignoringDisable(true));
+        reactions.reefAligned.whileTrue(LEDCommands.aligned(leds).ignoringDisable(true));
     }
 
     /**
