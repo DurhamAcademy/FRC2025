@@ -310,9 +310,7 @@ public class RobotContainer {
                                                         () ->
                                                                 ElevatorCommands.setElevatorLevel(
                                                                         elevator, queuedLevel)),
-
-                                                Commands.runOnce(
-                                                        () -> currentLevel = queuedLevel))
+                                                Commands.runOnce(() -> currentLevel = queuedLevel))
                                         .onlyIf(safeToMoveElevator),
                                 () -> queuedLevel == currentLevel));
 
