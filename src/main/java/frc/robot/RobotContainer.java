@@ -475,6 +475,16 @@ public class RobotContainer {
         drive.updateTargetDashboardVisualization(drive.getTargetAlgae().ordinal());
 
         SmartDashboard.putData(
+                "Processor Angle",
+                builder -> {
+                    builder.setSmartDashboardType("Double");
+                    builder.addDoubleProperty(
+                            "Angle",
+                            () -> WristConstants.PROCESSOR,
+                            val -> WristConstants.PROCESSOR = val);
+                });
+
+        SmartDashboard.putData(
                 "Override",
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
