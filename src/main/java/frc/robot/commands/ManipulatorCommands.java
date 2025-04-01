@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.manipulator.Manipulator;
+import frc.robot.subsystems.manipulator.ManipulatorConstants;
 
 public class ManipulatorCommands {
     public double secondForwardVolts = 0.75;
@@ -47,11 +48,11 @@ public class ManipulatorCommands {
     }
 
     public static Command netEject(Manipulator manipulator) {
-        return eject(manipulator, 4);
+        return eject(manipulator, ManipulatorConstants.netEjectVoltage);
     }
 
     public static Command processorEject(Manipulator manipulator) {
-        return runManipulator(manipulator, 1);
+        return runManipulator(manipulator, ManipulatorConstants.processorEjectVoltage);
     }
 
     // eject at a low voltage

@@ -475,6 +475,20 @@ public class RobotContainer {
         drive.updateTargetDashboardVisualization(drive.getTargetAlgae().ordinal());
 
         SmartDashboard.putData(
+                "Ejection voltages",
+                builder -> {
+                    builder.setSmartDashboardType("Integer");
+                    builder.addIntegerProperty(
+                            "Net Ejection Voltage",
+                            () -> ManipulatorConstants.netEjectVoltage,
+                            val -> ManipulatorConstants.netEjectVoltage = (int) val);
+                    builder.addIntegerProperty(
+                            "Processor Ejection Voltage",
+                            () -> ManipulatorConstants.processorEjectVoltage,
+                            val -> ManipulatorConstants.processorEjectVoltage = (int) val);
+                });
+
+        SmartDashboard.putData(
                 "Processor Angle",
                 builder -> {
                     builder.setSmartDashboardType("Double");
