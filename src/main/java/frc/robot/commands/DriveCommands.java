@@ -378,7 +378,7 @@ public class DriveCommands {
             locationPose = drive.getProcessor();
         }
 
-        double shiftDistance = DriveConstants.robotWidth - .24;
+        double shiftDistance = DriveConstants.robotWidth - .26;
         Rotation2d shiftRotation =
                 Rotation2d.fromDegrees(
                         locationPose.getRotation().getDegrees()
@@ -453,8 +453,8 @@ public class DriveCommands {
                 new HolonomicDriveController(
                         // a value in the kp param is how many meters the robot should adjust by, if
                         // off by a meter
-                        new PIDController(1, 0, 0),
-                        new PIDController(1, 0, 0),
+                        new PIDController(2, 0, 0),
+                        new PIDController(2, 0, 0),
                         new ProfiledPIDController(
                                 // max velocity of 1 rotation/s
                                 1,
@@ -482,7 +482,7 @@ public class DriveCommands {
                                                     - goalPose.getRotation().getDegrees());
 
                             // only run if not on target
-                            if (distance > 0.05 || rotationError > 2.0) {
+                            if (distance > 0.025 || rotationError > 1.0) {
                                 // get speeds to move to goal pose
                                 ChassisSpeeds speeds =
                                         holonomicDriveController.calculate(
@@ -531,7 +531,7 @@ public class DriveCommands {
                                                     .getDistance(targetPose.getTranslation());
 
                                     // true if distance > threshold distance (m)
-                                    return distance > .5;
+                                    return distance > 1;
                                 }))
                 .until(drive::isAlignedToLocation);
     }
