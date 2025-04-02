@@ -179,6 +179,12 @@ public class Vision extends SubsystemBase {
                 // skip camera because it's not on the front
                 continue;
             }*/
+            if (!DriveConstants.frontLeftCameraEnabled && camera.getName().contains("left")) {
+                continue;
+            }
+            if (!DriveConstants.frontRightCameraEnabled && camera.getName().contains("right")) {
+                continue;
+            }
             PhotonPoseEstimator photonPoseEstimator = cameraPoseEstimators.get(camera);
             Optional<EstimatedRobotPose> estimatedPose =
                     getEstimatedGlobalPose(camera, photonPoseEstimator);
