@@ -295,7 +295,7 @@ public class RobotContainer {
                 .onFalse(stopManipulator);
 
         driverController
-                .a()
+                .leftBumper()
                 .and(() -> !algaeMode)
                 .onTrue(
                         Commands.either(
@@ -306,13 +306,9 @@ public class RobotContainer {
                                                         () -> currentLevel = ElevatorLevel.INTAKE))
                                         .onlyIf(safeToMoveElevator),
                                 Commands.parallel(
-                                                Commands.runOnce(
-                                                        () ->
-                                                                ElevatorCommands.setElevatorLevel(
-                                                                        elevator, queuedLevel)),
-
-                                                Commands.runOnce(
-                                                        () -> currentLevel = queuedLevel))
+                                                ElevatorCommands.setElevatorLevel(
+                                                        elevator, () -> queuedLevel),
+                                                Commands.runOnce(() -> currentLevel = queuedLevel))
                                         .onlyIf(safeToMoveElevator),
                                 () -> queuedLevel == currentLevel));
 
@@ -404,7 +400,7 @@ public class RobotContainer {
                                 () -> algaeMode));
 
         operatorController
-                .x()
+                .povRight()
                 .onTrue(
                         Commands.either(
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.PROCESSOR)
