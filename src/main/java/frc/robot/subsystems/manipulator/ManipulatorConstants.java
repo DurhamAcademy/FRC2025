@@ -8,8 +8,8 @@ public class ManipulatorConstants {
     public static final int manipulatorBeamBrakePort = 7;
     public static final int manipulatorDistanceSensorPort = 3;
 
-    public static int netEjectVoltage = 4;
-    public static int processorEjectVoltage = 1;
+    public static double netEjectVoltage = 4;
+    public static double processorEjectVoltage = 1;
 
     // the gear ratio of the gear box
     public static final double manipulatorGearRatio = 1;
