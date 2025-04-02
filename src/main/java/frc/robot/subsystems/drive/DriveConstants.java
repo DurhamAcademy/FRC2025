@@ -25,7 +25,7 @@ import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
 public class DriveConstants {
-    //vision constants bc im to lazy to figure out how to make it work individally
+    // vision constants bc im to lazy to figure out how to make it work individally
     public static boolean frontLeftCameraEnabled = true;
     public static boolean frontRightCameraEnabled = true;
     // update max speed meters per sec
