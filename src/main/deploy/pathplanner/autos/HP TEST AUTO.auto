@@ -13,7 +13,38 @@
         {
           "type": "named",
           "data": {
-            "name": "Run Intake"
+            "name": "Elevator Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Pull Coral into Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Pull Coral into Manipulator"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "New Path"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Manipulator Coral Ripple"
+                }
+              }
+            ]
           }
         }
       ]

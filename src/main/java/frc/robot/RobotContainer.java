@@ -266,6 +266,8 @@ public class RobotContainer {
                         .onlyIf(drive::isTipping)
                         .onlyIf(safeToMoveElevator)); // assuming that the robot has been zeroed
 
+        manipulator.setDefaultCommand(ManipulatorCommands.runManipulatorPid(manipulator));
+
         Command manipulatorEject = ManipulatorCommands.eject(manipulator, 1);
 
         Command setAlignLeft =
