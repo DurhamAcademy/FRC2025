@@ -7,7 +7,6 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.AnalogInput;
-import org.littletonrobotics.junction.Logger;
 
 public class ManipulatorIOSparkFlex implements ManipulatorIO {
     private final SparkFlex primaryRollerR =
