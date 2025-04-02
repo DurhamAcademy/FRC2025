@@ -457,7 +457,7 @@ public class DriveCommands {
                         new PIDController(2, 0, 0),
                         new ProfiledPIDController(
                                 // max velocity of 1 rotation/s
-                                1,
+                                2,
                                 0,
                                 0,
                                 // max velocity and max acceleration TODO check these values
@@ -531,7 +531,7 @@ public class DriveCommands {
                                                     .getDistance(targetPose.getTranslation());
 
                                     // true if distance > threshold distance (m)
-                                    return distance > 1;
+                                    return distance > 2.5;
                                 }))
                 .until(drive::isAlignedToLocation);
     }

@@ -56,7 +56,7 @@ public class ManipulatorCommands {
 
     // eject at a low voltage
     public static Command eject(Manipulator manipulator) {
-        return runManipulator(manipulator, 1);
+        return runManipulator(manipulator, 1.5);
     }
 
     // eject at a certain voltage could be useful if net is slightly off
@@ -81,7 +81,7 @@ public class ManipulatorCommands {
     public static Command coralIntakeRipple(Manipulator manipulator) {
         return sequence(
                 runManipulator(manipulator, -0.6).until(manipulator::beamBroken),
-                // runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
+                runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
                 stopManipulator(manipulator)
                 /*Commands.runOnce(manipulator::lockToCurrentPosition)*/ );
     }
