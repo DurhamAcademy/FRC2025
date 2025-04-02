@@ -510,8 +510,7 @@ public class RobotContainer {
                             "Front right camera",
                             () -> DriveConstants.frontRightCameraEnabled,
                             val -> DriveConstants.frontRightCameraEnabled = val);
-                }
-        );
+                });
 
         SmartDashboard.putData(
                 "Override",
