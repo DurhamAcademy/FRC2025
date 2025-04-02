@@ -300,8 +300,7 @@ public class RobotContainer {
                 .onTrue(
                         Commands.either(
                                 Commands.parallel(
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel.INTAKE),
+                                                ElevatorCommands.zeroElevatorForCoral(elevator),
                                                 Commands.runOnce(
                                                         () -> currentLevel = ElevatorLevel.INTAKE))
                                         .onlyIf(safeToMoveElevator),
