@@ -48,7 +48,7 @@ public class LEDCommands {
         if (leds == null) return none();
         if (leds.getCandle() == null) return idle(leds);
         CANdle candle = leds.getCandle();
-        return startEnd(
+        return runEnd(
                 () -> {
                     if (algaeMode.getAsBoolean()) {
                         candle.setLEDs(0, 128, 128, 0, 0, stripLength);
