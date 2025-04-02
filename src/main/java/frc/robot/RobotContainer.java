@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.IntakeCommands;
@@ -74,6 +75,7 @@ public class RobotContainer {
     private double yDirect = 1;
 
     public boolean algaeMode = true;
+    public boolean overrideSafeElevator = false;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -242,6 +244,9 @@ public class RobotContainer {
      * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
     private void configureButtonBindings() {
+        Trigger safeToMoveElevator =
+                new Trigger(() -> !intake.getBeamBroken() || overrideSafeElevator);
+
         // Default command, normal field-relative drive
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
@@ -250,11 +255,16 @@ public class RobotContainer {
                         () -> (xDirect * driverController.getLeftX()),
                         () -> -driverController.getRightX()));
 
+        manipulator.setDefaultCommand(
+                ManipulatorCommands.manipulatorDefaultHoldCoral(manipulator, elevator)
+                        .onlyIf(manipulator::beamBroken));
+
         // if elevator has zeroed, run tipping prevention code
         // if not, zero the elevator for the first time
         elevator.setDefaultCommand(
                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.ZERO)
-                        .onlyIf(drive::isTipping)); // assuming that the robot has been zeroed
+                        .onlyIf(drive::isTipping)
+                        .onlyIf(safeToMoveElevator)); // assuming that the robot has been zeroed
 
         manipulator.setDefaultCommand(ManipulatorCommands.runManipulatorPid(manipulator));
 
@@ -327,49 +337,68 @@ public class RobotContainer {
                         ManipulatorCommands.stopManipulator(manipulator)
                                 .andThen(IntakeCommands.stopIntake(intake)));
 
-        operatorController.a().onTrue(IntakeCommands.retryStuckIntake(intake, manipulator));
+        operatorController
+                .a()
+                .onTrue(
+                        IntakeCommands.stopIntake(intake)
+                                .alongWith(ManipulatorCommands.stopManipulator(manipulator))
+                                .andThen(IntakeCommands.retryStuckIntake(intake, manipulator)));
 
         // elevator
         operatorController
                 .start()
                 .onTrue(
                         Commands.either(
-                                ElevatorCommands.zeroElevatorForAlgae(elevator),
-                                ElevatorCommands.zeroElevatorForCoral(elevator),
-                                () -> algaeMode));
+                                        ElevatorCommands.zeroElevatorForAlgae(elevator),
+                                        ElevatorCommands.zeroElevatorForCoral(elevator),
+                                        () -> algaeMode)
+                                .onlyIf(safeToMoveElevator));
         operatorController
                 .povLeft()
                 .onTrue(
                         Commands.either(
-                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.NET),
-                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L1),
-                                () -> algaeMode));
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.NET),
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.L1),
+                                        () -> algaeMode)
+                                .onlyIf(safeToMoveElevator));
         operatorController
                 .povDown()
                 .onTrue(
                         Commands.either(
-                                ElevatorCommands.setElevatorLevel(
-                                                elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL)
-                                        .andThen(ManipulatorCommands.algaeIntake(manipulator)),
-                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L2),
-                                () -> algaeMode));
+                                        ElevatorCommands.setElevatorLevel(
+                                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL)
+                                                .andThen(
+                                                        ManipulatorCommands.algaeIntake(
+                                                                manipulator)),
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.L2),
+                                        () -> algaeMode)
+                                .onlyIf(safeToMoveElevator));
         operatorController
                 .povRight()
                 .onTrue(
                         Commands.either(
-                                ElevatorCommands.setElevatorLevel(
-                                        elevator, ElevatorLevel.PROCESSOR),
-                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L3),
-                                () -> algaeMode));
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.PROCESSOR),
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.L3),
+                                        () -> algaeMode)
+                                .onlyIf(safeToMoveElevator));
         operatorController
                 .povUp()
                 .onTrue(
                         Commands.either(
-                                ElevatorCommands.setElevatorLevel(
-                                                elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL)
-                                        .andThen(ManipulatorCommands.algaeIntake(manipulator)),
-                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4),
-                                () -> algaeMode));
+                                        ElevatorCommands.setElevatorLevel(
+                                                        elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL)
+                                                .andThen(
+                                                        ManipulatorCommands.algaeIntake(
+                                                                manipulator)),
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.L4),
+                                        () -> algaeMode)
+                                .onlyIf(safeToMoveElevator));
     }
 
     /**
@@ -461,6 +490,10 @@ public class RobotContainer {
                             "Anti-Tip",
                             () -> drive.overrideTipProtection,
                             val -> drive.overrideTipProtection = val);
+                    builder.addBooleanProperty(
+                            "Safe Elevator",
+                            () -> overrideSafeElevator,
+                            val -> overrideSafeElevator = val);
                 });
         SmartDashboard.putData(
                 "INVERT AXES",

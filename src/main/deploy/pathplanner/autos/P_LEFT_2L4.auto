@@ -57,27 +57,14 @@
                     }
                   ]
                 }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Run Intake"
-                      }
-                    }
-                  ]
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Pull Coral into Intake"
           }
         },
         {
@@ -91,9 +78,28 @@
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "Elevator L4"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Pull Coral into Manipulator"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Manipulator Coral Ripple"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator L4"
+                      }
+                    }
+                  ]
                 }
               }
             ]

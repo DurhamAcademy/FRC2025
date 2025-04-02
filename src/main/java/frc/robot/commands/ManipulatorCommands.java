@@ -32,8 +32,7 @@ public class ManipulatorCommands {
     }
 
     public static Command coralEject(Manipulator manipulator) {
-        // return normalCoralEject(manipulator);
-        return Commands.none();
+        return eject(manipulator);
     }
 
     public static Command algaeEject(Manipulator manipulator, Elevator elevator) {
@@ -76,7 +75,7 @@ public class ManipulatorCommands {
     }
 
     public static Command pullCoralIntoManipulator(Manipulator manipulator) {
-        return runManipulator(manipulator, 0.75).until(() -> !manipulator.beamBroken());
+        return runManipulator(manipulator, 0.4).until(() -> !manipulator.beamBroken());
     }
 
     public static Command coralIntakeRipple(Manipulator manipulator) {
@@ -99,5 +98,14 @@ public class ManipulatorCommands {
         return Commands.waitUntil((() -> manipulator.getVelocity() == 0.0))
                 .andThen(Commands.runOnce(manipulator::lockToCurrentPosition))
                 .andThen(Commands.run(manipulator::updateProfile, manipulator).repeatedly());
+    }
+
+    public static Command manipulatorDefaultHoldCoral(Manipulator manipulator, Elevator elevator) {
+        return Commands.either(
+                        runManipulator(manipulator, 0.5),
+                        runManipulator(manipulator, 0.32),
+                        () -> elevator.getWristAngle() > 0)
+                .until(() -> !manipulator.beamBroken())
+                .andThen(stopManipulator(manipulator));
     }
 }
