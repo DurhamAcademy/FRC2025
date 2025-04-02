@@ -400,7 +400,7 @@ public class RobotContainer {
                                 () -> algaeMode));
 
         operatorController
-                .x()
+                .povRight()
                 .onTrue(
                         Commands.either(
                                 ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.PROCESSOR)
