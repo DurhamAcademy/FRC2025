@@ -475,21 +475,6 @@ public class RobotContainer {
         drive.updateTargetDashboardVisualization(drive.getTargetAlgae().ordinal());
 
         SmartDashboard.putData(
-                "Enabled Cameras",
-                builder -> {
-                    builder.setSmartDashboardType("Boolean");
-                    builder.addBooleanProperty(
-                            "Front left camera",
-                            () -> DriveConstants.frontLeftCameraEnabled,
-                            val -> DriveConstants.frontLeftCameraEnabled = val);
-                    builder.addBooleanProperty(
-                            "Front right camera",
-                            () -> DriveConstants.frontRightCameraEnabled,
-                            val -> DriveConstants.frontRightCameraEnabled = val);
-                }
-        );
-
-        SmartDashboard.putData(
                 "Ejection voltages",
                 builder -> {
                     builder.setSmartDashboardType("Boolean");
