@@ -389,16 +389,18 @@ public class RobotContainer {
 
         operatorController
                 .povDown()
+                .and(() -> algaeMode)
                 .onTrue(
-                        Commands.either(
-                                Commands.parallel(
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator,
-                                                        ElevatorLevel.LOWER_ALGAE_REMOVAL),
-                                                ManipulatorCommands.algaeIntake(manipulator))
-                                        .onlyIf(safeToMoveElevator),
-                                Commands.runOnce(() -> queuedLevel = ElevatorLevel.L2),
-                                () -> algaeMode));
+                        Commands.parallel(
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
+                                        ManipulatorCommands.algaeIntake(manipulator))
+                                .onlyIf(safeToMoveElevator));
+
+        operatorController
+                .povDown()
+                .and(() -> !algaeMode)
+                .onTrue(Commands.runOnce(() -> queuedLevel = ElevatorLevel.L2));
 
         operatorController
                 .povRight()
@@ -411,16 +413,18 @@ public class RobotContainer {
 
         operatorController
                 .povUp()
+                .and(() -> algaeMode)
                 .onTrue(
-                        Commands.either(
-                                Commands.parallel(
-                                                ElevatorCommands.setElevatorLevel(
-                                                        elevator,
-                                                        ElevatorLevel.UPPER_ALGAE_REMOVAL),
-                                                ManipulatorCommands.algaeIntake(manipulator))
-                                        .onlyIf(safeToMoveElevator),
-                                Commands.runOnce(() -> queuedLevel = ElevatorLevel.L4),
-                                () -> algaeMode));
+                        Commands.parallel(
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                        ManipulatorCommands.algaeIntake(manipulator))
+                                .onlyIf(safeToMoveElevator));
+
+        operatorController
+                .povUp()
+                .and(() -> !algaeMode)
+                .onTrue(Commands.runOnce(() -> queuedLevel = ElevatorLevel.L4));
     }
 
     /**
