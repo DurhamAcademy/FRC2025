@@ -444,15 +444,7 @@ public class RobotContainer {
                 .povDown()
                 .and(() -> algaeMode)
                 .onTrue(
-                        Commands.either(
-                                        ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL)
-                                                .andThen(
-                                                        ManipulatorCommands.algaeIntake(
-                                                                manipulator)),
-//                                                .andThen(
-//                                                        LEDCommands.blink(leds, 0, 128, 128)
-//                                                                .withTimeout(1)),
+                        Commands.parallel(
                                         ElevatorCommands.setElevatorLevel(
                                                 elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL),
                                         ManipulatorCommands.algaeIntake(manipulator))
@@ -478,16 +470,8 @@ public class RobotContainer {
                 .onTrue(
                         Commands.parallel(
                                         ElevatorCommands.setElevatorLevel(
-                                                        elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL)
-                                                .andThen(
-                                                        ManipulatorCommands.algaeIntake(
-                                                                manipulator)),
-//                                                .andThen(
-//                                                        LEDCommands.blink(leds, 0, 128, 128)
-//                                                                .withTimeout(1)),
-                                        ElevatorCommands.setElevatorLevel(
-                                                elevator, ElevatorLevel.L4),
-                                        () -> algaeMode)
+                                                elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL),
+                                        ManipulatorCommands.algaeIntake(manipulator))
                                 .onlyIf(safeToMoveElevator));
 
         operatorController
