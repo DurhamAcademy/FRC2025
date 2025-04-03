@@ -21,11 +21,12 @@ public class IntakeCommands {
     public static Command backUpStuckIntake(Intake intake, Manipulator manipulator) {
         return new RepeatCommand(
                         sequence(
-                                runIntake(intake, -1.0).withTimeout(0.1),
+                                runIntake(intake, -1.0).repeatedly().withTimeout(0.3),
                                 parallel(
                                                 runIntake(intake, 3.0),
                                                 ManipulatorCommands.runManipulator(
                                                         manipulator, 1.5))
+                                        .repeatedly()
                                         .until(manipulator::beamBroken)
                                         .withTimeout(0.5)))
                 .until(manipulator::beamBroken); // Stop repeating when the coral passes through the
