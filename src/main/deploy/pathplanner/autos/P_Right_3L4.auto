@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Fast Right to E"
+                  "pathName": "Right to E"
                 }
               },
               {
@@ -59,7 +59,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "Fast E to HP"
+                        "pathName": "E to HP"
                       }
                     },
                     {
@@ -87,7 +87,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Fast HP to D"
+                  "pathName": "HP to D"
                 }
               },
               {
@@ -141,7 +141,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "Fast D to HP"
+                        "pathName": "D to HP"
                       }
                     },
                     {
@@ -169,7 +169,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Fast HP to C"
+                  "pathName": "HP to C"
                 }
               },
               {
