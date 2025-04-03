@@ -56,7 +56,7 @@ public class ManipulatorCommands {
 
     // eject at a low voltage
     public static Command eject(Manipulator manipulator) {
-        return runManipulator(manipulator, 1);
+        return runManipulator(manipulator, 1.5);
     }
 
     // eject at a certain voltage could be useful if net is slightly off
@@ -81,8 +81,23 @@ public class ManipulatorCommands {
     public static Command coralIntakeRipple(Manipulator manipulator) {
         return sequence(
                 runManipulator(manipulator, -0.6).until(manipulator::beamBroken),
-                runManipulator(manipulator, 0.25).until(() -> !manipulator.beamBroken()),
-                stopManipulator(manipulator));
+                runManipulator(manipulator, 0.3).until(() -> !manipulator.beamBroken()),
+                stopManipulator(manipulator)
+                /*Commands.runOnce(manipulator::lockToCurrentPosition)*/ );
+    }
+
+    public static Command pidPullCoralIntoManipulator(Manipulator manipulator) {
+        return sequence(
+                Commands.runOnce(manipulator::setIntakingRollerPosition),
+                Commands.run(manipulator::updateProfile, manipulator)
+                        .until(manipulator::isAtSetpoint)
+                /*Commands.runOnce(manipulator::lockToCurrentPosition)*/ );
+    }
+
+    public static Command runManipulatorPid(Manipulator manipulator) {
+        return Commands.waitUntil((() -> manipulator.getVelocity() == 0.0))
+                .andThen(Commands.runOnce(manipulator::lockToCurrentPosition))
+                .andThen(Commands.run(manipulator::updateProfile, manipulator).repeatedly());
     }
 
     public static Command manipulatorDefaultHoldCoral(Manipulator manipulator, Elevator elevator) {

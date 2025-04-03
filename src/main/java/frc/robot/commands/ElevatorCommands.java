@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorLevel;
+import java.util.function.Supplier;
 
 public class ElevatorCommands {
     // command to set the target height setpoints of the elevator subsystem
@@ -12,6 +13,15 @@ public class ElevatorCommands {
                 () -> {
                     elevator.setElevatorTargetHeight(level.heightInches);
                     elevator.setWristTargetAngle(level.angleRadians);
+                },
+                elevator);
+    }
+
+    public static Command setElevatorLevel(Elevator elevator, Supplier<ElevatorLevel> level) {
+        return Commands.runOnce(
+                () -> {
+                    elevator.setElevatorTargetHeight(level.get().heightInches);
+                    elevator.setWristTargetAngle(level.get().angleRadians);
                 },
                 elevator);
     }

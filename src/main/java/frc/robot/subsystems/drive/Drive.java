@@ -149,7 +149,7 @@ public class Drive extends SubsystemBase {
                                         Logger.recordOutput("Drive/SysIdState", state.toString())),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
-        vision = new Vision(gyroInputs, this);
+        vision = new Vision(poseEstimator);
     }
 
     @Override
