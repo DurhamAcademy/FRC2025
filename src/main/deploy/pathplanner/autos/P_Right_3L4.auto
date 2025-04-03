@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Right to E"
+                  "pathName": "Fast Right to E"
                 }
               },
               {
@@ -21,7 +21,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.5
+                        "waitTime": 0.25
                       }
                     },
                     {
@@ -59,7 +59,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "E to HP"
+                        "pathName": "Fast E to HP"
                       }
                     },
                     {
@@ -87,7 +87,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP to D"
+                  "pathName": "Fast HP to D"
                 }
               },
               {
@@ -141,7 +141,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "D to HP"
+                        "pathName": "Fast D to HP"
                       }
                     },
                     {
@@ -169,7 +169,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP to C"
+                  "pathName": "Fast HP to C"
                 }
               },
               {
