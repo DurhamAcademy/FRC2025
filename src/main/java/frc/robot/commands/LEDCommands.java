@@ -8,229 +8,107 @@ import static frc.robot.subsystems.lights.LEDs.stripLength;
 import com.ctre.phoenix.led.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.lights.LEDs;
+import java.util.function.BooleanSupplier;
 
 public class LEDCommands {
+
+    public static Command aligned(LEDs leds) {
+        if (leds == null) return none();
+        if (leds.getCandle() == null) return idle(leds);
+        CANdle candle = leds.getCandle();
+        return startEnd(
+                () -> {
+                    candle.animate(
+                            new StrobeAnimation(0, 255, 0, 0, 0.2, stripLength, candleLength));
+                },
+                () -> {
+                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
+                        candle.clearAnimation(i);
+                    }
+                },
+                leds);
+    }
+
+    public static Command blink(LEDs leds, int r, int g, int b) {
+        if (leds == null) return none();
+        if (leds.getCandle() == null) return idle(leds);
+        CANdle candle = leds.getCandle();
+        return startEnd(
+                () -> {
+                    candle.animate(new StrobeAnimation(r, g, b, 0, 0.5, stripLength, candleLength));
+                },
+                () -> {
+                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
+                        candle.clearAnimation(i);
+                    }
+                },
+                leds);
+    }
+
+    public static Command enabled(LEDs leds, BooleanSupplier algaeMode) {
+        if (leds == null) return none();
+        if (leds.getCandle() == null) return idle(leds);
+        CANdle candle = leds.getCandle();
+        return runEnd(
+                () -> {
+                    if (algaeMode.getAsBoolean()) {
+                        candle.setLEDs(0, 128, 128, 0, 0, stripLength);
+                    } else {
+                        candle.setLEDs(248, 131, 121, 0, 0, stripLength);
+                    }
+                },
+                () -> {
+                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++)
+                        candle.clearAnimation(i);
+                },
+                leds);
+    }
+
+    public static Command disabled(LEDs leds) {
+        if (leds == null) return none();
+        if (leds.getCandle() == null) return idle(leds);
+        CANdle candle = leds.getCandle();
+
+        return startEnd(
+                () ->
+                        candle.animate(
+                                new LarsonAnimation(
+                                        248,
+                                        131,
+                                        121,
+                                        0,
+                                        0.1,
+                                        stripLength,
+                                        LarsonAnimation.BounceMode.Center,
+                                        10,
+                                        candleLength)),
+                () -> {
+                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++)
+                        candle.clearAnimation(i);
+                },
+                leds);
+    }
+
+    public static Command flameCommand(LEDs leds) {
+        if (leds == null) return none();
+        if (leds.getCandle() == null) return idle(leds);
+        return flameCommand(leds, 0.5);
+    }
+
     public static Command flameCommand(LEDs leds, double brightness) {
         if (leds == null) return none();
+        if (leds.getCandle() == null) return idle(leds);
         CANdle candle = leds.getCandle();
-        if (candle == null) return idle(leds);
         return startEnd(
                 () -> {
                     candle.animate(new RgbFadeAnimation(1.0, 0.5, candleLength, 0));
                     candle.animate(
                             new FireAnimation(
-                                    brightness, 0, stripLength, 1, 0.5, false, candleLength),
-                            1);
-                    candle.animate(
-                            new FireAnimation(
-                                    brightness,
-                                    0,
-                                    stripLength,
-                                    1,
-                                    0.5,
-                                    true,
-                                    candleLength + stripLength),
-                            2);
-                    candle.animate(
-                            new FireAnimation(
-                                    brightness,
-                                    0,
-                                    stripLength,
-                                    1,
-                                    0.5,
-                                    false,
-                                    candleLength + stripLength * 2),
-                            3);
-                    candle.animate(
-                            new FireAnimation(
-                                    brightness,
-                                    0,
-                                    stripLength,
-                                    1,
-                                    0.5,
-                                    true,
-                                    candleLength + stripLength * 3),
-                            4);
+                                    brightness, 0.5, stripLength, 1, .5, false, candleLength));
                 },
                 () -> {
-                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
+                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++)
                         candle.clearAnimation(i);
-                    }
-                },
-                leds);
-    }
-
-    public static Command hasAlgae(LEDs leds, double brightness) {
-        if (leds == null) return none();
-        if (leds.getCandle() == null) return idle(leds);
-        CANdle candle = leds.getCandle();
-
-        return startEnd(
-                () -> {
-                    candle.animate(
-                            new LarsonAnimation(
-                                    255,
-                                    165,
-                                    0,
-                                    0,
-                                    0,
-                                    stripLength,
-                                    LarsonAnimation.BounceMode.Back,
-                                    stripLength,
-                                    candleLength),
-                            0);
-                    candle.animate(
-                            new LarsonAnimation(
-                                    255,
-                                    165,
-                                    0,
-                                    0,
-                                    0,
-                                    stripLength,
-                                    LarsonAnimation.BounceMode.Front,
-                                    stripLength,
-                                    candleLength + stripLength),
-                            1);
-                    candle.animate(
-                            new LarsonAnimation(
-                                    255,
-                                    165,
-                                    0,
-                                    0,
-                                    0,
-                                    stripLength,
-                                    LarsonAnimation.BounceMode.Back,
-                                    stripLength,
-                                    candleLength + stripLength * 2),
-                            2);
-                    candle.animate(
-                            new LarsonAnimation(
-                                    255,
-                                    165,
-                                    0,
-                                    0,
-                                    0,
-                                    stripLength,
-                                    LarsonAnimation.BounceMode.Front,
-                                    stripLength,
-                                    candleLength + stripLength * 3),
-                            3);
-                },
-                () -> {
-                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
-                        candle.clearAnimation(i);
-                    }
-                },
-                leds);
-    }
-
-    /**
-     * TODO tell me what to do for this
-     *
-     * @param leds
-     * @param brightness
-     * @return
-     */
-    public static Command aligned(LEDs leds, double brightness) {
-        if (leds == null) return none();
-        if (leds.getCandle() == null) return idle(leds);
-        CANdle candle = leds.getCandle();
-        return startEnd(
-                () -> {
-                    candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, 1), 0);
-                    candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, 1), 1);
-                    candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, 1), 2);
-                    candle.animate(new StrobeAnimation(0, 255, 0, 0, 0, 1), 3);
-                },
-                () -> {
-                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
-                        candle.clearAnimation(i);
-                    }
-                },
-                leds);
-    }
-
-    public static Command hasCoral(LEDs leds, double brightness) {
-        if (leds == null) return none();
-        if (leds.getCandle() == null) return idle(leds);
-        CANdle candle = leds.getCandle();
-
-        return startEnd(
-                () -> {
-                    candle.animate(
-                            new LarsonAnimation(
-                                    255,
-                                    192,
-                                    203,
-                                    0,
-                                    0,
-                                    stripLength,
-                                    LarsonAnimation.BounceMode.Back,
-                                    stripLength,
-                                    candleLength),
-                            0);
-                    candle.animate(
-                            new LarsonAnimation(
-                                    255,
-                                    192,
-                                    203,
-                                    0,
-                                    0,
-                                    stripLength,
-                                    LarsonAnimation.BounceMode.Front,
-                                    stripLength,
-                                    candleLength + stripLength),
-                            1);
-                    candle.animate(
-                            new LarsonAnimation(
-                                    255,
-                                    192,
-                                    203,
-                                    0,
-                                    0,
-                                    stripLength,
-                                    LarsonAnimation.BounceMode.Back,
-                                    stripLength,
-                                    candleLength + stripLength * 2),
-                            2);
-                    candle.animate(
-                            new LarsonAnimation(
-                                    255,
-                                    192,
-                                    203,
-                                    0,
-                                    0,
-                                    stripLength,
-                                    LarsonAnimation.BounceMode.Front,
-                                    stripLength,
-                                    candleLength + stripLength * 3),
-                            3);
-                },
-                () -> {
-                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
-                        candle.clearAnimation(i);
-                    }
-                },
-                leds);
-    }
-
-    public static Command ryanLandisBaurothTheUltimateKingHeIsMyEternalGoat(
-            LEDs leds, double brightness) {
-        if (leds == null) return none();
-        if (leds.getCandle() == null) return idle(leds);
-        CANdle candle = leds.getCandle();
-
-        return startEnd(
-                () -> {
-                    candle.animate(new RainbowAnimation(brightness, 0, 0, true, 0));
-                    candle.animate(new RainbowAnimation(brightness, 0, 0, false, 1));
-                    candle.animate(new RainbowAnimation(brightness, 0, 0, true, 2));
-                    candle.animate(new RainbowAnimation(brightness, 0, 0, false, 3));
-                },
-                () -> {
-                    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
-                        candle.clearAnimation(i);
-                    }
                 },
                 leds);
     }
