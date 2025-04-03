@@ -1,9 +1,11 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.manipulator.Manipulator;
 
@@ -14,6 +16,20 @@ public class IntakeCommands {
                         runIntake(intake, -1.0))
                 .withTimeout(0.1)
                 .andThen(fullCoralIntakeSequence(intake, manipulator));
+    }
+
+    public static Command backUpStuckIntake(Intake intake, Manipulator manipulator) {
+        return new RepeatCommand(
+                        sequence(
+                                runIntake(intake, -1.0).withTimeout(0.1),
+                                parallel(
+                                                runIntake(intake, 3.0),
+                                                ManipulatorCommands.runManipulator(
+                                                        manipulator, 1.5))
+                                        .until(manipulator::beamBroken)
+                                        .withTimeout(0.5)))
+                .until(manipulator::beamBroken); // Stop repeating when the coral passes through the
+        // intake
     }
 
     public static Command pullCoralThroughIntake(Intake intake, Manipulator manipulator) {

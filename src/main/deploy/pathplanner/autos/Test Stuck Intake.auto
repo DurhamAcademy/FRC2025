@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "HP TEST"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Elevator Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Coral with Retry"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Pull Coral into Manipulator"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Manipulator Coral Ripple"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

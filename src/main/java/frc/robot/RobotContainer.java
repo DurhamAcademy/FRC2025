@@ -12,6 +12,7 @@
 // GNU General Public License for more details.
 package frc.robot;
 
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static frc.robot.Constants.PosesOfAllHumanPlayerStations;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -233,9 +234,25 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "Pull Coral into Intake",
                 IntakeCommands.pullCoralThroughIntake(intake, manipulator));
+
         NamedCommands.registerCommand(
                 "Pull Coral into Manipulator",
                 ManipulatorCommands.pullCoralIntoManipulator(manipulator));
+
+        NamedCommands.registerCommand(
+                "Intake Coral with Retry",
+                sequence(
+                        IntakeCommands.pullCoralThroughIntake(intake, manipulator)
+                                .until(intake::getBeamBroken), // run until we first hit the beam
+                        IntakeCommands.pullCoralThroughIntake(intake, manipulator)
+                                .withTimeout(0.5), // now keep trying until we're either in the
+                        // manipulator or stuck
+                        Commands.either(
+                                IntakeCommands.backUpStuckIntake(
+                                        intake, manipulator), // retry if stuck
+                                Commands.none(), // don't do anything if normal intake
+                                intake::getBeamBroken)));
+
         NamedCommands.registerCommand(
                 "Manipulator Coral Ripple", ManipulatorCommands.coralIntakeRipple(manipulator));
     }
