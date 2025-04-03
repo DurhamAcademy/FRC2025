@@ -381,28 +381,28 @@ public class RobotContainer {
                         Commands.either(
                                         ManipulatorCommands.algaeIntake(manipulator),
                                         IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
-                                        () -> algaeMode)
-                                .andThen(LEDCommands.blink(leds, 0, 128, 128).withTimeout(1)));
+                                        () -> algaeMode));
+//                                .andThen(LEDCommands.blink(leds, 0, 128, 128).withTimeout(1)));
         operatorController
                 .rightTrigger()
                 .onTrue(
                         ManipulatorCommands.stopManipulator(manipulator)
-                                .andThen(IntakeCommands.stopIntake(intake))
-                                .andThen(
-                                        LEDCommands.blink(leds, 248, 131, 121)
-                                                .onlyIf(manipulator::beamBroken)
-                                                .withTimeout(1)));
+                                .andThen(IntakeCommands.stopIntake(intake)));
+//                                .andThen(
+//                                        LEDCommands.blink(leds, 248, 131, 121)
+//                                                .onlyIf(manipulator::beamBroken)
+//                                                .withTimeout(1)));
 
         operatorController
                 .a()
                 .onTrue(
                         IntakeCommands.stopIntake(intake)
                                 .alongWith(ManipulatorCommands.stopManipulator(manipulator))
-                                .andThen(IntakeCommands.retryStuckIntake(intake, manipulator))
-                                .andThen(
-                                        LEDCommands.blink(leds, 248, 131, 121)
-                                                .onlyIf(manipulator::beamBroken)
-                                                .withTimeout(1)));
+                                .andThen(IntakeCommands.retryStuckIntake(intake, manipulator)));
+//                                .andThen(
+////                                        LEDCommands.blink(leds, 248, 131, 121)
+////                                                .onlyIf(manipulator::beamBroken)
+////                                                .withTimeout(1)));
 
         // please do what you have to do with this, i just kept this here, i didn't know what it was
         // This should be simplified, I do not know why there are two command structures bound to
@@ -439,10 +439,10 @@ public class RobotContainer {
                                                         elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL)
                                                 .andThen(
                                                         ManipulatorCommands.algaeIntake(
-                                                                manipulator))
-                                                .andThen(
-                                                        LEDCommands.blink(leds, 0, 128, 128)
-                                                                .withTimeout(1)),
+                                                                manipulator)),
+//                                                .andThen(
+//                                                        LEDCommands.blink(leds, 0, 128, 128)
+//                                                                .withTimeout(1)),
                                         ElevatorCommands.setElevatorLevel(
                                                 elevator, ElevatorLevel.L2),
                                         () -> algaeMode)
@@ -465,10 +465,10 @@ public class RobotContainer {
                                                         elevator, ElevatorLevel.UPPER_ALGAE_REMOVAL)
                                                 .andThen(
                                                         ManipulatorCommands.algaeIntake(
-                                                                manipulator))
-                                                .andThen(
-                                                        LEDCommands.blink(leds, 0, 128, 128)
-                                                                .withTimeout(1)),
+                                                                manipulator)),
+//                                                .andThen(
+//                                                        LEDCommands.blink(leds, 0, 128, 128)
+//                                                                .withTimeout(1)),
                                         ElevatorCommands.setElevatorLevel(
                                                 elevator, ElevatorLevel.L4),
                                         () -> algaeMode)

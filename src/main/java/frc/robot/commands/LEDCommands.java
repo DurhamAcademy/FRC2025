@@ -18,7 +18,8 @@ public class LEDCommands {
         CANdle candle = leds.getCandle();
         return startEnd(
                 () -> {
-                    candle.animate(new StrobeAnimation(0, 255, 0, 0, 0.2, stripLength, candleLength));
+                    candle.animate(
+                            new StrobeAnimation(0, 255, 0, 0, 0.2, stripLength, candleLength));
                 },
                 () -> {
                     for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
