@@ -388,19 +388,20 @@ public class RobotContainer {
                 .leftTrigger()
                 .onTrue(
                         Commands.either(
-                                        ManipulatorCommands.algaeIntake(manipulator),
-                                        IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
-                                        () -> algaeMode));
-//                                .andThen(LEDCommands.blink(leds, 0, 128, 128).withTimeout(1)));
+                                ManipulatorCommands.algaeIntake(manipulator),
+                                IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
+                                () -> algaeMode));
+        //                                .andThen(LEDCommands.blink(leds, 0, 128,
+        // 128).withTimeout(1)));
         operatorController
                 .rightTrigger()
                 .onTrue(
                         ManipulatorCommands.stopManipulator(manipulator)
                                 .andThen(IntakeCommands.stopIntake(intake)));
-//                                .andThen(
-//                                        LEDCommands.blink(leds, 248, 131, 121)
-//                                                .onlyIf(manipulator::beamBroken)
-//                                                .withTimeout(1)));
+        //                                .andThen(
+        //                                        LEDCommands.blink(leds, 248, 131, 121)
+        //                                                .onlyIf(manipulator::beamBroken)
+        //                                                .withTimeout(1)));
 
         operatorController
                 .a()
@@ -408,10 +409,10 @@ public class RobotContainer {
                         IntakeCommands.stopIntake(intake)
                                 .alongWith(ManipulatorCommands.stopManipulator(manipulator))
                                 .andThen(IntakeCommands.retryStuckIntake(intake, manipulator)));
-//                                .andThen(
-////                                        LEDCommands.blink(leds, 248, 131, 121)
-////                                                .onlyIf(manipulator::beamBroken)
-////                                                .withTimeout(1)));
+        //                                .andThen(
+        ////                                        LEDCommands.blink(leds, 248, 131, 121)
+        ////                                                .onlyIf(manipulator::beamBroken)
+        ////                                                .withTimeout(1)));
 
         // please do what you have to do with this, i just kept this here, i didn't know what it was
         // This should be simplified, I do not know why there are two command structures bound to
