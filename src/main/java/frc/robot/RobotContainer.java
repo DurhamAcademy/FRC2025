@@ -477,7 +477,7 @@ public class RobotContainer {
         SmartDashboard.putData(
                 "Ejection voltages",
                 builder -> {
-                    builder.setSmartDashboardType("Boolean");
+                    builder.setSmartDashboardType("Double");
                     builder.addDoubleProperty(
                             "Net Ejection Voltage",
                             () -> ManipulatorConstants.netEjectVoltage,
