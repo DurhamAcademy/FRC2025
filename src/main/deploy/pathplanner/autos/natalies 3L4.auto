@@ -205,6 +205,31 @@
           "data": {
             "name": "Eject Coral"
           }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "L to HP"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator Intake"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 15.0
+                }
+              }
+            ]
+          }
         }
       ]
     }
