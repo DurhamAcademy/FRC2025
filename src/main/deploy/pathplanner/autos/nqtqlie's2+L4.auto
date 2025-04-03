@@ -74,7 +74,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Pull Coral into Intake"
+                  "name": "Intake Coral with Retry"
                 }
               }
             ]
@@ -87,7 +87,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP to K"
+                  "pathName": "HP to .5K"
                 }
               },
               {
@@ -105,14 +105,27 @@
                       "data": {
                         "name": "Manipulator Coral Ripple"
                       }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Elevator L4"
-                      }
                     }
                   ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": ".5K to K"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator L4"
                 }
               }
             ]
@@ -156,7 +169,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Pull Coral into Intake"
+                  "name": "Intake Coral with Retry"
                 }
               }
             ]
