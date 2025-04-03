@@ -227,8 +227,8 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "Eject Coral",
                 ManipulatorCommands.eject(manipulator, 1)
-                        .withTimeout(.75)
-                        .andThen(ManipulatorCommands.eject(manipulator, 0).withTimeout(.1)));
+                        .withTimeout(.5)
+                        .andThen(ManipulatorCommands.eject(manipulator, 0).withTimeout(.025)));
 
         NamedCommands.registerCommand(
                 "Pull Coral into Intake",
