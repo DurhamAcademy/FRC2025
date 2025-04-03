@@ -21,7 +21,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.25
+                        "waitTime": 0.15
                       }
                     },
                     {
@@ -74,7 +74,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Pull Coral into Intake"
+                  "name": "Intake Coral with Retry"
                 }
               }
             ]
@@ -156,7 +156,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Pull Coral into Intake"
+                  "name": "Intake Coral with Retry"
                 }
               }
             ]
