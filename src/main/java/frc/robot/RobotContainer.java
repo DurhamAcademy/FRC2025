@@ -371,16 +371,13 @@ public class RobotContainer {
 
         // OPERATOR CONTROLLER
 
-        operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
-
-        operatorController.rightBumper().onTrue(Commands.runOnce(() -> algaeMode = true));
-
         // algae / coral mode
         operatorController
                 .rightBumper()
                 .onTrue(
                         Commands.runOnce(() -> algaeMode = true)
                                 .alongWith(Commands.runOnce(() -> currentLevel = null)));
+
         operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
 
         // intake
@@ -391,17 +388,12 @@ public class RobotContainer {
                                 ManipulatorCommands.algaeIntake(manipulator),
                                 IntakeCommands.fullCoralIntakeSequence(intake, manipulator),
                                 () -> algaeMode));
-        //                                .andThen(LEDCommands.blink(leds, 0, 128,
-        // 128).withTimeout(1)));
+
         operatorController
                 .rightTrigger()
                 .onTrue(
                         ManipulatorCommands.stopManipulator(manipulator)
                                 .andThen(IntakeCommands.stopIntake(intake)));
-        //                                .andThen(
-        //                                        LEDCommands.blink(leds, 248, 131, 121)
-        //                                                .onlyIf(manipulator::beamBroken)
-        //                                                .withTimeout(1)));
 
         operatorController
                 .a()
@@ -409,18 +401,6 @@ public class RobotContainer {
                         IntakeCommands.stopIntake(intake)
                                 .alongWith(ManipulatorCommands.stopManipulator(manipulator))
                                 .andThen(IntakeCommands.retryStuckIntake(intake, manipulator)));
-        //                                .andThen(
-        ////                                        LEDCommands.blink(leds, 248, 131, 121)
-        ////                                                .onlyIf(manipulator::beamBroken)
-        ////                                                .withTimeout(1)));
-
-        // please do what you have to do with this, i just kept this here, i didn't know what it was
-        // This should be simplified, I do not know why there are two command structures bound to
-        // one button
-        driverController
-                .rightBumper()
-                .whileTrue(ManipulatorCommands.eject(manipulator, 1))
-                .onFalse(ManipulatorCommands.runManipulator(manipulator, 0));
 
         // elevator
         operatorController
