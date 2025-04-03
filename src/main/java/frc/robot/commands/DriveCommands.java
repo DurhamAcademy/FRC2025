@@ -533,8 +533,7 @@ public class DriveCommands {
                                     // true if distance > threshold distance (m)
                                     return distance > 2.5;
                                 }))
-                .until(drive::isAlignedToLocation)
-                .andThen();
+                .until(drive::isAlignedToLocation);
     }
 
     /**

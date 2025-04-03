@@ -126,16 +126,6 @@ public class RobotContainer {
 
                 leds = new LEDs();
 
-                // TODO: Vision SIM
-                //        vision = new Vision(
-                //                drive,
-                //                new VisionIOPhotonVisionSim(
-                //                        camera0Name, robotToCamera0,
-                // driveSimulation::getSimulatedDriveTrainPose),
-                //                new VisionIOPhotonVisionSim(
-                //                        camera1Name, robotToCamera1,
-                // driveSimulation::getSimulatedDriveTrainPose));
-
                 break;
 
             default:
