@@ -3,10 +3,10 @@
   "robotLength": 0.89535,
   "holonomicMode": true,
   "pathFolders": [
-    "Right",
     "Center",
+    "Left",
     "Mobility",
-    "Left"
+    "Right"
   ],
   "autoFolders": [
     "Mobility"
