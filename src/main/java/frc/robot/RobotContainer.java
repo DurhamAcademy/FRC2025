@@ -465,6 +465,16 @@ public class RobotContainer {
                 .povUp()
                 .and(() -> !algaeMode)
                 .onTrue(Commands.runOnce(() -> queuedLevel = ElevatorLevel.L4));
+
+        operatorController
+                .x()
+                .and(() -> algaeMode)
+                .onTrue(
+                        Commands.parallel(
+                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.LOLLIPOP_REMOVAL),
+                                ManipulatorCommands.algaeIntake(manipulator)
+                        ).onlyIf(safeToMoveElevator)
+                );
     }
 
     public void configureReactions() {

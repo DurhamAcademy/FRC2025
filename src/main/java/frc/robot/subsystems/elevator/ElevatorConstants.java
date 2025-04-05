@@ -30,6 +30,7 @@ public class ElevatorConstants {
     // elevator heights for algae removal
     public static final double LOWER_ALGAE_REMOVAL = 17;
     public static final double UPPER_ALGAE_REMOVAL = 33;
+    public static final double LOLLIPOP_REMOVAL = 0;
 
     // the distance between the floor and the bottom of the elevator
     public static final double elevatorBaseHeight = 4.750;
