@@ -19,7 +19,7 @@ public class LEDCommands {
         return startEnd(
                 () -> {
                     candle.animate(
-                            new StrobeAnimation(0, 255, 0, 0, 0.2, stripLength, candleLength));
+                            new StrobeAnimation(0, 255, 0, 0, 0.15, stripLength + candleLength));
                 },
                 () -> {
                     for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
@@ -35,7 +35,8 @@ public class LEDCommands {
         CANdle candle = leds.getCandle();
         return startEnd(
                 () -> {
-                    candle.animate(new StrobeAnimation(r, g, b, 0, 0.5, stripLength, candleLength));
+                    candle.animate(
+                            new SingleFadeAnimation(r, g, b, 0, 1, stripLength, candleLength));
                 },
                 () -> {
                     for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
@@ -52,9 +53,9 @@ public class LEDCommands {
         return runEnd(
                 () -> {
                     if (algaeMode.getAsBoolean()) {
-                        candle.setLEDs(0, 128, 128, 0, 0, stripLength);
+                        candle.setLEDs(0, 128, 128, 0, 0, stripLength + candleLength);
                     } else {
-                        candle.setLEDs(248, 131, 121, 0, 0, stripLength);
+                        candle.setLEDs(255, 105, 180, 0, 0, stripLength + candleLength);
                     }
                 },
                 () -> {
@@ -92,19 +93,19 @@ public class LEDCommands {
     public static Command flameCommand(LEDs leds) {
         if (leds == null) return none();
         if (leds.getCandle() == null) return idle(leds);
-        return flameCommand(leds, 0.5);
-    }
-
-    public static Command flameCommand(LEDs leds, double brightness) {
-        if (leds == null) return none();
-        if (leds.getCandle() == null) return idle(leds);
         CANdle candle = leds.getCandle();
         return startEnd(
                 () -> {
-                    candle.animate(new RgbFadeAnimation(1.0, 0.5, candleLength, 0));
+                    candle.animate(new FireAnimation(0.5, 0.2, 25, 4, .3, false, candleLength), 0);
+                    candle.animate(
+                            new FireAnimation(0.5, 0.2, 32, 4, .3, true, candleLength + 25), 1);
+                    candle.animate(
+                            new FireAnimation(0.5, 0.2, 29, 4, .3, false, candleLength + 25 + 32),
+                            2);
                     candle.animate(
                             new FireAnimation(
-                                    brightness, 0.5, stripLength, 1, .5, false, candleLength));
+                                    0.5, 0.2, 25, 4, .3, true, candleLength + 25 + 32 + 29),
+                            3);
                 },
                 () -> {
                     for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++)

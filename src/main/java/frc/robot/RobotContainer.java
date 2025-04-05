@@ -156,6 +156,14 @@ public class RobotContainer {
                 new ReactionObjects(
                         new Trigger(drive::isAlignedToAlgae),
                         new Trigger(drive::isAlignedToReef),
+                        new Trigger(
+                                () ->
+                                        intake.getVoltage() > 0
+                                                && elevator.getWristSetpoint()
+                                                        == WristConstants.INTAKE
+                                                && elevator.getElevatorSetpoint()
+                                                        == ElevatorConstants.ZERO
+                                                && elevator.isAtSetpoint()),
                         new Trigger(RobotState::isAutonomous),
                         new Trigger(RobotState::isTeleop),
                         new Trigger(RobotState::isEnabled));
@@ -468,14 +476,12 @@ public class RobotContainer {
     }
 
     public void configureReactions() {
-        reactions
-                .isAutonomous
-                .and(reactions.isEnabled)
-                .whileTrue(LEDCommands.flameCommand(leds).ignoringDisable(true));
+        reactions.isAutonomous.whileTrue(LEDCommands.flameCommand(leds).ignoringDisable(true));
         reactions
                 .isTeleop
                 .and(reactions.isEnabled)
                 .whileTrue(LEDCommands.enabled(leds, () -> algaeMode).ignoringDisable(true));
+        reactions.isIntaking.whileTrue(LEDCommands.blink(leds, 255, 95, 31));
         reactions.algaeAligned.whileTrue(LEDCommands.aligned(leds).ignoringDisable(true));
         reactions.reefAligned.whileTrue(LEDCommands.aligned(leds).ignoringDisable(true));
     }
@@ -609,6 +615,7 @@ public class RobotContainer {
     private static class ReactionObjects {
         Trigger algaeAligned;
         Trigger reefAligned;
+        Trigger isIntaking;
         Trigger isAutonomous;
         Trigger isTeleop;
         Trigger isEnabled;
@@ -616,12 +623,14 @@ public class RobotContainer {
         public ReactionObjects(
                 Trigger algaeAligned,
                 Trigger reefAligned,
+                Trigger isIntaking,
                 Trigger isAutonomous,
                 Trigger isTeleop,
                 Trigger isEnabled) {
 
             this.algaeAligned = algaeAligned;
             this.reefAligned = reefAligned;
+            this.isIntaking = isIntaking;
             this.isAutonomous = isAutonomous;
             this.isTeleop = isTeleop;
             this.isEnabled = isEnabled;

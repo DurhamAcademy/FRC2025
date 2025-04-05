@@ -19,6 +19,10 @@ public class Intake extends SubsystemBase {
         io.setIntakeVoltage(voltage);
     }
 
+    public double getVoltage() {
+        return inputs.intakeAppliedVolts;
+    }
+
     public void stopMotors() {
         io.stopMotors();
     }
