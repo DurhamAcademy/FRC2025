@@ -69,7 +69,7 @@ public class DriveConstants {
     public static final int backRightTurnCanId = 8;
 
     // Drive motor configuration
-    public static final int driveMotorCurrentLimit = 60;
+    public static final int driveMotorCurrentLimit = 40;
     public static final DCMotor driveGearbox = DCMotor.getNEO(1);
     // 2024 robot
     // public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
