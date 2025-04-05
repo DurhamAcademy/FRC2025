@@ -19,7 +19,7 @@ public class LEDs extends SubsystemBase {
             config.disableWhenLOS = true;
             config.statusLedOffWhenActive = true;
             config.stripType = CANdle.LEDStripType.GRB;
-            config.brightnessScalar = 1.0;
+            config.brightnessScalar = 0.5;
             config.v5Enabled = false;
             config.enableOptimizations = true;
             candle.configAllSettings(config);
@@ -27,7 +27,7 @@ public class LEDs extends SubsystemBase {
                 candle.clearAnimation(i);
             }
             candle.setLEDs(
-                    0, 0, 255, 0, candleLength, stripLength); // Blue to confirm initialization
+                    0, 0, 255, 0, 0, stripLength + candleLength); // Blue to confirm initialization
         }
     }
 

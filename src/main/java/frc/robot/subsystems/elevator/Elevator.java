@@ -233,6 +233,18 @@ public class Elevator extends SubsystemBase {
         wristIO.stopMotors();
     }
 
+    public double getElevatorSetpoint() {
+        return elevatorInputs.targetHeightInches;
+    }
+
+    public double getWristSetpoint() {
+        return wristInputs.targetAngle;
+    }
+
+    public boolean getWristIsAtSetpoint() {
+        return elevatorInputs.isAtTargetLevel;
+    }
+
     /**
      * Updates the max velocity of the drivetrain based on the height of the elevator in a linear
      * relationship.
