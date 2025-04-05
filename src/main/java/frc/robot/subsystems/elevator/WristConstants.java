@@ -22,6 +22,7 @@ public class WristConstants {
     public static final double L4 = Math.toRadians(-45);
     public static final double LOWER_ALGAE_REMOVAL = Math.toRadians(0.0);
     public static final double UPPER_ALGAE_REMOVAL = Math.toRadians(0.0);
+    public static final double LOLLIPOP_REMOVAL = Math.toRadians(0.0);
     public static final double NET = Math.toRadians(40.0);
     // fixme seems wrong in sim
     public static final double PROCESSOR = Math.toRadians(-10);
