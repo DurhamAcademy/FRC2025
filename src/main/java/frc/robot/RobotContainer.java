@@ -471,10 +471,10 @@ public class RobotContainer {
                 .and(() -> algaeMode)
                 .onTrue(
                         Commands.parallel(
-                                ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.LOLLIPOP_REMOVAL),
-                                ManipulatorCommands.algaeIntake(manipulator)
-                        ).onlyIf(safeToMoveElevator)
-                );
+                                        ElevatorCommands.setElevatorLevel(
+                                                elevator, ElevatorLevel.LOLLIPOP_REMOVAL),
+                                        ManipulatorCommands.algaeIntake(manipulator))
+                                .onlyIf(safeToMoveElevator));
     }
 
     public void configureReactions() {

@@ -45,8 +45,8 @@ public class Elevator extends SubsystemBase {
                 ElevatorConstants.LOWER_ALGAE_REMOVAL, WristConstants.LOWER_ALGAE_REMOVAL),
         UPPER_ALGAE_REMOVAL(
                 ElevatorConstants.UPPER_ALGAE_REMOVAL, WristConstants.UPPER_ALGAE_REMOVAL),
-        LOLLIPOP_REMOVAL(
-                ElevatorConstants.LOLLIPOP_REMOVAL, WristConstants.LOLLIPOP_REMOVAL),;
+        LOLLIPOP_REMOVAL(ElevatorConstants.LOLLIPOP_REMOVAL, WristConstants.LOLLIPOP_REMOVAL),
+        ;
 
         public final double heightInches;
         public final double angleRadians;
