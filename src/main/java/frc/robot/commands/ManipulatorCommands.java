@@ -56,7 +56,7 @@ public class ManipulatorCommands {
 
     // eject at a low voltage
     public static Command eject(Manipulator manipulator) {
-        return runManipulator(manipulator, 1.5);
+        return runManipulator(manipulator, 1.0);
     }
 
     // eject at a certain voltage could be useful if net is slightly off

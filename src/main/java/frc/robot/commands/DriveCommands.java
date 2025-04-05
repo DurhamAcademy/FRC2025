@@ -378,7 +378,7 @@ public class DriveCommands {
             locationPose = drive.getProcessor();
         }
 
-        double shiftDistance = DriveConstants.robotWidth - .26;
+        double shiftDistance = DriveConstants.robotWidth - .28 - Units.inchesToMeters(1);
         Rotation2d shiftRotation =
                 Rotation2d.fromDegrees(
                         locationPose.getRotation().getDegrees()
@@ -482,7 +482,7 @@ public class DriveCommands {
                                                     - goalPose.getRotation().getDegrees());
 
                             // only run if not on target
-                            if (distance > 0.025 || rotationError > 1.0) {
+                            if (distance > Units.inchesToMeters(.5) || rotationError > 1.0) {
                                 // get speeds to move to goal pose
                                 ChassisSpeeds speeds =
                                         holonomicDriveController.calculate(
