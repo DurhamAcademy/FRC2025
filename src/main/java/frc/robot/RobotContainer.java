@@ -389,10 +389,16 @@ public class RobotContainer {
         operatorController
                 .rightBumper()
                 .onTrue(
-                        Commands.runOnce(() -> algaeMode = true)
-                                .alongWith(Commands.runOnce(() -> currentLevel = null)));
+                        Commands.parallel(
+                                Commands.runOnce(() -> algaeMode = true),
+                                Commands.runOnce(() -> currentLevel = null),
+                                IntakeCommands.stopIntake(intake)
+                        )
+                );
 
-        operatorController.leftBumper().onTrue(Commands.runOnce(() -> algaeMode = false));
+        operatorController.leftBumper().onTrue(
+                Commands.runOnce(() -> algaeMode = false)
+        );
 
         // intake
         operatorController
