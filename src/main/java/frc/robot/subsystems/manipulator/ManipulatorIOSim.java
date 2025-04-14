@@ -1,0 +1,50 @@
+package frc.robot.subsystems.manipulator;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+
+public class ManipulatorIOSim implements ManipulatorIO {
+
+    // just making a simple 2 motor vortex gearbox, simpler than it looks
+    private final FlywheelSim rollerSim =
+            new FlywheelSim(
+                    LinearSystemId.createFlywheelSystem(
+                            DCMotor.getNeoVortex(2),
+                            3,
+                            1.0 / ManipulatorConstants.manipulatorGearRatio),
+                    DCMotor.getNeoVortex(2));
+    private double rollerVoltage = 0.0;
+    private Double timestamp = null;
+
+    public ManipulatorIOSim() {
+        setRollerPercent(0.0);
+    }
+
+    public void updateInputs(ManipulatorIOInputs inputs) {
+        var ct = Timer.getFPGATimestamp();
+        var dt = (timestamp == null) ? .02 : ct - timestamp;
+
+        inputs.rollerRCurrentAmps = rollerSim.getCurrentDrawAmps();
+        inputs.rollerRAppliedVolts = rollerVoltage;
+        inputs.rollerRVelocityRadPerSec = rollerSim.getAngularVelocityRadPerSec();
+
+        inputs.rollerLCurrentAmps = rollerSim.getCurrentDrawAmps();
+        inputs.rollerLAppliedVolts = rollerVoltage;
+        inputs.rollerLVelocityRadPerSec = rollerSim.getAngularVelocityRadPerSec();
+        rollerSim.update(dt);
+        timestamp = ct;
+    }
+
+    /** Set intake wheel voltage. */
+    public void setRollerPercent(double percent) {
+        rollerVoltage = percent * 12.0;
+        rollerSim.setInputVoltage(rollerVoltage);
+    }
+
+    public void setRollerVoltage(double volts) {
+        rollerVoltage = volts;
+        rollerSim.setInputVoltage(volts);
+    }
+}

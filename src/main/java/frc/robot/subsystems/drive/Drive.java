@@ -14,6 +14,8 @@
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.wpilibj.DriverStation.Alliance.Blue;
+import static edu.wpi.first.wpilibj.DriverStation.Alliance.Red;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -24,7 +26,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -33,291 +35,662 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.RobotContainer;
+import frc.robot.commands.DriveCommands;
 import frc.robot.util.LocalADStarAK;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
-  static final Lock odometryLock = new ReentrantLock();
-  private final GyroIO gyroIO;
-  private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
-  private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-  private final SysIdRoutine sysId;
-  private final Alert gyroDisconnectedAlert =
-      new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
+    public static double currentSpeedLimitMetersPerSec = maxSpeedLimitMetersPerSec;
+    private final GyroIO gyroIO;
+    private final Alert gyroDisconnectedAlert =
+            new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
+    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+    private Rotation2d rawGyroRotation = new Rotation2d();
 
-  private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
-  private Rotation2d rawGyroRotation = new Rotation2d();
-  private SwerveModulePosition[] lastModulePositions = // For delta tracking
-      new SwerveModulePosition[] {
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition()
-      };
-  private SwerveDrivePoseEstimator poseEstimator =
-      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+    private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+    static final Lock odometryLock = new ReentrantLock();
+    private final Consumer<Pose2d> resetSimulationPoseCallBack;
+    private final SysIdRoutine sysId;
+    private final Vision vision;
+    private final RobotContainer robotContainer;
 
-  public Drive(
-      GyroIO gyroIO,
-      ModuleIO flModuleIO,
-      ModuleIO frModuleIO,
-      ModuleIO blModuleIO,
-      ModuleIO brModuleIO) {
-    this.gyroIO = gyroIO;
-    modules[0] = new Module(flModuleIO, 0);
-    modules[1] = new Module(frModuleIO, 1);
-    modules[2] = new Module(blModuleIO, 2);
-    modules[3] = new Module(brModuleIO, 3);
+    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
+    private final SwerveModulePosition[] lastModulePositions = // For delta tracking
+            new SwerveModulePosition[] {
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition()
+            };
+    private final SwerveDrivePoseEstimator poseEstimator =
+            new SwerveDrivePoseEstimator(
+                    kinematics,
+                    rawGyroRotation,
+                    lastModulePositions,
+                    new Pose2d(3, 3, new Rotation2d()));
 
-    // Usage reporting for swerve template
-    HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
+    public Constants.ReefConstants targetReef = Constants.ReefConstants.SEVEN;
+    public boolean overrideReefAutoAlign = false;
+    public boolean overrideTipProtection = false;
 
-    // Start odometry thread
-    SparkOdometryThread.getInstance().start();
+    public Constants.AlgaeConstants targetAlgae = Constants.AlgaeConstants.ONE;
+    public boolean overrideAlgaeAutoAlign = false;
 
-    // Configure AutoBuilder for PathPlanner
-    AutoBuilder.configure(
-        this::getPose,
-        this::setPose,
-        this::getChassisSpeeds,
-        this::runVelocity,
-        new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-        ppConfig,
-        () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-        this);
-    Pathfinding.setPathfinder(new LocalADStarAK());
-    PathPlannerLogging.setLogActivePathCallback(
-        (activePath) -> {
-          Logger.recordOutput(
-              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-        });
-    PathPlannerLogging.setLogTargetPoseCallback(
-        (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-        });
+    public DriveCommands.autoAlignLocations currentAlignLocation;
 
-    // Configure SysId
-    sysId =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
-  }
+    public Drive(
+            GyroIO gyroIO,
+            ModuleIO flModuleIO,
+            ModuleIO frModuleIO,
+            ModuleIO blModuleIO,
+            ModuleIO brModuleIO,
+            Consumer<Pose2d> resetSimulationPoseCallBack,
+            RobotContainer robotContainer) {
+        this.robotContainer = robotContainer;
+        this.gyroIO = gyroIO;
+        this.resetSimulationPoseCallBack = resetSimulationPoseCallBack;
+        modules[0] = new Module(flModuleIO, 0);
+        modules[1] = new Module(frModuleIO, 1);
+        modules[2] = new Module(blModuleIO, 2);
+        modules[3] = new Module(brModuleIO, 3);
 
-  @Override
-  public void periodic() {
-    odometryLock.lock(); // Prevents odometry updates while reading data
-    gyroIO.updateInputs(gyroInputs);
-    Logger.processInputs("Drive/Gyro", gyroInputs);
-    for (var module : modules) {
-      module.periodic();
-    }
-    odometryLock.unlock();
+        // Usage reporting for swerve template
+        HAL.report(
+                tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
 
-    // Stop moving when disabled
-    if (DriverStation.isDisabled()) {
-      for (var module : modules) {
-        module.stop();
-      }
-    }
+        // Start odometry thread
+        SparkOdometryThread.getInstance().start();
 
-    // Log empty setpoint states when disabled
-    if (DriverStation.isDisabled()) {
-      Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
-    }
+        // Configure AutoBuilder for PathPlanner
+        AutoBuilder.configure(
+                this::getPose,
+                this::setPose,
+                this::getChassisSpeeds,
+                this::runVelocity,
+                new PPHolonomicDriveController(
+                        new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+                ppConfig,
+                () -> DriverStation.getAlliance().orElse(Blue) == Red,
+                this);
+        Pathfinding.setPathfinder(new LocalADStarAK());
+        PathPlannerLogging.setLogActivePathCallback(
+                (activePath) ->
+                        Logger.recordOutput(
+                                "Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
+        PathPlannerLogging.setLogTargetPoseCallback(
+                (targetPose) -> {
+                    Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+                });
 
-    // Update odometry
-    double[] sampleTimestamps =
-        modules[0].getOdometryTimestamps(); // All signals are sampled together
-    int sampleCount = sampleTimestamps.length;
-    for (int i = 0; i < sampleCount; i++) {
-      // Read wheel positions and deltas from each module
-      SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
-      SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
-      for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
-        moduleDeltas[moduleIndex] =
-            new SwerveModulePosition(
-                modulePositions[moduleIndex].distanceMeters
-                    - lastModulePositions[moduleIndex].distanceMeters,
-                modulePositions[moduleIndex].angle);
-        lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
-      }
-
-      // Update gyro angle
-      if (gyroInputs.connected) {
-        // Use the real gyro angle
-        rawGyroRotation = gyroInputs.odometryYawPositions[i];
-      } else {
-        // Use the angle delta from the kinematics and module deltas
-        Twist2d twist = kinematics.toTwist2d(moduleDeltas);
-        rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
-      }
-
-      // Apply update
-      poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+        // Configure SysId
+        sysId =
+                new SysIdRoutine(
+                        new SysIdRoutine.Config(
+                                null,
+                                null,
+                                null,
+                                (state) ->
+                                        Logger.recordOutput("Drive/SysIdState", state.toString())),
+                        new SysIdRoutine.Mechanism(
+                                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+        vision = new Vision(poseEstimator);
     }
 
-    // Update gyro alert
-    gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
-  }
+    @Override
+    public void periodic() {
+        odometryLock.lock(); // Prevents odometry updates while reading data
+        gyroIO.updateInputs(gyroInputs);
+        Logger.processInputs("Drive/Gyro", gyroInputs);
+        for (var module : modules) {
+            module.periodic();
+        }
+        odometryLock.unlock();
 
-  /**
-   * Runs the drive at the desired velocity.
-   *
-   * @param speeds Speeds in meters/sec
-   */
-  public void runVelocity(ChassisSpeeds speeds) {
-    // Calculate module setpoints
-    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
-    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxSpeedMetersPerSec);
+        // Stop moving when disabled
+        if (DriverStation.isDisabled()) {
+            for (var module : modules) {
+                module.stop();
+            }
+        }
 
-    // Log unoptimized setpoints
-    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+        // Log empty setpoint states when disabled
+        if (DriverStation.isDisabled()) {
+            Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
+            Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+        }
 
-    // Send setpoints to modules
-    for (int i = 0; i < 4; i++) {
-      modules[i].runSetpoint(setpointStates[i]);
+        // Update odometry
+        double[] sampleTimestamps =
+                modules[0].getOdometryTimestamps(); // All signals are sampled together
+        int sampleCount = sampleTimestamps.length;
+        for (int i = 0; i < sampleCount; i++) {
+            // Read wheel positions and deltas from each module
+            SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
+            SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+            for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+                modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
+                moduleDeltas[moduleIndex] =
+                        new SwerveModulePosition(
+                                modulePositions[moduleIndex].distanceMeters
+                                        - lastModulePositions[moduleIndex].distanceMeters,
+                                modulePositions[moduleIndex].angle);
+                lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
+            }
+
+            // Update gyro angle
+            if (gyroInputs.connected) {
+                // Use the real gyro angle
+                rawGyroRotation = gyroInputs.odometryYawPositions[i];
+            } else {
+                // Use the angle delta from the kinematics and module deltas
+                Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+                rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+            }
+
+            // Apply update
+            poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+        }
+
+        // Update gyro alert
+        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode == Mode.SIM);
+
+        setTargetAlgaeToClosest();
     }
 
-    // Log optimized setpoints (runSetpoint mutates each state)
-    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
-  }
+    /**
+     * Runs the drive at the desired velocity. it should go a certain acceleration and stop at
+     * whatever
+     *
+     * @param speeds Speeds in meters/sec
+     */
+    public void runVelocity(ChassisSpeeds speeds) {
+        // Check if we are in game-piece-oriented mode
+        /*if (isGamePieceOriented && DriverStation.getAlliance().isPresent()) {
+            // Get the desired direction for the game piece
+            Pose2d targetPose =
+                    Constants.LocationConstants.ReefLocations.get(reefToAlign)[
+                            Constants.getAllianceColor(DriverStation.getAlliance().get())];
+            Translation2d targetDirection =
+                    targetPose
+                            .getTranslation()
+                            .minus(poseEstimator.getEstimatedPosition().getTranslation());
+            double angleToTarget = Math.atan2(targetDirection.getY(), targetDirection.getX());
+            Rotation2d targetRotation = new Rotation2d(angleToTarget);
 
-  /** Runs the drive in a straight line with the specified drive output. */
-  public void runCharacterization(double output) {
-    for (int i = 0; i < 4; i++) {
-      modules[i].runCharacterization(output);
+            // Rotate input speeds to align with target direction
+            speeds =
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                            speeds.vxMetersPerSecond,
+                            speeds.vyMetersPerSecond,
+                            speeds.omegaRadiansPerSecond,
+                            targetRotation // Override field orientation with target orientation
+                            );
+        }*/
+
+        // Calculate module setpoints
+        ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+        SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, currentSpeedLimitMetersPerSec);
+
+        // Log unoptimized setpoints
+        Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+        Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+
+        // Send setpoints to modules
+        for (int i = 0; i < 4; i++) {
+            modules[i].runSetpoint(setpointStates[i]);
+        }
+
+        // Log optimized setpoints (runSetpoint mutates each state)
+        Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
     }
-  }
 
-  /** Stops the drive. */
-  public void stop() {
-    runVelocity(new ChassisSpeeds());
-  }
-
-  /**
-   * Stops the drive and turns the modules to an X arrangement to resist movement. The modules will
-   * return to their normal orientations the next time a nonzero velocity is requested.
-   */
-  public void stopWithX() {
-    Rotation2d[] headings = new Rotation2d[4];
-    for (int i = 0; i < 4; i++) {
-      headings[i] = moduleTranslations[i].getAngle();
+    /** Runs the drive in a straight line with the specified drive output. */
+    public void runCharacterization(double output) {
+        for (int i = 0; i < 4; i++) {
+            modules[i].runCharacterization(output);
+        }
     }
-    kinematics.resetHeadings(headings);
-    stop();
-  }
 
-  /** Returns a command to run a quasistatic test in the specified direction. */
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0))
-        .withTimeout(1.0)
-        .andThen(sysId.quasistatic(direction));
-  }
-
-  /** Returns a command to run a dynamic test in the specified direction. */
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
-  }
-
-  /** Returns the module states (turn angles and drive velocities) for all of the modules. */
-  @AutoLogOutput(key = "SwerveStates/Measured")
-  private SwerveModuleState[] getModuleStates() {
-    SwerveModuleState[] states = new SwerveModuleState[4];
-    for (int i = 0; i < 4; i++) {
-      states[i] = modules[i].getState();
+    /** Stops the drive. */
+    public void stop() {
+        runVelocity(new ChassisSpeeds());
     }
-    return states;
-  }
 
-  /** Returns the module positions (turn angles and drive positions) for all of the modules. */
-  private SwerveModulePosition[] getModulePositions() {
-    SwerveModulePosition[] states = new SwerveModulePosition[4];
-    for (int i = 0; i < 4; i++) {
-      states[i] = modules[i].getPosition();
+    /**
+     * Stops the drive and turns the modules to an X arrangement to resist movement. The modules
+     * will return to their normal orientations the next time a nonzero velocity is requested.
+     */
+    public void stopWithX() {
+        Rotation2d[] headings = new Rotation2d[4];
+        for (int i = 0; i < 4; i++) {
+            headings[i] = moduleTranslations[i].getAngle();
+        }
+        kinematics.resetHeadings(headings);
+        stop();
     }
-    return states;
-  }
 
-  /** Returns the measured chassis speeds of the robot. */
-  @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-  private ChassisSpeeds getChassisSpeeds() {
-    return kinematics.toChassisSpeeds(getModuleStates());
-  }
-
-  /** Returns the position of each module in radians. */
-  public double[] getWheelRadiusCharacterizationPositions() {
-    double[] values = new double[4];
-    for (int i = 0; i < 4; i++) {
-      values[i] = modules[i].getWheelRadiusCharacterizationPosition();
+    /** Returns a command to run a quasistatic test in the specified direction. */
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return run(() -> runCharacterization(0.0))
+                .withTimeout(1.0)
+                .andThen(sysId.quasistatic(direction));
     }
-    return values;
-  }
 
-  /** Returns the average velocity of the modules in rad/sec. */
-  public double getFFCharacterizationVelocity() {
-    double output = 0.0;
-    for (int i = 0; i < 4; i++) {
-      output += modules[i].getFFCharacterizationVelocity() / 4.0;
+    /** Returns a command to run a dynamic test in the specified direction. */
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return run(() -> runCharacterization(0.0))
+                .withTimeout(1.0)
+                .andThen(sysId.dynamic(direction));
     }
-    return output;
-  }
 
-  /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/Robot")
-  public Pose2d getPose() {
-    return poseEstimator.getEstimatedPosition();
-  }
+    /** Returns the module states (turn angles and drive velocities) for all of the modules. */
+    @AutoLogOutput(key = "SwerveStates/Measured")
+    private SwerveModuleState[] getModuleStates() {
+        SwerveModuleState[] states = new SwerveModuleState[4];
+        for (int i = 0; i < 4; i++) {
+            states[i] = modules[i].getState();
+        }
+        return states;
+    }
 
-  /** Returns the current odometry rotation. */
-  public Rotation2d getRotation() {
-    return getPose().getRotation();
-  }
+    /** Returns the module positions (turn angles and drive positions) for all of the modules. */
+    private SwerveModulePosition[] getModulePositions() {
+        SwerveModulePosition[] states = new SwerveModulePosition[4];
+        for (int i = 0; i < 4; i++) {
+            states[i] = modules[i].getPosition();
+        }
+        return states;
+    }
 
-  /** Resets the current odometry pose. */
-  public void setPose(Pose2d pose) {
-    poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
-  }
+    /** Returns the measured chassis speeds of the robot. */
+    @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
+    private ChassisSpeeds getChassisSpeeds() {
+        return kinematics.toChassisSpeeds(getModuleStates());
+    }
 
-  /** Adds a new timestamped vision measurement. */
-  public void addVisionMeasurement(
-      Pose2d visionRobotPoseMeters,
-      double timestampSeconds,
-      Matrix<N3, N1> visionMeasurementStdDevs) {
-    poseEstimator.addVisionMeasurement(
-        visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
-  }
+    /** Returns the position of each module in radians. */
+    public double[] getWheelRadiusCharacterizationPositions() {
+        double[] values = new double[4];
+        for (int i = 0; i < 4; i++) {
+            values[i] = modules[i].getWheelRadiusCharacterizationPosition();
+        }
+        return values;
+    }
 
-  /** Returns the maximum linear speed in meters per sec. */
-  public double getMaxLinearSpeedMetersPerSec() {
-    return maxSpeedMetersPerSec;
-  }
+    /** Returns the average velocity of the modules in rad/sec. */
+    public double getFFCharacterizationVelocity() {
+        double output = 0.0;
+        for (int i = 0; i < 4; i++) {
+            output += modules[i].getFFCharacterizationVelocity() / 4.0;
+        }
+        return output;
+    }
 
-  /** Returns the maximum angular speed in radians per sec. */
-  public double getMaxAngularSpeedRadPerSec() {
-    return maxSpeedMetersPerSec / driveBaseRadius;
-  }
+    /** Returns the current odometry pose. */
+    @AutoLogOutput(key = "Odometry/Robot")
+    public Pose2d getPose() {
+        if (Constants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
+            return robotContainer.getDriveSimulation().getSimulatedDriveTrainPose();
+        }
+        return poseEstimator.getEstimatedPosition();
+    }
+
+    /** Returns the current odometry rotation. */
+    public Rotation2d getRotation() {
+        if (Constants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
+            return robotContainer.getDriveSimulation().getSimulatedDriveTrainPose().getRotation();
+        }
+        return getPose().getRotation();
+    }
+
+    /** Resets the current odometry pose. */
+    public void setPose(Pose2d pose) {
+        resetSimulationPoseCallBack.accept(pose);
+        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+    }
+
+    public SwerveDrivePoseEstimator getPoseEstimator() {
+        return poseEstimator;
+    }
+
+    /** Returns the maximum linear speed in meters per sec. */
+    public double getMaxLinearSpeedMetersPerSec() {
+        return currentSpeedLimitMetersPerSec;
+    }
+
+    /** Returns the maximum angular speed in radians per sec. */
+    public double getMaxAngularSpeedRadPerSec() {
+        return currentSpeedLimitMetersPerSec / driveBaseRadius;
+    }
+
+    public Module getModule(int index) {
+        return modules[index];
+    }
+
+    // TODO figure this out
+    public Constants.ReefConstants getClosestReef() {
+        Constants.ReefConstants closestReef = Constants.ReefConstants.SIX;
+        if (!overrideReefAutoAlign && DriverStation.getAlliance().isPresent()) {
+            int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
+
+            // Find closest reef position to current pose
+            Pose2d estimatedReefPose =
+                    poseEstimator
+                            .getEstimatedPosition()
+                            .nearest(Constants.LocationConstants.PosesOfAllReefLocations(alliance));
+
+            // Find corresponding reef constant value
+            closestReef =
+                    Constants.LocationConstants.ReefLocations.entrySet().stream()
+                            .filter(entry -> entry.getValue()[alliance].equals(estimatedReefPose))
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(Constants.ReefConstants.SIX);
+        }
+        return closestReef;
+    }
+
+    public enum ReefAlignSide {
+        LEFT,
+        RIGHT
+    }
+
+    /**
+     * Sets reef target to the nearest reef on a certain side
+     *
+     * @param side the side of each flat panel of the reef hexagon to align to
+     */
+    public void setTargetReefToClosest(ReefAlignSide side) {
+        // Define the left-right reef pairs
+        Map<Integer, Integer> reefPairs =
+                Map.of(
+                        10, 11,
+                        2, 3,
+                        9, 8,
+                        7, 6,
+                        5, 4,
+                        12, 1);
+
+        // Retrieve the closest reef
+        Constants.ReefConstants closestReef = getClosestReef();
+        int closestReefId = closestReef.ordinal() + 1; // Enums are 0-indexed
+
+        // Determine the target reef based on the required side
+        int targetReefId =
+                switch (side) {
+                    case RIGHT -> reefPairs.getOrDefault(
+                            closestReefId, closestReefId); // Go to left
+                    case LEFT -> reefPairs.entrySet().stream()
+                            .filter(entry -> entry.getValue() == closestReefId)
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(closestReefId); // Go to right
+                };
+
+        // Update the target reef
+        Constants.ReefConstants oldTargetReef = targetReef;
+        targetReef = Constants.ReefConstants.values()[targetReefId - 1];
+
+        // Update visualization if the reef has changed
+        if (oldTargetReef != targetReef) {
+            updateTargetDashboardVisualization(targetReef.ordinal());
+        }
+    }
+
+    public Pose2d getReefPose(Constants.ReefConstants reef) {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        return Constants.LocationConstants.ReefLocations.get(reef)[alliance];
+    }
+
+    public Pose2d getTargetReefPose() {
+        return getReefPose(targetReef);
+    }
+
+    public Constants.ReefConstants getTargetReef() {
+        return targetReef;
+    }
+
+    /**
+     * Function that returns whether the gyro pitch or roll is greater than the specified tipping
+     * threshold
+     */
+    public boolean isTipping() {
+        if (overrideTipProtection) return false;
+        return (Math.abs(gyroInputs.pitchPosition.getDegrees()) > tippingThresholdDegrees
+                || Math.abs(gyroInputs.rollPosition.getDegrees()) > tippingThresholdDegrees);
+    }
+
+    public Pose2d getNearestHumanPlayerStation() {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        Logger.recordOutput(
+                "HumanPlayerStation/target",
+                poseEstimator
+                        .getEstimatedPosition()
+                        .nearest(Constants.PosesOfAllHumanPlayerStations(alliance)));
+
+        return poseEstimator
+                .getEstimatedPosition()
+                .nearest(Constants.PosesOfAllHumanPlayerStations(alliance));
+    }
+
+    public double getMaxVelocity() {
+        clampMaxUsableSpeed();
+        return currentSpeedLimitMetersPerSec;
+    }
+
+    public void setMaxVelocity(double maxVelocity) {
+        currentSpeedLimitMetersPerSec = maxVelocity;
+    }
+
+    public void clampMaxUsableSpeed() {
+        currentSpeedLimitMetersPerSec =
+                MathUtil.clamp(currentSpeedLimitMetersPerSec, 0.0, maxSpeedLimitMetersPerSec);
+    }
+
+    // take a drivecommands location var (from the enum)
+    public boolean isAlignedToLocation() {
+        boolean isAligned = false;
+        if (currentAlignLocation == DriveCommands.autoAlignLocations.reef) {
+            // gets reef goal pose
+            isAligned = isAlignedToReef();
+
+        } else if (currentAlignLocation == DriveCommands.autoAlignLocations.algae) {
+            isAligned = isAlignedToAlgae();
+
+        } else if (currentAlignLocation == DriveCommands.autoAlignLocations.processor) {
+            isAligned = isAlignedToProcessor();
+        }
+        Logger.recordOutput("Vision/alignedToLocation", isAligned);
+        return isAligned;
+    }
+
+    public boolean isAlignedToProcessor() {
+
+        // Overall condition to stop this command (robot
+        // must be at goal pose)
+        Pose2d currentPose = getPose();
+        Pose2d targetPose =
+                DriveCommands.calculateRobotTargetPose(
+                        this, DriveCommands.autoAlignLocations.processor);
+        // Calculate distance and rotation
+        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+        double rotationError =
+                Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
+
+        // Stop when BOTH distance and orientation are
+        // within the thresholds
+
+        boolean alignedToProcessor =
+                distance
+                                < Constants.coralInnerWidth
+                                        - Constants.reefPipeDiameter
+                                        - Units.inchesToMeters(.25)
+                        && rotationError < 2.0; // 2.5 inches and < 2 degrees
+        Logger.recordOutput("Vision/alignedToProcessor", alignedToProcessor);
+        return alignedToProcessor;
+    }
+
+    public Pose2d getProcessor() {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        return Constants.LocationConstants.processorLocation[alliance];
+    }
+
+    /**
+     * @return boolean, is robot is within tolerance of target location
+     */
+    public boolean isAlignedToReef() {
+
+        // Overall condition to stop this command (robot
+        // must be at goal pose)
+        Pose2d currentPose = getPose();
+        Pose2d targetPose =
+                DriveCommands.calculateRobotTargetPose(this, DriveCommands.autoAlignLocations.reef);
+        // Calculate distance and rotation
+        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+        double rotationError =
+                Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
+
+        // Stop when BOTH distance and orientation are
+        // within the thresholds
+
+        Logger.recordOutput("Vision/currentPose", currentPose);
+        Logger.recordOutput("Vision/targetPose", targetPose);
+        Logger.recordOutput(
+                "Vision/maxDistance",
+                Constants.coralInnerWidth - Constants.reefPipeDiameter - Units.inchesToMeters(.25));
+        Logger.recordOutput("Vision/distance", distance);
+        Logger.recordOutput("Vision/rotationError", rotationError);
+
+        boolean alignedToReef =
+                distance
+                                < Constants.coralInnerWidth
+                                        - Constants.reefPipeDiameter
+                                        - Units.inchesToMeters(.25)
+                        && rotationError < 5; // 2.5 inches and < 2 degrees
+        Logger.recordOutput("Vision/alignedToReef", alignedToReef);
+        return alignedToReef;
+    }
+
+    private int oldLocationIndex = -1;
+
+    public void updateTargetDashboardVisualization(int locationIndex) {
+        if (oldLocationIndex != locationIndex) {
+            for (int i = 1; i <= 6; i++) {
+                final int index = i;
+                SmartDashboard.putData(
+                        "Target Location",
+                        builder -> {
+                            builder.setSmartDashboardType("Boolean");
+                            builder.addBooleanProperty(
+                                    String.valueOf(index),
+                                    () -> (locationIndex + 4) % 6 == index,
+                                    null);
+                        });
+            }
+            oldLocationIndex = locationIndex;
+        }
+    }
+
+    public Constants.AlgaeConstants getClosestTargetAlgae() {
+        Constants.AlgaeConstants closestAlgae = Constants.AlgaeConstants.ONE;
+        if (!overrideAlgaeAutoAlign && DriverStation.getAlliance().isPresent()) {
+            int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
+            // Find closest algae position to current pose
+            Pose2d estimatedAlgaePose =
+                    poseEstimator
+                            .getEstimatedPosition()
+                            .nearest(
+                                    Constants.LocationConstants.PosesOfAllAlgaeLocations(alliance));
+
+            // Find corresponding algae constant value
+            closestAlgae =
+                    Constants.LocationConstants.AlgaeLocations.entrySet().stream()
+                            .filter(entry -> entry.getValue()[alliance].equals(estimatedAlgaePose))
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(Constants.AlgaeConstants.SIX);
+        }
+        return closestAlgae;
+    }
+
+    public void setTargetAlgaeToClosest() {
+        Constants.AlgaeConstants oldTargetAlgae = targetAlgae;
+        targetAlgae = getClosestTargetAlgae();
+        if (oldTargetAlgae != targetAlgae) {
+            updateTargetDashboardVisualization(targetAlgae.ordinal());
+        }
+    }
+
+    public Pose2d getAlgaePose(Constants.AlgaeConstants algae) {
+        int alliance =
+                DriverStation.getAlliance().isPresent()
+                        ? Constants.getAllianceColor(DriverStation.getAlliance().get())
+                        : 0;
+        return Constants.LocationConstants.AlgaeLocations.get(algae)[alliance];
+    }
+
+    public Pose2d getTargetAlgaePose() {
+        return getAlgaePose(targetAlgae);
+    }
+
+    public Constants.AlgaeConstants getTargetAlgae() {
+        return targetAlgae;
+    }
+
+    /**
+     * If robot is within 5 cm of
+     *
+     * @return boolean
+     */
+    public boolean isAlignedToAlgae() {
+
+        // Overall condition to stop this command (robot
+        // must be at goal pose)
+        Pose2d currentPose = getPose();
+        Pose2d targetPose =
+                DriveCommands.calculateRobotTargetPose(
+                        this, DriveCommands.autoAlignLocations.algae);
+        // Calculate distance and rotation
+        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+        double rotationError =
+                Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
+
+        // Stop when BOTH distance and orientation are
+        // within the thresholds
+
+        boolean alignedToAlgae =
+                distance
+                                < Constants.coralInnerWidth
+                                        - Constants.reefPipeDiameter
+                                        - Units.inchesToMeters(.25)
+                        && rotationError < 2.0; // 2.5 inches and < 2 degrees
+        Logger.recordOutput("Vision/alignedToAlgae", alignedToAlgae);
+        return alignedToAlgae;
+    }
 }
