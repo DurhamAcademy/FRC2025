@@ -91,6 +91,7 @@ public class LanguageInterpreter {
     }
 
     public String getJavaForm() {
+        text = text.toLowerCase();
         StringBuilder java = new StringBuilder();
         if (text == null || text.trim().isEmpty()) {
             return "";
