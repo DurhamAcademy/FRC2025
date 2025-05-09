@@ -594,4 +594,144 @@ public class DriveCommands {
                         })
                 .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
     }
+
+    public static Command driveForward(Drive drive, double distanceInches) {
+        double distanceMeters = Units.inchesToMeters(distanceInches);
+        // Supplier to get the current pose each time it's needed
+        Supplier<Pose2d> currentPoseSupplier = drive::getPose;
+
+        return new Command() {
+            // These will be initialized in initialize()
+            private Pose2d initialPose;
+            private double targetX;
+            private double targetY;
+
+            // Initialize the PID controllers for both X and Y axes
+            private final PIDController xController =
+                    new PIDController(2.0, 0.0, 0.1); // Tune as needed
+            private final PIDController yController =
+                    new PIDController(2.0, 0.0, 0.1); // Tune as needed
+
+            @Override
+            public void initialize() {
+                // Get the robot's initial position and heading when the command starts
+                initialPose = currentPoseSupplier.get();
+                double initialHeading = initialPose.getRotation().getRadians();
+
+                // Calculate the target position, relative to the initial position and heading
+                targetX = initialPose.getX() + (Math.cos(initialHeading) * distanceMeters);
+                targetY = initialPose.getY() + (Math.sin(initialHeading) * distanceMeters);
+
+                // Reset PID controllers
+                xController.setTolerance(0.02); // 2cm tolerance for X axis
+                yController.setTolerance(0.02); // 2cm tolerance for Y axis
+                xController.reset();
+                yController.reset();
+            }
+
+            @Override
+            public void execute() {
+                Pose2d currentPose = currentPoseSupplier.get();
+
+                // Calculate the current position errors (distance to target)
+                double xError = targetX - currentPose.getX();
+                double yError = targetY - currentPose.getY();
+
+                // Calculate the speed along X and Y using the PID controllers
+                double xSpeed = xController.calculate(currentPose.getX(), targetX);
+                double ySpeed = yController.calculate(currentPose.getY(), targetY);
+
+                // Convert field-centric speeds to robot-centric speeds
+                // This depends on your drivetrain's convention for directions
+                double forwardSpeed =
+                        xSpeed * Math.cos(currentPose.getRotation().getRadians())
+                                + ySpeed * Math.sin(currentPose.getRotation().getRadians());
+                double sidewaysSpeed =
+                        -xSpeed * Math.sin(currentPose.getRotation().getRadians())
+                                + ySpeed * Math.cos(currentPose.getRotation().getRadians());
+
+                // No rotation for this command
+                double omegaSpeed = 0.0;
+
+                // Command the robot to move using the calculated robot-centric speeds
+                drive.runVelocity(new ChassisSpeeds(forwardSpeed, sidewaysSpeed, omegaSpeed));
+            }
+
+            @Override
+            public boolean isFinished() {
+                // Check if both X and Y axes are within tolerance
+                Pose2d currentPose = currentPoseSupplier.get();
+                return xController.atSetpoint() && yController.atSetpoint();
+            }
+
+            @Override
+            public void end(boolean interrupted) {
+                // Stop movement once the goal is reached or if interrupted
+                drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 0.0));
+            }
+        };
+    }
+
+    public static Command rotateByAngle(Drive drive, double angleToRotateDegrees) {
+        double angleToRotateRadians = Units.degreesToRadians(angleToRotateDegrees);
+        // Supplier to get the current pose each time it's needed
+        Supplier<Pose2d> currentPoseSupplier = drive::getPose;
+
+        return new Command() {
+            // Initialize the PID controller for rotation
+            private final PIDController rotationController =
+                    new PIDController(4.0, 0.0, 0.3); // Tune as needed
+            private double targetAngle;
+
+            @Override
+            public void initialize() {
+                // Get the robot's current heading when command starts
+                Pose2d initialPose = currentPoseSupplier.get();
+                double initialHeading = initialPose.getRotation().getRadians();
+
+                // Calculate the target angle by adding the rotation amount to the current heading
+                targetAngle = initialHeading + angleToRotateRadians;
+
+                // Normalize the angle to be between -π and π
+                targetAngle = Math.atan2(Math.sin(targetAngle), Math.cos(targetAngle));
+
+                // Configure the rotation controller
+                rotationController.setTolerance(0.02); // ~1 degree tolerance
+
+                // Enable continuous input for angle control (handles wraparound from -π to π or 0
+                // to 2π)
+                rotationController.enableContinuousInput(-Math.PI, Math.PI);
+
+                rotationController.reset();
+            }
+
+            @Override
+            public void execute() {
+                Pose2d currentPose = currentPoseSupplier.get();
+                double currentAngle = currentPose.getRotation().getRadians();
+
+                // Calculate the rotation speed using the PID controller
+                double omegaSpeed = rotationController.calculate(currentAngle, targetAngle);
+
+                // Limit the rotation speed if necessary
+                double maxRotationSpeed = 1.5; // Adjust as needed
+                omegaSpeed = Math.min(Math.max(omegaSpeed, -maxRotationSpeed), maxRotationSpeed);
+
+                // Command the robot to rotate while staying in place
+                drive.runVelocity(new ChassisSpeeds(0.0, 0.0, omegaSpeed));
+            }
+
+            @Override
+            public boolean isFinished() {
+                // Check if the rotation is within tolerance
+                return rotationController.atSetpoint();
+            }
+
+            @Override
+            public void end(boolean interrupted) {
+                // Stop all movement
+                drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 0.0));
+            }
+        };
+    }
 }

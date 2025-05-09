@@ -483,6 +483,32 @@ public class RobotContainer {
                                                 elevator, ElevatorLevel.LOLLIPOP_REMOVAL),
                                         ManipulatorCommands.algaeIntake(manipulator))
                                 .onlyIf(safeToMoveElevator));
+        // ------------------------------------------------------------------------------------------------------------
+        // **PSEUDO Code Area of Button Bindings, please do not mess with the comments in this
+        // area**
+
+        // How to use the Pseudo code translator(If something does not work as seen in the
+        // instructions ask someone)
+        // 1. Navigate to the right side of your screen and click the elephant symbol(far right,
+        //    directly under what looks like 3 coins stacked on top of each other)
+        // 2. After clicking the elephant symbol, a menu should open, once the menu is open,
+        //    double-click the Tasks folder, then double-click the "pseudo code commands" folder
+        // 3. If you want to create a series of commands to execute double-click writeCode
+        // 4. Use this link to look at the API for what commands are possible and how to write them
+        //    https://docs.google.com/document/d/1rOwSqB0qzuhe4-jgVMSJEf3glP5fCHXCpS3JKcOm458/edit?usp=sharing
+        //    or simply look at the text box that pops up
+        // 5. To use this code refer back to the API google doc, which contains ways to use your
+        //    code.
+        // 6. If you would like to write a different command double-click "reset" in the right menu
+        //    and then after that task finishes, double-click "writeCode", and then continue until
+        //    you are satisfied
+
+        // Comments below this line are required to be in this exact format for the pseudo code
+        // system to work
+
+        // BEGIN GENERATED PSEUDO CODE
+        /*REPLACE THIS*/
+        // END GENERATED PSEUDO CODE
     }
 
     public void configureReactions() {

@@ -1,0 +1,10 @@
+sudo beginning~java beginning~java after~java option1~java option2~~sudo option1~sudo option 2
+elevatorHeight=~ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.~).onlyIf(safeToMoveElevator).andThen(Commands.waitUntil(elevator::elevatorIsAtSetpoint)).withTimeout(4)~L1~L2~L3~L4~ZERO~PROCESSOR~NET~LOWER_ALGAE_REMOVAL~UPPER_ALGAE_REMOVAL~LOLLIPOP_REMOVAL~~L1~L2~L3~L4~0~Processor~Net~Lower_Algae~Upper_Algae~Lollipop
+intake(Coral)#sequence(IntakeCommands.pullCoralThroughIntake(intake, manipulator).until(intake::getBeamBroken), IntakeCommands.pullCoralThroughIntake(intake, manipulator).withTimeout(0.5), Commands.either(IntakeCommands.backUpStuckIntake(intake, manipulator), Commands.none(), intake::getBeamBroken))
+intake(Algae)#ManipulatorCommands.algaeIntake(manipulator)
+eject(Coral)#ManipulatorCommands.eject(manipulator, 1).withTimeout(.25).andThen(ManipulatorCommands.eject(manipulator, 0).withTimeout(.025))
+eject(Algae)#ManipulatorCommands.algaeEject(manipulator, elevator).withTimeout(.5)
+autoAlign(Coral)#sequence(Commands.run(drive::setTargetReefToClosest, drive), new RepeatCommand(DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef)).until(drive::isAlignedToLocation))
+autoAlign(Algae)#sequence(Commands.run(drive::setTargetAlgaeToClosest, drive), new RepeatCommand(DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.algae)).until(drive::isAlignedToLocation))
+drive(%double%)%DriveCommands.driveForward(drive, %)
+rotate(%double%)%DriveCommands.rotateByAngle(drive, %)

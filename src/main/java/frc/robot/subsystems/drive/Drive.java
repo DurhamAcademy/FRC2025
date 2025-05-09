@@ -412,6 +412,10 @@ public class Drive extends SubsystemBase {
         RIGHT
     }
 
+    public void setTargetReefToClosest() {
+        targetReef = getClosestReef();
+    }
+
     /**
      * Sets reef target to the nearest reef on a certain side
      *
