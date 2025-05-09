@@ -509,7 +509,7 @@ public class RobotContainer {
         // system to work
 
         // BEGIN GENERATED PSEUDO CODE
-        /*REPLACE THIS*/
+        driverController.a().onTrue(sequence(sequence(IntakeCommands.pullCoralThroughIntake(intake, manipulator).until(intake::getBeamBroken), IntakeCommands.pullCoralThroughIntake(intake, manipulator).withTimeout(0.5), Commands.either(IntakeCommands.backUpStuckIntake(intake, manipulator), Commands.none(), intake::getBeamBroken)), ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.L4).onlyIf(safeToMoveElevator).andThen(Commands.waitUntil(elevator::elevatorIsAtSetpoint)).withTimeout(4), sequence(Commands.run(drive::setTargetReefToClosest, drive), new RepeatCommand(DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.reef)).until(drive::isAlignedToLocation)), ManipulatorCommands.eject(manipulator, 1).withTimeout(.25).andThen(ManipulatorCommands.eject(manipulator, 0).withTimeout(.025)), DriveCommands.driveForward(drive,-25), ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.LOWER_ALGAE_REMOVAL).onlyIf(safeToMoveElevator).andThen(Commands.waitUntil(elevator::elevatorIsAtSetpoint)).withTimeout(4), sequence(Commands.run(drive::setTargetAlgaeToClosest, drive), new RepeatCommand(DriveCommands.autoAlignToLocation(drive, DriveCommands.autoAlignLocations.algae)).until(drive::isAlignedToLocation)), ManipulatorCommands.algaeIntake(manipulator), DriveCommands.driveForward(drive,-25), ElevatorCommands.setElevatorLevel(elevator, ElevatorLevel.PROCESSOR).onlyIf(safeToMoveElevator).andThen(Commands.waitUntil(elevator::elevatorIsAtSetpoint)).withTimeout(4), ManipulatorCommands.algaeEject(manipulator, elevator).withTimeout(.5)));
         // END GENERATED PSEUDO CODE
     }
 

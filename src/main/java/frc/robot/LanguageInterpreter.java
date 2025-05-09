@@ -147,37 +147,48 @@ public class LanguageInterpreter {
     }
 
     // *** NEW METHOD to show the informational JFrame ***
-    public static void showInfoFrame(String message, Component parentComponent) {
-        // If an old info frame exists, dispose of it first
+    public static void showInfoFrame(
+            String htmlMessage, Component parentComponent) { // Renamed to htmlMessage
         if (infoFrameInstance != null && infoFrameInstance.isVisible()) {
             infoFrameInstance.dispose();
         }
 
-        infoFrameInstance = new JFrame("Possible Commands");
-        infoFrameInstance.setDefaultCloseOperation(
-                JFrame.DISPOSE_ON_CLOSE); // Dispose this frame only
-        infoFrameInstance.setSize(450, 1000);
+        infoFrameInstance = new JFrame("Information");
+        infoFrameInstance.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        infoFrameInstance.setSize(657, 880); // Adjusted size slightly for potentially more content
 
-        JTextArea infoTextArea = new JTextArea(message);
-        infoTextArea.setWrapStyleWord(true);
-        infoTextArea.setLineWrap(true);
-        infoTextArea.setOpaque(false);
-        infoTextArea.setEditable(false);
-        infoTextArea.setFocusable(false);
-        infoTextArea.setFont(UIManager.getFont("Label.font")); // Use a standard label font
-        infoTextArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add some padding
+        // *** Use JLabel for HTML rendering ***
+        // JLabel can render simple HTML if the text starts with "<html>"
+        JLabel infoLabel = new JLabel();
+        // Ensure the message is wrapped in <html> tags for the JLabel to render HTML
+        if (!htmlMessage.toLowerCase().startsWith("<html>")) {
+            // Basic wrapping if not already HTML, preserve newlines with <br>
+            htmlMessage = "<html><body>" + htmlMessage.replace("\n", "<br>") + "</body></html>";
+        }
+        infoLabel.setText(htmlMessage);
 
-        infoFrameInstance.add(
-                new JScrollPane(infoTextArea)); // Add scroll pane in case message is long
+        // Optional: Set vertical alignment if the label is larger than its content
+        infoLabel.setVerticalAlignment(SwingConstants.TOP);
+        infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Position it relative to the parent (editor dialog) or center of screen
+        // If the message is long, a JScrollPane is still a good idea.
+        // JLabel doesn't scroll by itself, but a JScrollPane can scroll a JLabel.
+        JScrollPane scrollPane = new JScrollPane(infoLabel);
+        scrollPane.setBorder(null); // Remove scrollpane border if you want a cleaner look
+
+        Font currentFont = infoLabel.getFont();
+        Font newFont = currentFont.deriveFont(currentFont.getSize() * 0.95f);
+
+        infoLabel.setFont(newFont);
+
+        infoFrameInstance.add(scrollPane);
+
         if (parentComponent != null && parentComponent.isVisible()) {
-            // Position it slightly offset from the editor dialog
             Point parentLocation = parentComponent.getLocation();
             infoFrameInstance.setLocation(
                     parentLocation.x + parentComponent.getWidth() + 10, parentLocation.y);
         } else {
-            infoFrameInstance.setLocationRelativeTo(null); // Center on screen
+            infoFrameInstance.setLocationRelativeTo(null);
         }
         infoFrameInstance.setVisible(true);
     }
@@ -192,7 +203,8 @@ public class LanguageInterpreter {
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         JTextArea textArea = new JTextArea();
-        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
         JScrollPane scrollPane = new JScrollPane(textArea);
         dialog.add(scrollPane, BorderLayout.CENTER);
 
@@ -227,91 +239,89 @@ public class LanguageInterpreter {
                     @Override
                     public void windowOpened(WindowEvent e) { // Or windowActivated
                         // *** CALL to show the informational frame ***
-                        String infoMessage =
-                                """
-                                        elevatorHeight=
-                                            L1
-                                            L2
-                                            L3
-                                            L4
-                                            0
-                                            Processor
-                                            Net
-                                            Lower_Algae
-                                            Upper_Algae
-                                            Lollipop
-                                        intake(GamePiece)
-                                            Coral - intake(Coral)
-                                            Algae - intake(Algae)
-                                        eject(GamePiece)
-                                            Coral - eject(Coral)
-                                            Algae - eject(Algae)
-                                        autoAlign
-                                            Coral - autoAlign(Coral)
-                                            Algae - autoAlign(Algae)
-                                        drive(double inches)
-                                        drive(double degrees)
-                                        """;
                         String moreDetailInfoMessage =
-                                """
-                                elevatorHeight=
-                                 -  L1
-                                     -  The height needed to place coral in the trough
-                                 -  L2
-                                     -  The height needed to place coral on the shortest pole level of
-                                         the reef
-                                 -  L3
-                                     -  The height needed to place coral on the second tallest level
-                                         of the reef
-                                 -  L4
-                                     -  The height needed to place coral on the tallest level of the
-                                         reef(changes wrist too)
-                                 -  0
-                                     -  This is the zero height of the elevator or at the bottom
-                                 -  Processor
-                                     -  The height needed to shoot algae into the processor.
-                                 -  Net
-                                     -  The height to shoot algae into the net(changes the wrist
-                                         accordingly too)
-                                 -  Lower_Algae
-                                     -  The height to remove algae place on L2 of the reef(the shorter
-                                         of the two algae locations)
-                                 -  Upper_Algae
-                                     -  The height to remove algae place on L3 of the reef(the taller
-                                         of the two algae locations)
-                                 -  Lollipop
-                                     -  The height to removal algae from the lollipops(algae placed
-                                         onto of coral near the starting zone)
-                                intake(GamePiece)
-                                 -  Coral - intake(Coral)
-                                     -  This starts the sequence needed to intake coral
-                                 -  Algae - intake(Algae)
-                                     -  This starts the sequence needed to intake algae
-                                eject(GamePiece)
-                                 -  Coral - eject(Coral)
-                                     -  This ejects the coral
-                                 -  Algae - eject(Algae)
-                                     -  This ejects the algae
-                                autoAlign
-                                 -  Coral - autoAlign(Coral)
-                                     -  This aligns to the reef in the location of the closest node of
-                                         the reef
-                                 -  Algae - autoAlign(Algae)
-                                     -  This aligns to the reef in the location of the closest side of
-                                         the reef for algae
-                                drive(double inches)
-                                 -  Inches - this is how far forward the robot drives forward(Ex.
-                                     3.5,15, 49, 63.38562)
-                                drive(double degrees)
-                                 -  Degrees - this is how far forward the robot rotates clockwise
-                                     (Ex.3.5,15, 49, 63.38562)
-                                """;
-
+                                "<html><body>"
+                                        + "<b>elevatorHeight =</b>"
+                                        + "<ul>"
+                                        + "  <li><u>L1</u></li>"
+                                        + // Description removed
+                                        "  <li><u>L2</u></li>"
+                                        + // Description removed
+                                        "  <li><u>L3</u></li>"
+                                        + // Description removed
+                                        "  <li><u>L4</u></li>"
+                                        + // Description removed
+                                        "  <li><u>0</u>"
+                                        + // Kept 0 underlined as a second-level option
+                                        "    <ul><li>This is the zero height of the elevator or at"
+                                        + " the bottom</li></ul>  </li>  <li><u>Processor</u></li>"
+                                        + // Description removed
+                                        "  <li><u>Net</u></li>"
+                                        + // Description removed
+                                        "  <li><u>Lower_Algae</u>    <ul><li>The height to remove"
+                                      + " algae place on L2 of the reef (the shorter of the two"
+                                      + " algae locations)</li></ul>  </li>  <li><u>Upper_Algae</u>"
+                                      + "    <ul><li>The height to remove algae place on L3 of the"
+                                      + " reef (the taller of the two algae locations)</li></ul> "
+                                      + " </li>  <li><u>Lollipop</u>    <ul><li>The height to"
+                                      + " removal algae from the lollipops (algae placed onto of"
+                                      + " coral near the starting zone)</li></ul>  </li></ul>"
+                                        + // End of elevatorHeight list
+                                        "<b>intake(GamePiece)</b><ul>  <li><u>Coral -"
+                                        + " intake(Coral)</u>    <ul><li>This starts the sequence"
+                                        + " needed to intake coral</li></ul>  </li>  <li><u>Algae -"
+                                        + " intake(Algae)</u>    <ul><li>This starts the sequence"
+                                        + " needed to intake algae</li></ul>  </li></ul>"
+                                        + // End of intake list
+                                        "<b>eject(GamePiece)</b>"
+                                        + "<ul>"
+                                        + "  <li><u>Coral - eject(Coral)</u>"
+                                        + "    <ul><li>This ejects the coral</li></ul>"
+                                        + "  </li>"
+                                        + "  <li><u>Algae - eject(Algae)</u>"
+                                        + "    <ul><li>This ejects the algae</li></ul>"
+                                        + "  </li>"
+                                        + "</ul>"
+                                        + // End of eject list
+                                        "<b>autoAlign</b><ul>  <li><u>Coral - autoAlign(Coral)</u> "
+                                      + "   <ul><li>This aligns to the reef in the location of the"
+                                      + " closest node of the reef</li></ul>  </li>  <li><u>Algae -"
+                                      + " autoAlign(Algae)</u>    <ul><li>This aligns to the reef"
+                                      + " in the location of the closest side of the reef for"
+                                      + " algae</li></ul>  </li></ul>"
+                                        + // End of autoAlign list
+                                        "<b>drive(double inches)</b><ul>  <li><u>Inches - this is"
+                                        + " how far forward the robot drives forward (Ex. 3.5, 15,"
+                                        + " 49, 63.38562)</u></li></ul><b>rotate(double"
+                                        + " degrees)</b><ul>  <li><u>Degrees - this is how far"
+                                        + " forward the robot rotates clockwise (Ex. 3.5, 15, 49,"
+                                        + " 63.38562)</u></li></ul></body></html>";
                         showInfoFrame(moreDetailInfoMessage, dialog);
                     }
                 });
 
-        dialog.setLocationRelativeTo(null);
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Dimension screenSize = toolkit.getScreenSize();
+
+        // Example: Place it in the top-left quadrant, but with some offset
+        int dialogWidth =
+                dialog.getWidth(); // or dialog.getPreferredSize().width if not explicitly set
+        int dialogHeight = dialog.getHeight(); // or dialog.getPreferredSize().height
+
+        int desiredDialogX = (int) (screenSize.width * 0.14); // 10% from left
+        int desiredDialogY = (int) ((screenSize.height - dialogHeight) * 0.5); // 10% from top
+
+        // Ensure it doesn't go off-screen if the window is very large for some reason
+        if (desiredDialogX + dialogWidth > screenSize.width) {
+            desiredDialogX = screenSize.width - dialogWidth;
+        }
+        if (desiredDialogY + dialogHeight > screenSize.height) {
+            desiredDialogY = screenSize.height - dialogHeight;
+        }
+        if (desiredDialogX < 0) desiredDialogX = 0;
+        if (desiredDialogY < 0) desiredDialogY = 0;
+
+        dialog.setLocation(desiredDialogX, desiredDialogY);
         // setVisible(true) should be the LAST call for the dialog before it blocks
         dialog.setVisible(true);
 
