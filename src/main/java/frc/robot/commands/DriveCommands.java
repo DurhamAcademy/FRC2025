@@ -471,14 +471,17 @@ public class DriveCommands {
 
                             // Get goal pose for robot
                             Pose2d goalPose = calculateRobotTargetPose(drive, location);
-
+                            Pose2d currentPose =
+                                    location == autoAlignLocations.processor
+                                            ? drive.getPose()
+                                            : drive.getReefBasedPose();
                             double distance =
-                                    drive.getPose()
+                                    currentPose
                                             .getTranslation()
                                             .getDistance(goalPose.getTranslation());
                             double rotationError =
                                     Math.abs(
-                                            drive.getPose().getRotation().getDegrees()
+                                            currentPose.getRotation().getDegrees()
                                                     - goalPose.getRotation().getDegrees());
 
                             // only run if not on target
@@ -486,10 +489,7 @@ public class DriveCommands {
                                 // get speeds to move to goal pose
                                 ChassisSpeeds speeds =
                                         holonomicDriveController.calculate(
-                                                drive.getPose(),
-                                                goalPose,
-                                                0,
-                                                goalPose.getRotation());
+                                                currentPose, goalPose, 0, goalPose.getRotation());
 
                                 // go to goal pose
                                 // TODO figure out why this isn't field relative?
@@ -520,7 +520,10 @@ public class DriveCommands {
                                 () -> {
                                     // Calculate the distance between the robot and
                                     // the target.
-                                    Pose2d currentPose = drive.getPose(); // Get current robot
+                                    Pose2d currentPose =
+                                            location == autoAlignLocations.processor
+                                                    ? drive.getPose()
+                                                    : drive.getReefBasedPose(); // Get current robot
                                     // pose
                                     Pose2d targetPose =
                                             calculateRobotTargetPose(drive, location); // Target

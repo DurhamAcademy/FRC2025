@@ -49,6 +49,7 @@ import frc.robot.RobotContainer;
 import frc.robot.commands.DriveCommands;
 import frc.robot.util.LocalADStarAK;
 import java.util.Map;
+import java.util.Optional; // <<< ADDED IMPORT
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -67,7 +68,7 @@ public class Drive extends SubsystemBase {
     static final Lock odometryLock = new ReentrantLock();
     private final Consumer<Pose2d> resetSimulationPoseCallBack;
     private final SysIdRoutine sysId;
-    private final Vision vision;
+    private final Vision vision; // Already declared
     private final RobotContainer robotContainer;
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
@@ -352,6 +353,23 @@ public class Drive extends SubsystemBase {
         return poseEstimator.getEstimatedPosition();
     }
 
+    /**
+     * Returns the robot's field position based *only* on the AprilTags designated as being on the
+     * shifting game element. The pose is still in the global field coordinate system.
+     *
+     * @return An Optional<Pose2d> of the robot's estimated field position from shifting tags. Empty
+     *     if no shifting element tags are visible or if not configured.
+     */
+    public Optional<Pose2d> getShiftingElementBasedFieldPose() { // <<< ADDED NEW METHOD
+        return vision.getShiftingElementBasedFieldPose();
+    }
+
+    public Pose2d getReefBasedPose() {
+        return getShiftingElementBasedFieldPose().isPresent()
+                ? getShiftingElementBasedFieldPose().get()
+                : getPose();
+    }
+
     /** Returns the current odometry rotation. */
     public Rotation2d getRotation() {
         if (Constants.currentMode == Mode.SIM && robotContainer.getDriveSimulation() != null) {
@@ -392,8 +410,7 @@ public class Drive extends SubsystemBase {
 
             // Find closest reef position to current pose
             Pose2d estimatedReefPose =
-                    poseEstimator
-                            .getEstimatedPosition()
+                    getReefBasedPose() // Use the fused pose
                             .nearest(Constants.LocationConstants.PosesOfAllReefLocations(alliance));
 
             // Find corresponding reef constant value
@@ -487,12 +504,10 @@ public class Drive extends SubsystemBase {
                         : 0;
         Logger.recordOutput(
                 "HumanPlayerStation/target",
-                poseEstimator
-                        .getEstimatedPosition()
+                getPose() // Use the fused pose
                         .nearest(Constants.PosesOfAllHumanPlayerStations(alliance)));
 
-        return poseEstimator
-                .getEstimatedPosition()
+        return getPose() // Use the fused pose
                 .nearest(Constants.PosesOfAllHumanPlayerStations(alliance));
     }
 
@@ -531,7 +546,7 @@ public class Drive extends SubsystemBase {
 
         // Overall condition to stop this command (robot
         // must be at goal pose)
-        Pose2d currentPose = getPose();
+        Pose2d currentPose = getPose(); // Use the fused pose
         Pose2d targetPose =
                 DriveCommands.calculateRobotTargetPose(
                         this, DriveCommands.autoAlignLocations.processor);
@@ -568,7 +583,7 @@ public class Drive extends SubsystemBase {
 
         // Overall condition to stop this command (robot
         // must be at goal pose)
-        Pose2d currentPose = getPose();
+        Pose2d currentPose = getReefBasedPose(); // Use the fused pose
         Pose2d targetPose =
                 DriveCommands.calculateRobotTargetPose(this, DriveCommands.autoAlignLocations.reef);
         // Calculate distance and rotation
@@ -623,8 +638,7 @@ public class Drive extends SubsystemBase {
             int alliance = Constants.getAllianceColor(DriverStation.getAlliance().get());
             // Find closest algae position to current pose
             Pose2d estimatedAlgaePose =
-                    poseEstimator
-                            .getEstimatedPosition()
+                    getReefBasedPose() // Use the fused pose
                             .nearest(
                                     Constants.LocationConstants.PosesOfAllAlgaeLocations(alliance));
 
@@ -672,7 +686,7 @@ public class Drive extends SubsystemBase {
 
         // Overall condition to stop this command (robot
         // must be at goal pose)
-        Pose2d currentPose = getPose();
+        Pose2d currentPose = getReefBasedPose(); // Use the fused pose
         Pose2d targetPose =
                 DriveCommands.calculateRobotTargetPose(
                         this, DriveCommands.autoAlignLocations.algae);
