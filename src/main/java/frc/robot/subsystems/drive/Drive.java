@@ -30,6 +30,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -365,9 +366,9 @@ public class Drive extends SubsystemBase {
     }
 
     public Pose2d getReefBasedPose() {
-        return getShiftingElementBasedFieldPose().isPresent()
-                ? getShiftingElementBasedFieldPose().get()
-                : getPose();
+        return (getShiftingElementBasedFieldPose().isPresent()
+                        ? getShiftingElementBasedFieldPose().get()
+                        : getPose());
     }
 
     /** Returns the current odometry rotation. */

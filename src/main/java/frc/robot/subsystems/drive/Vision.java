@@ -11,7 +11,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-// Added for AprilTagFieldLayout loading
 import java.util.*;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
@@ -84,24 +83,32 @@ public class Vision extends SubsystemBase {
 
         try {
             // 1. Load the FULL field layout
-            fullFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded); // Or your current year
+            fullFieldLayout =
+                    AprilTagFieldLayout.loadField(
+                            AprilTagFields.k2025ReefscapeWelded); // Or your current year
 
             // 2. Create the layout for the SHIFTING ELEMENT tags
             List<AprilTag> shiftingTagsList = new ArrayList<>();
             if (fullFieldLayout != null && SHIFTING_ELEMENT_TAG_IDS != null) {
                 for (int id : SHIFTING_ELEMENT_TAG_IDS) {
-                    fullFieldLayout.getTagPose(id).ifPresent(pose3d ->
-                            shiftingTagsList.add(new AprilTag(id, pose3d))
-                    );
+                    fullFieldLayout
+                            .getTagPose(id)
+                            .ifPresent(pose3d -> shiftingTagsList.add(new AprilTag(id, pose3d)));
                 }
             }
             if (fullFieldLayout != null) {
-                shiftingElementFieldLayout = new AprilTagFieldLayout(shiftingTagsList, fullFieldLayout.getFieldLength(), fullFieldLayout.getFieldWidth());
-                // For WPILib 2024.3.1+ you might need to specify origin if it's not implicitly derived:
+                shiftingElementFieldLayout =
+                        new AprilTagFieldLayout(
+                                shiftingTagsList,
+                                fullFieldLayout.getFieldLength(),
+                                fullFieldLayout.getFieldWidth());
+                // For WPILib 2024.3.1+ you might need to specify origin if it's not implicitly
+                // derived:
                 // shiftingElementFieldLayout.setOrigin(fullFieldLayout.getOrigin());
             } else {
                 // Fallback if fullFieldLayout failed to load
-                shiftingElementFieldLayout = new AprilTagFieldLayout(new ArrayList<>(), 16.46, 8.23);
+                shiftingElementFieldLayout =
+                        new AprilTagFieldLayout(new ArrayList<>(), 16.46, 8.23);
             }
 
 
@@ -109,12 +116,18 @@ public class Vision extends SubsystemBase {
             List<AprilTag> mainLayoutTagsList = new ArrayList<>();
             if (fullFieldLayout != null) {
                 for (AprilTag tag : fullFieldLayout.getTags()) {
-                    if (SHIFTING_ELEMENT_TAG_IDS == null || !SHIFTING_ELEMENT_TAG_IDS.contains(tag.ID)) {
+                    if (SHIFTING_ELEMENT_TAG_IDS == null
+                            || !SHIFTING_ELEMENT_TAG_IDS.contains(tag.ID)) {
                         mainLayoutTagsList.add(tag); // Add if NOT in the shifting set
                     }
                 }
-                mainFieldLayout = new AprilTagFieldLayout(mainLayoutTagsList, fullFieldLayout.getFieldLength(), fullFieldLayout.getFieldWidth());
-                // mainFieldLayout.setOrigin(fullFieldLayout.getOrigin()); // If needed for older WPILib or explicit setting
+                mainFieldLayout =
+                        new AprilTagFieldLayout(
+                                mainLayoutTagsList,
+                                fullFieldLayout.getFieldLength(),
+                                fullFieldLayout.getFieldWidth());
+                // mainFieldLayout.setOrigin(fullFieldLayout.getOrigin()); // If needed for older
+                // WPILib or explicit setting
             } else {
                 // Fallback if fullFieldLayout failed to load
                 mainFieldLayout = new AprilTagFieldLayout(new ArrayList<>(), 16.46, 8.23);
@@ -122,15 +135,17 @@ public class Vision extends SubsystemBase {
 
 
         } catch (Exception e) {
-            System.err.println("CRITICAL: Could not load AprilTag field layout! Using empty layouts.");
+            System.err.println(
+                    "CRITICAL: Could not load AprilTag field layout! Using empty layouts.");
             e.printStackTrace();
             // Initialize with empty layouts on error to prevent NPEs
             var emptyList = new ArrayList<AprilTag>();
             var defaultLength = 16.46; // Approx field length
-            var defaultWidth = 8.23;   // Approx field width
+            var defaultWidth = 8.23; // Approx field width
             fullFieldLayout = new AprilTagFieldLayout(emptyList, defaultLength, defaultWidth);
             mainFieldLayout = new AprilTagFieldLayout(emptyList, defaultLength, defaultWidth);
-            shiftingElementFieldLayout = new AprilTagFieldLayout(emptyList, defaultLength, defaultWidth);
+            shiftingElementFieldLayout =
+                    new AprilTagFieldLayout(emptyList, defaultLength, defaultWidth);
         }
 
         // --- Initialize PhotonPoseEstimators for each camera ---
@@ -139,7 +154,8 @@ public class Vision extends SubsystemBase {
             try {
                 PhotonCamera camera = new PhotonCamera(cameraName);
 
-                // 1. Estimator for Global Field Pose (uses mainFieldLayout - EXCLUDES shifting tags)
+                // 1. Estimator for Global Field Pose (uses mainFieldLayout - EXCLUDES shifting
+                // tags)
                 if (mainFieldLayout != null && !mainFieldLayout.getTags().isEmpty()) {
                     PhotonPoseEstimator globalPhotonPoseEstimator =
                             new PhotonPoseEstimator(
@@ -150,11 +166,16 @@ public class Vision extends SubsystemBase {
                             PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY);
                     globalCameraPoseEstimators.put(camera, globalPhotonPoseEstimator);
                 } else {
-                    System.err.println("Skipping global pose estimator for " + cameraName + " due to empty or unconfigured mainFieldLayout.");
+                    System.err.println(
+                            "Skipping global pose estimator for "
+                                    + cameraName
+                                    + " due to empty or unconfigured mainFieldLayout.");
                 }
 
-                // 2. Estimator for Shifting Element Pose (uses shiftingElementFieldLayout - ONLY shifting tags)
-                if (shiftingElementFieldLayout != null && !shiftingElementFieldLayout.getTags().isEmpty()) {
+                // 2. Estimator for Shifting Element Pose (uses shiftingElementFieldLayout - ONLY
+                // shifting tags)
+                if (shiftingElementFieldLayout != null
+                        && !shiftingElementFieldLayout.getTags().isEmpty()) {
                     PhotonPoseEstimator shiftingElementPhotonPoseEstimator =
                             new PhotonPoseEstimator(
                                     shiftingElementFieldLayout,
@@ -162,9 +183,13 @@ public class Vision extends SubsystemBase {
                                     robotToCam);
                     shiftingElementPhotonPoseEstimator.setMultiTagFallbackStrategy(
                             PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY);
-                    shiftingElementCameraPoseEstimators.put(camera, shiftingElementPhotonPoseEstimator);
+                    shiftingElementCameraPoseEstimators.put(
+                            camera, shiftingElementPhotonPoseEstimator);
                 } else {
-                    System.err.println("Skipping shifting element pose estimator for " + cameraName + " due to empty or unconfigured shiftingElementFieldLayout.");
+                    System.err.println(
+                            "Skipping shifting element pose estimator for "
+                                    + cameraName
+                                    + " due to empty or unconfigured shiftingElementFieldLayout.");
                 }
 
             } catch (Exception e) {
@@ -361,7 +386,6 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void periodic() {
-        System.out.println("asdfasdfasd");
         updateGlobalEstimatedPose(); // Update main pose estimator with global vision
 
         // Example of how to get and log the shifting element based pose:

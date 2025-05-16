@@ -434,11 +434,23 @@ public class DriveCommands {
                             // Get goal position of robot
                             Pose2d goalPose = calculateRobotTargetPose(drive, location);
 
+                            Pose2d reefBased = drive.getReefBasedPose();
+                            Pose2d generalPose = drive.getPose();
+
                             // Return the actual pathfinding command
-                            return AutoBuilder.pathfindToPose(goalPose, constraints, 0.0);
+                            Transform2d currentPoseTransform =
+                                    new Transform2d(
+                                            reefBased.getX() - generalPose.getX(),
+                                            reefBased.getY() - generalPose.getY(),
+                                            new Rotation2d());
+                            return AutoBuilder.pathfindToPose(
+                                    goalPose.plus(currentPoseTransform), constraints, 0.0);
                         },
                         Set.of(drive))
-                .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+                .beforeStarting(
+                        () ->
+                                angleController.reset(
+                                        drive.getReefBasedPose().getRotation().getRadians()));
     }
 
     /**
